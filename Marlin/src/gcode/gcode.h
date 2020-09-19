@@ -72,6 +72,9 @@
  * G61  - Apply/restore saved coordinates. (Requires SAVED_POSITIONS)
  * G76  - Calibrate first layer temperature offsets. (Requires PROBE_TEMP_COMPENSATION)
  * G80  - Cancel current motion mode (Requires GCODE_MOTION_MODES)
+ * G81  - Drilling Cycles - drilling (Requires DRILLING_CANNED_CYCLES)
+ * G82  - Drilling Cycles - spot drill (Requires DRILLING_CANNED_CYCLES)
+ * G83  - Drilling Cycles - pecking (Requires DRILLING_CANNED_CYCLES)
  * G90  - Use Absolute Coordinates
  * G91  - Use Relative Coordinates
  * G92  - Set current position to coordinates given
@@ -494,6 +497,12 @@ private:
   #endif
 
   TERN_(GCODE_MOTION_MODES, static void G80());
+
+  #if ENABLED(DRILLING_CANNED_CYCLES)
+    static void G81();
+    static void G82();
+    static void G83();
+  #endif
 
   static void G92();
 
