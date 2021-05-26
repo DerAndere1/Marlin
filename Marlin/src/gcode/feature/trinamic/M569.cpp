@@ -45,6 +45,7 @@ static void set_stealth_status(const bool enable, const int8_t target_extruder) 
 
   #if    X_HAS_STEALTHCHOP  || Y_HAS_STEALTHCHOP  || Z_HAS_STEALTHCHOP \
       || I_HAS_STEALTHCHOP  || J_HAS_STEALTHCHOP  || K_HAS_STEALTHCHOP \
+      || M_HAS_STEALTHCHOP  || O_HAS_STEALTHCHOP  || P_HAS_STEALTHCHOP  || Q_HAS_STEALTHCHOP \   
       || X2_HAS_STEALTHCHOP || Y2_HAS_STEALTHCHOP || Z2_HAS_STEALTHCHOP || Z3_HAS_STEALTHCHOP || Z4_HAS_STEALTHCHOP
     const uint8_t index = parser.byteval('I');
   #endif
@@ -75,7 +76,19 @@ static void set_stealth_status(const bool enable, const int8_t target_extruder) 
       #if K_HAS_STEALTHCHOP
         case K_AXIS: TMC_SET_STEALTH(K); break;
       #endif
-
+      #if M_HAS_STEALTHCHOP
+        case M_AXIS: TMC_SET_STEALTH(M); break;
+      #endif
+      #if O_HAS_STEALTHCHOP
+        case O_AXIS: TMC_SET_STEALTH(O); break;
+      #endif
+      #if P_HAS_STEALTHCHOP
+        case P_AXIS: TMC_SET_STEALTH(P); break;
+      #endif
+      #if Q_HAS_STEALTHCHOP
+        case Q_AXIS: TMC_SET_STEALTH(Q); break;
+      #endif
+      
       case E_AXIS: {
         if (target_extruder < 0) return;
         OPTCODE(E0_HAS_STEALTHCHOP, else if (target_extruder == 0) TMC_SET_STEALTH(E0))
@@ -104,6 +117,10 @@ static void say_stealth_status() {
   OPTCODE( I_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(I))
   OPTCODE( J_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(J))
   OPTCODE( K_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(K))
+  OPTCODE( M_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(M))
+  OPTCODE( O_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(O))
+  OPTCODE( P_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(P))
+  OPTCODE( Q_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(Q))
   OPTCODE(E0_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(E0))
   OPTCODE(E1_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(E1))
   OPTCODE(E2_HAS_STEALTHCHOP, TMC_SAY_STEALTH_STATUS(E2))

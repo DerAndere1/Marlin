@@ -159,12 +159,24 @@
 #if HAS_K_STEP
   #define ISR_K_STEPPER_CYCLES  ISR_STEPPER_CYCLES
 #endif
+#if HAS_M_STEP
+  #define ISR_M_STEPPER_CYCLES  ISR_STEPPER_CYCLES
+#endif
+#if HAS_O_STEP
+  #define ISR_O_STEPPER_CYCLES  ISR_STEPPER_CYCLES
+#endif
+#if HAS_P_STEP
+  #define ISR_P_STEPPER_CYCLES  ISR_STEPPER_CYCLES
+#endif
+#if HAS_Q_STEP
+  #define ISR_Q_STEPPER_CYCLES  ISR_STEPPER_CYCLES
+#endif
 #if HAS_EXTRUDERS
   #define ISR_E_STEPPER_CYCLES  ISR_STEPPER_CYCLES    // E is always interpolated, even for mixing extruders
 #endif
 
 // And the total minimum loop time, not including the base
-#define MIN_ISR_LOOP_CYCLES (ISR_MIXING_STEPPER_CYCLES LOGICAL_AXIS_GANG(+ ISR_E_STEPPER_CYCLES, + ISR_X_STEPPER_CYCLES, + ISR_Y_STEPPER_CYCLES, + ISR_Z_STEPPER_CYCLES, + ISR_I_STEPPER_CYCLES, + ISR_J_STEPPER_CYCLES, + ISR_K_STEPPER_CYCLES))
+#define MIN_ISR_LOOP_CYCLES (ISR_MIXING_STEPPER_CYCLES LOGICAL_AXIS_GANG(+ ISR_E_STEPPER_CYCLES, + ISR_X_STEPPER_CYCLES, + ISR_Y_STEPPER_CYCLES, + ISR_Z_STEPPER_CYCLES, + ISR_I_STEPPER_CYCLES, + ISR_J_STEPPER_CYCLES, + ISR_K_STEPPER_CYCLES, + ISR_M_STEPPER_CYCLES, + ISR_O_STEPPER_CYCLES, + ISR_P_STEPPER_CYCLES, + ISR_Q_STEPPER_CYCLES))
 
 // Calculate the minimum MPU cycles needed per pulse to enforce, limited to the max stepper rate
 #define _MIN_STEPPER_PULSE_CYCLES(N) _MAX(uint32_t((F_CPU) / (MAXIMUM_STEPPER_RATE)), ((F_CPU) / 500000UL) * (N))
@@ -436,11 +448,11 @@ class Stepper {
 
     // Set the current position in steps
     static void set_position(LOGICAL_AXIS_LIST(
-      const int32_t &e, const int32_t &a, const int32_t &b, const int32_t &c, const int32_t &i, const int32_t &j, const int32_t &k
+      const int32_t &e, const int32_t &a, const int32_t &b, const int32_t &c, const int32_t &i, const int32_t &j, const int32_t &k, const int32_t &m, const int32_t &o, const int32_t &p, const int32_t &q
     ));
     static inline void set_position(const xyze_long_t &abce) {
       set_position(LOGICAL_AXIS_LIST(
-        abce.e, abce.a, abce.b, abce.c, abce.i, abce.j, abce.k
+        abce.e, abce.a, abce.b, abce.c, abce.i, abce.j, abce.k, abce.m, abce.o, abce.p, abce.q
       ));
     }
     static void set_axis_position(const AxisEnum a, const int32_t &v);
@@ -539,11 +551,11 @@ class Stepper {
 
     // Set the current position in steps
     static void _set_position(LOGICAL_AXIS_LIST(
-      const int32_t &e, const int32_t &a, const int32_t &b, const int32_t &c, const int32_t &i, const int32_t &j, const int32_t &k
+      const int32_t &e, const int32_t &a, const int32_t &b, const int32_t &c, const int32_t &i, const int32_t &j, const int32_t &k, const int32_t &m, const int32_t &o, const int32_t &p, const int32_t &q
     ));
     FORCE_INLINE static void _set_position(const abce_long_t &spos) {
       _set_position(LOGICAL_AXIS_LIST(
-        spos.e, spos.a, spos.b, spos.c, spos.i, spos.j, spos.k
+        spos.e, spos.a, spos.b, spos.c, spos.i, spos.j, spos.k, spos.m, spos.o, spos.p, spos.q
       ));
     }
 

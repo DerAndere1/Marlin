@@ -32,6 +32,10 @@ void report_M92(const bool echo=true, const int8_t e=-1) {
     SP_I_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[I_AXIS]),
     SP_J_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[J_AXIS]),
     SP_K_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[K_AXIS]))
+    SP_M_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[M_AXIS]),    /**SG**/
+    SP_O_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[O_AXIS]),    /**SG**/
+    SP_P_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[P_AXIS]),    /**SG**/
+    SP_Q_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Q_AXIS]))    /**SG**/
   );
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
     SERIAL_ECHOPAIR_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.axis_steps_per_mm[E_AXIS]));
@@ -70,7 +74,7 @@ void GcodeSuite::M92() {
 
   // No arguments? Show M92 report.
   if (!parser.seen(
-    LOGICAL_AXIS_GANG("E", "X", "Y", "Z", AXIS4_STR, AXIS5_STR, AXIS6_STR)
+    LOGICAL_AXIS_GANG("E", "X", "Y", "Z", AXIS4_STR, AXIS5_STR, AXIS6_STR, AXIS7_STR, AXIS8_STR, AXIS9_STR, AXIS10_STR)
     TERN_(MAGIC_NUMBERS_GCODE, "HL")
   )) return report_M92(true, target_extruder);
 

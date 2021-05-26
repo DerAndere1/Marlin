@@ -51,18 +51,18 @@ void GcodeSuite::M122() {
 
     if (parser.seen_test('V')) {
       tmc_get_registers(
-        LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k)
+        LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k, print_axis.m, print_axis.o, print_axis.p, print_axis.q)
       );
     }
     else {
       tmc_report_all(
-        LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k)
+        LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k, print_axis.m, print_axis.o, print_axis.p, print_axis.q)
       );
     }
   #endif
 
   test_tmc_connection(
-    LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k)
+    LOGICAL_AXIS_LIST(print_axis.e, print_axis.x, print_axis.y, print_axis.z, print_axis.i, print_axis.j, print_axis.k, print_axis.m, print_axis.o, print_axis.p, print_axis.q)
   );
 }
 

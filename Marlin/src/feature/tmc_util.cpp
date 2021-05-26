@@ -431,6 +431,26 @@
         if (monitor_tmc_driver(stepperK, need_update_error_counters, need_debug_reporting))
           step_current_down(stepperK);
       #endif
+      /**SG**/
+      #if AXIS_IS_TMC(M)
+        if (monitor_tmc_driver(stepperM, need_update_error_counters, need_debug_reporting))
+          step_current_down(stepperM);
+      #endif
+      /**SG**/
+      #if AXIS_IS_TMC(O)
+        if (monitor_tmc_driver(stepperO, need_update_error_counters, need_debug_reporting))
+          step_current_down(stepperO);
+      #endif
+      /**SG**/
+      #if AXIS_IS_TMC(P)
+        if (monitor_tmc_driver(stepperP, need_update_error_counters, need_debug_reporting))
+          step_current_down(stepperPM);
+      #endif
+      /**SG**/
+      #if AXIS_IS_TMC(Q)
+        if (monitor_tmc_driver(stepperQ, need_update_error_counters, need_debug_reporting))
+          step_current_down(stepperQ);
+      #endif
 
       #if AXIS_IS_TMC(E0)
         (void)monitor_tmc_driver(stepperE0, need_update_error_counters, need_debug_reporting);
@@ -774,7 +794,7 @@
 
   static void tmc_debug_loop(
     const TMC_debug_enum i,
-    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k)
+    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k, const bool print_m, const bool print_o, const bool print_p, const bool print_q)
   ) {
     if (print_x) {
       #if AXIS_IS_TMC(X)
@@ -818,6 +838,22 @@
     #if AXIS_IS_TMC(K)
       if (print_k) tmc_status(stepperK, i);
     #endif
+    /**SG**/
+    #if AXIS_IS_TMC(M)
+      if (print_m) tmc_status(stepperM, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(O)
+      if (print_o) tmc_status(stepperO, i);
+    #endif
+     /**SG**/
+    #if AXIS_IS_TMC(P)
+      if (print_p) tmc_status(stepperP, i);
+    #endif
+     /**SG**/
+    #if AXIS_IS_TMC(Q)
+      if (print_q) tmc_status(stepperQ, i);
+    #endif
 
     if (print_e) {
       #if AXIS_IS_TMC(E0)
@@ -851,7 +887,7 @@
 
   static void drv_status_loop(
     const TMC_drv_status_enum i,
-    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k)
+    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k, const bool print_m, const bool print_o, const bool print_p, const bool print_q)
   ) {
     if (print_x) {
       #if AXIS_IS_TMC(X)
@@ -895,7 +931,38 @@
     #if AXIS_IS_TMC(K)
       if (print_k) tmc_parse_drv_status(stepperK, i);
     #endif
-
+    /**SG**/
+    #if AXIS_IS_TMC(M)
+      if (print_m) tmc_parse_drv_status(stepperM, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(O)
+      if (print_o) tmc_parse_drv_status(stepperO, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(P)
+      if (print_p) tmc_parse_drv_status(stepperP, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(Q)
+      if (print_q) tmc_parse_drv_status(stepperQ, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(M)
+      if (print_m) tmc_parse_drv_status(stepperM, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(O)
+      if (print_o) tmc_parse_drv_status(stepperO, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(P)
+      if (print_p) tmc_parse_drv_status(stepperP, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(Q)
+      if (print_q) tmc_parse_drv_status(stepperQ, i);
+    #endif
     if (print_e) {
       #if AXIS_IS_TMC(E0)
         tmc_parse_drv_status(stepperE0, i);
@@ -933,7 +1000,7 @@
   void tmc_report_all(LOGICAL_AXIS_LIST(
     const bool print_e/*=true*/,
     const bool print_x/*=true*/, const bool print_y/*=true*/, const bool print_z/*=true*/,
-    const bool print_i/*=true*/, const bool print_j/*=true*/, const bool print_k/*=true*/
+    const bool print_i/*=true*/, const bool print_j/*=true*/, const bool print_k/*=true*/, const bool print_m/*=true*/, const bool print_o/*=true*/, const bool print_p/*=true*/, const bool print_q/*=true*/
   )) {
     #define TMC_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL);  tmc_debug_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k)); }while(0)
     #define DRV_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); drv_status_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k)); }while(0)
@@ -1063,7 +1130,7 @@
 
   static void tmc_get_registers(
     TMC_get_registers_enum i,
-    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k)
+    LOGICAL_AXIS_LIST(const bool print_e, const bool print_x, const bool print_y, const bool print_z, const bool print_i, const bool print_j, const bool print_k, const bool print_m, const bool print_o, const bool print_p, const bool print_q)   /**SG**/
   ) {
     if (print_x) {
       #if AXIS_IS_TMC(X)
@@ -1107,6 +1174,22 @@
     #if AXIS_IS_TMC(K)
       if (print_k) tmc_get_registers(stepperK, i);
     #endif
+    /**SG**/
+    #if AXIS_IS_TMC(M)
+      if (print_m) tmc_get_registers(stepperM, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(O)
+      if (print_o) tmc_get_registers(stepperO, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(P)
+      if (print_p) tmc_get_registers(stepperP, i);
+    #endif
+    /**SG**/
+    #if AXIS_IS_TMC(Q)
+      if (print_q) tmc_get_registers(stepperQ, i);
+    #endif
 
     if (print_e) {
       #if AXIS_IS_TMC(E0)
@@ -1139,9 +1222,9 @@
   }
 
   void tmc_get_registers(
-    LOGICAL_AXIS_LIST(bool print_e, bool print_x, bool print_y, bool print_z, bool print_i, bool print_j, bool print_k)
+    LOGICAL_AXIS_LIST(bool print_e, bool print_x, bool print_y, bool print_z, bool print_i, bool print_j, bool print_k, bool print_m, bool print_o, bool print_p, bool print_q)
   ) {
-    #define _TMC_GET_REG(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); tmc_get_registers(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k)); }while(0)
+    #define _TMC_GET_REG(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); tmc_get_registers(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k, print_m, print_o, print_p, print_q)); }while(0)
     #define TMC_GET_REG(NAME, TABS) _TMC_GET_REG(STRINGIFY(NAME) TABS, TMC_GET_##NAME)
     _TMC_GET_REG("\t", TMC_AXIS_CODES);
     TMC_GET_REG(GCONF, "\t\t");
@@ -1235,6 +1318,22 @@
     #if AXIS_HAS_SPI(K)
       SET_CS_PIN(K);
     #endif
+    /**SG**/
+    #if AXIS_HAS_SPI(M)
+      SET_CS_PIN(M);
+    #endif
+    /**SG**/
+    #if AXIS_HAS_SPI(O)
+      SET_CS_PIN(O);
+    #endif
+    /**SG**/
+    #if AXIS_HAS_SPI(P)
+      SET_CS_PIN(P);
+    #endif
+    /**SG**/
+    #if AXIS_HAS_SPI(Q)
+      SET_CS_PIN(Q);
+    #endif
     #if AXIS_HAS_SPI(E0)
       SET_CS_PIN(E0);
     #endif
@@ -1287,7 +1386,8 @@ static bool test_connection(TMC &st) {
 void test_tmc_connection(LOGICAL_AXIS_LIST(
   const bool test_e/*=true*/,
   const bool test_x/*=true*/, const bool test_y/*=true*/, const bool test_z/*=true*/,
-  const bool test_i/*=true*/, const bool test_j/*=true*/, const bool test_k/*=true*/
+  const bool test_i/*=true*/, const bool test_j/*=true*/, const bool test_k/*=true*/,
+  const bool test_m/*=true*/, const bool test_o/*=true*/, const bool test_p/*=true*/, const bool test_q/*=true*/
 )) {
   uint8_t axis_connection = 0;
 
@@ -1332,6 +1432,21 @@ void test_tmc_connection(LOGICAL_AXIS_LIST(
   #endif
   #if AXIS_IS_TMC(K)
     if (test_k) axis_connection += test_connection(stepperK);
+  #endif
+  #if AXIS_IS_TMC(M)
+    if (test_m) axis_connection += test_connection(stepperM);
+  #endif
+  /**SG**/  
+  #if AXIS_IS_TMC(O)
+    if (test_o) axis_connection += test_connection(stepperO);
+  #endif
+  /**SG**/  
+  #if AXIS_IS_TMC(P)
+    if (test_p) axis_connection += test_connection(stepperP);
+  #endif
+  /**SG**/  
+  #if AXIS_IS_TMC(Q)
+    if (test_q) axis_connection += test_connection(stepperQ);
   #endif
 
   if (test_e) {

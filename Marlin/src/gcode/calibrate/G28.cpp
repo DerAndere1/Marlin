@@ -353,7 +353,7 @@ void GcodeSuite::G28() {
 
     const float z_homing_height = parser.seenval('R') ? parser.value_linear_units() : Z_HOMING_HEIGHT;
 
-    if (z_homing_height && (0 LINEAR_AXIS_GANG(|| doX, || doY, || TERN0(Z_SAFE_HOMING, doZ), || doI, || doJ, || doK))) {
+    if (z_homing_height && (0 LINEAR_AXIS_GANG(|| doX, || doY, || TERN0(Z_SAFE_HOMING, doZ), || doI, || doJ, || doK, || doM, || doO, || doP, || doQ))) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Raise Z (before homing) by ", z_homing_height);
       do_z_clearance(z_homing_height);
@@ -419,6 +419,18 @@ void GcodeSuite::G28() {
     #endif
     #if LINEAR_AXES >= 6
       if (doK) homeaxis(K_AXIS);
+    #endif
+    #if LINEAR_AXES >= 7    /**SG**/
+      if (doM) homeaxis(M_AXIS);
+    #endif
+    #if LINEAR_AXES >= 8    /**SG**/
+      if (doO) homeaxis(O_AXIS);
+    #endif
+    #if LINEAR_AXES >= 9    /**SG**/
+      if (doP) homeaxis(P_AXIS);
+    #endif
+    #if LINEAR_AXES >= 10    /**SG**/
+      if (doQ) homeaxis(Q_AXIS);
     #endif
 
     sync_plan_position();
@@ -501,6 +513,18 @@ void GcodeSuite::G28() {
     #if HAS_CURRENT_HOME(K)
       stepperK.rms_current(tmc_save_current_K);
     #endif
+    #if HAS_CURRENT_HOME(M)   /**SG**/
+      stepperM.rms_current(tmc_save_current_M);
+    #endif
+    #if HAS_CURRENT_HOME(O)   /**SG**/
+      stepperO.rms_current(tmc_save_current_O);
+    #endif
+    #if HAS_CURRENT_HOME(P)   /**SG**/
+      stepperP.rms_current(tmc_save_current_P);
+    #endif
+    #if HAS_CURRENT_HOME(Q)   /**SG**/
+      stepperQ.rms_current(tmc_save_current_Q);
+    #endif
   #endif // HAS_HOMING_CURRENT
 
   ui.refresh();
@@ -521,7 +545,7 @@ void GcodeSuite::G28() {
     // If not, this will need a PROGMEM directive and an accessor.
     #define _EN_ITEM(N) , E_AXIS
     static constexpr AxisEnum L64XX_axis_xref[MAX_L64XX] = {
-      LINEAR_AXIS_LIST(X_AXIS, Y_AXIS, Z_AXIS, I_AXIS, J_AXIS, K_AXIS),
+      LINEAR_AXIS_LIST(X_AXIS, Y_AXIS, Z_AXIS, I_AXIS, J_AXIS, K_AXIS, M_AXIS, O_AXIS, P_AXIS, Q_AXIS),
       X_AXIS, Y_AXIS, Z_AXIS, Z_AXIS, Z_AXIS
       REPEAT(E_STEPPERS, _EN_ITEM)
     };

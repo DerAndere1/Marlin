@@ -315,12 +315,12 @@ void serial_spaces(uint8_t count);
 
 void print_bin(const uint16_t val);
 void print_pos(
-  LINEAR_AXIS_LIST(const_float_t x, const_float_t y, const_float_t z, const_float_t i, const_float_t j, const_float_t k),
+  LINEAR_AXIS_LIST(const_float_t x, const_float_t y, const_float_t z, const_float_t i, const_float_t j, const_float_t k, const_float_t m, const_float_t o, const_float_t p, const_float_t q),
   PGM_P const prefix=nullptr, PGM_P const suffix=nullptr
 );
 
 inline void print_pos(const xyz_pos_t &xyz, PGM_P const prefix=nullptr, PGM_P const suffix=nullptr) {
-  print_pos(LINEAR_AXIS_LIST(xyz.x, xyz.y, xyz.z, xyz.i, xyz.j, xyz.k), prefix, suffix);
+  print_pos(LINEAR_AXIS_LIST(xyz.x, xyz.y, xyz.z, xyz.i, xyz.j, xyz.k, xyz.o, xyz.o, xyz.p, xyz.q), prefix, suffix);
 }
 
 #define SERIAL_POS(SUFFIX,VAR) do { print_pos(VAR, PSTR("  " STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n")); }while(0)

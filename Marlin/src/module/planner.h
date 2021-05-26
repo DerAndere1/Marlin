@@ -762,7 +762,8 @@ class Planner {
      */
     static bool buffer_segment(
       LOGICAL_AXIS_LIST(const_float_t e, const_float_t a, const_float_t b, const_float_t c,
-                        const_float_t i, const_float_t j, const_float_t k)
+                        const_float_t i, const_float_t j, const_float_t k,
+                        const_float_t m, const_float_t o, const_float_t p, const_float_t q)
       OPTARG(HAS_DIST_MM_ARG, const xyze_float_t &cart_dist_mm)
       , const_feedRate_t fr_mm_s, const uint8_t extruder, const_float_t millimeters=0.0
     );
@@ -772,7 +773,7 @@ class Planner {
       , const_feedRate_t fr_mm_s, const uint8_t extruder, const_float_t millimeters=0.0
     ) {
       return buffer_segment(
-        LOGICAL_AXIS_LIST(abce.e, abce.a, abce.b, abce.c, abce.i, abce.j, abce.k)
+        LOGICAL_AXIS_LIST(abce.e, abce.a, abce.b, abce.c, abce.i, abce.j, abce.k, abce.m, abce.o, abce.p, abce.q)
         OPTARG(HAS_DIST_MM_ARG, cart_dist_mm)
         , fr_mm_s, extruder, millimeters
       );
@@ -794,7 +795,8 @@ class Planner {
     static bool buffer_line(
       LOGICAL_AXIS_LIST(const_float_t e,
                         const_float_t rx, const_float_t ry, const_float_t rz,
-                        const_float_t ri, const_float_t rj, const_float_t rk)
+                        const_float_t ri, const_float_t rj, const_float_t rk,
+                        const_float_t rm, const_float_t ro, const_float_t rp, const_float_t rq)
       , const feedRate_t &fr_mm_s, const uint8_t extruder, const float millimeters=0.0
       OPTARG(SCARA_FEEDRATE_SCALING, const_float_t inv_duration=0.0)
     );
@@ -803,7 +805,7 @@ class Planner {
       OPTARG(SCARA_FEEDRATE_SCALING, const_float_t inv_duration=0.0)
     ) {
       return buffer_line(
-        LOGICAL_AXIS_LIST(cart.e, cart.x, cart.y, cart.z, cart.i, cart.j, cart.k)
+        LOGICAL_AXIS_LIST(cart.e, cart.x, cart.y, cart.z, cart.i, cart.j, cart.k, cart.m, cart.o, cart.p, cart.q)
         , fr_mm_s, extruder, millimeters
         OPTARG(SCARA_FEEDRATE_SCALING, inv_duration)
       );
@@ -829,10 +831,11 @@ class Planner {
     static void set_position_mm(
       LOGICAL_AXIS_LIST(const_float_t e,
                         const_float_t rx, const_float_t ry, const_float_t rz,
-                        const_float_t ri, const_float_t rj, const_float_t rk)
+                        const_float_t ri, const_float_t rj, const_float_t rk,
+                        const_float_t rm, const_float_t ro, const_float_t rp, const_float_t rq)
     );
     FORCE_INLINE static void set_position_mm(const xyze_pos_t &cart) {
-      set_position_mm(LOGICAL_AXIS_LIST(cart.e, cart.x, cart.y, cart.z, cart.i, cart.j, cart.k));
+      set_position_mm(LOGICAL_AXIS_LIST(cart.e, cart.x, cart.y, cart.z, cart.i, cart.j, cart.k, cart.m, cart.o, cart.p, cart.q));
     }
 
     #if HAS_EXTRUDERS
@@ -848,7 +851,8 @@ class Planner {
     static void set_machine_position_mm(LOGICAL_AXIS_LIST(
       const_float_t e,
       const_float_t a, const_float_t b, const_float_t c,
-      const_float_t i, const_float_t j, const_float_t k
+      const_float_t i, const_float_t j, const_float_t k,
+      const_float_t m, const_float_t o, const_float_t p, const_float_t q
     ));
     FORCE_INLINE static void set_machine_position_mm(const abce_pos_t &abce) {
       set_machine_position_mm(LOGICAL_AXIS_LIST(abce.e, abce.a, abce.b, abce.c, abce.i, abce.j, abce.k));
@@ -864,7 +868,8 @@ class Planner {
       const abce_pos_t out = LOGICAL_AXIS_ARRAY(
         get_axis_position_mm(E_AXIS),
         get_axis_position_mm(A_AXIS), get_axis_position_mm(B_AXIS), get_axis_position_mm(C_AXIS),
-        get_axis_position_mm(I_AXIS), get_axis_position_mm(J_AXIS), get_axis_position_mm(K_AXIS)
+        get_axis_position_mm(I_AXIS), get_axis_position_mm(J_AXIS), get_axis_position_mm(K_AXIS),
+        get_axis_position_mm(M_AXIS), get_axis_position_mm(O_AXIS), get_axis_position_mm(P_AXIS), get_axis_position_mm(Q_AXIS)
       );
       return out;
     }
