@@ -1100,19 +1100,15 @@ void MarlinSettings::postprocess() {
         #if AXIS_IS_TMC(K)
           tmc_stepper_current.K = stepperK.getMilliamps();
         #endif
-        /**SG**/
         #if AXIS_IS_TMC(M)
           tmc_stepper_current.M = stepperM.getMilliamps();
         #endif
-        /**SG**/
         #if AXIS_IS_TMC(O)
           tmc_stepper_current.O = stepperO.getMilliamps();
         #endif
-        /**SG**/
         #if AXIS_IS_TMC(P)
           tmc_stepper_current.P = stepperP.getMilliamps();
         #endif
-        /**SG**/
         #if AXIS_IS_TMC(Q)
           tmc_stepper_current.Q = stepperQ.getMilliamps();
         #endif
@@ -1990,19 +1986,15 @@ void MarlinSettings::postprocess() {
             #if AXIS_IS_TMC(K)
               SET_CURR(K);
             #endif
-            /**SG**/
             #if AXIS_IS_TMC(M)
               SET_CURR(M);
             #endif
-            /**SG**/
             #if AXIS_IS_TMC(O)
               SET_CURR(O);
             #endif
-            /**SG**/
             #if AXIS_IS_TMC(P)
               SET_CURR(P);
             #endif
-            /**SG**/
             #if AXIS_IS_TMC(Q)
               SET_CURR(Q);
             #endif
@@ -2085,10 +2077,10 @@ void MarlinSettings::postprocess() {
               TERN_(I_SENSORLESS, stepperI.homing_threshold(tmc_sgt.I)),
               TERN_(J_SENSORLESS, stepperJ.homing_threshold(tmc_sgt.J)),
               TERN_(K_SENSORLESS, stepperK.homing_threshold(tmc_sgt.K)),
-              TERN_(M_SENSORLESS, stepperM.homing_threshold(tmc_sgt.M)),   /**SG**/
-              TERN_(O_SENSORLESS, stepperO.homing_threshold(tmc_sgt.O)),   /**SG**/
-              TERN_(P_SENSORLESS, stepperP.homing_threshold(tmc_sgt.P)),   /**SG**/
-              TERN_(Q_SENSORLESS, stepperQ.homing_threshold(tmc_sgt.Q))   /**SG**/
+              TERN_(M_SENSORLESS, stepperM.homing_threshold(tmc_sgt.M)),
+              TERN_(O_SENSORLESS, stepperO.homing_threshold(tmc_sgt.O)),
+              TERN_(P_SENSORLESS, stepperP.homing_threshold(tmc_sgt.P)),
+              TERN_(Q_SENSORLESS, stepperQ.homing_threshold(tmc_sgt.Q))
             );
             TERN_(X2_SENSORLESS, stepperX2.homing_threshold(tmc_sgt.X2));
             TERN_(Y2_SENSORLESS, stepperY2.homing_threshold(tmc_sgt.Y2));
@@ -2586,20 +2578,20 @@ void MarlinSettings::reset() {
     #if LINEAR_AXES >= 6 && !defined(DEFAULT_KJERK)
       #define DEFAULT_KJERK 0
     #endif
-    #if LINEAR_AXES >= 7 && !defined(DEFAULT_MJERK)   /**SG**/
+    #if LINEAR_AXES >= 7 && !defined(DEFAULT_MJERK)
       #define DEFAULT_MJERK 0
     #endif
-    #if LINEAR_AXES >= 8 && !defined(DEFAULT_OJERK)   /**SG**/
+    #if LINEAR_AXES >= 8 && !defined(DEFAULT_OJERK)
       #define DEFAULT_OJERK 0
     #endif
-    #if LINEAR_AXES >= 9 && !defined(DEFAULT_PJERK)   /**SG**/
+    #if LINEAR_AXES >= 9 && !defined(DEFAULT_PJERK)
       #define DEFAULT_PJERK 0
     #endif
-    #if LINEAR_AXES >= 10 && !defined(DEFAULT_QJERK)   /**SG**/
+    #if LINEAR_AXES >= 10 && !defined(DEFAULT_QJERK)
       #define DEFAULT_QJERK 0
     #endif
     planner.max_jerk.set(
-      LINEAR_AXIS_LIST(DEFAULT_XJERK, DEFAULT_YJERK, DEFAULT_ZJERK, DEFAULT_IJERK, DEFAULT_JJERK, DEFAULT_KJERK, DEFAULT_MJERK, DEFAULT_OJERK, DEFAULT_PJERK, DEFAULT_QJERK)   /**SG**/
+      LINEAR_AXIS_LIST(DEFAULT_XJERK, DEFAULT_YJERK, DEFAULT_ZJERK, DEFAULT_IJERK, DEFAULT_JJERK, DEFAULT_KJERK, DEFAULT_MJERK, DEFAULT_OJERK, DEFAULT_PJERK, DEFAULT_QJERK)
     );
     TERN_(HAS_CLASSIC_E_JERK, planner.max_jerk.e = DEFAULT_EJERK);
   #endif
@@ -3145,10 +3137,10 @@ void MarlinSettings::reset() {
         SP_I_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[I_AXIS]),
         SP_J_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[J_AXIS]),
         SP_K_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[K_AXIS]),
-        SP_M_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[M_AXIS]),   /**SG**/
-        SP_O_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[O_AXIS]),   /**SG**/
-        SP_P_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[P_AXIS]),   /**SG**/
-        SP_Q_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[Q_AXIS])   /**SG**/
+        SP_M_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[M_AXIS]),
+        SP_O_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[O_AXIS]),
+        SP_P_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[P_AXIS]),
+        SP_Q_STR, LINEAR_UNIT(planner.settings.max_feedrate_mm_s[Q_AXIS])
       )
       #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
         , SP_E_STR, VOLUMETRIC_UNIT(planner.settings.max_feedrate_mm_s[E_AXIS])
@@ -3174,10 +3166,10 @@ void MarlinSettings::reset() {
         SP_I_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[I_AXIS]),
         SP_J_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[J_AXIS]),
         SP_K_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[K_AXIS]),
-        SP_M_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[M_AXIS]),  /**SG**/
-        SP_O_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[O_AXIS]),  /**SG**/
-        SP_P_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[P_AXIS]),  /**SG**/
-        SP_Q_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[Q_AXIS])  /**SG**/
+        SP_M_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[M_AXIS]),
+        SP_O_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[O_AXIS]),
+        SP_P_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[P_AXIS]),
+        SP_Q_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[Q_AXIS])
       )
       #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
         , SP_E_STR, VOLUMETRIC_UNIT(planner.settings.max_acceleration_mm_per_s2[E_AXIS])
@@ -3379,7 +3371,7 @@ void MarlinSettings::reset() {
       CONFIG_ECHO_START();
       SERIAL_ECHOLNPAIR_P(
           PSTR("  M665 S"), segments_per_second
-        , SP_P2_STR, scara_home_offset.a
+        , SP_PLETTER_STR, scara_home_offset.a
         , SP_T_STR, scara_home_offset.b
         , SP_Z_STR, LINEAR_UNIT(scara_home_offset.z)
       );
@@ -3467,7 +3459,7 @@ void MarlinSettings::reset() {
           SERIAL_ECHOPAIR_P(
             #if ENABLED(PID_PARAMS_PER_HOTEND)
               PSTR("  M301 E"), e,
-              SP_P2_STR
+              SP_PLETTER_STR
             #else
               PSTR("  M301 P")
             #endif
@@ -3621,19 +3613,19 @@ void MarlinSettings::reset() {
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR_P(SP_K_STR, stepperK.getMilliamps());
       #endif
-      #if AXIS_IS_TMC(M)  /**SG**/
+      #if AXIS_IS_TMC(M)
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR_P(SP_M_STR, stepperM.getMilliamps());
       #endif
-      #if AXIS_IS_TMC(O)  /**SG**/
+      #if AXIS_IS_TMC(O)
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR_P(SP_O_STR, stepperO.getMilliamps());
       #endif
-      #if AXIS_IS_TMC(P)  /**SG**/
+      #if AXIS_IS_TMC(P)
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR_P(SP_P_STR, stepperP.getMilliamps());
       #endif
-      #if AXIS_IS_TMC(Q)  /**SG**/
+      #if AXIS_IS_TMC(Q)
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR_P(SP_Q_STR, stepperQ.getMilliamps());
       #endif
@@ -3843,22 +3835,22 @@ void MarlinSettings::reset() {
           say_M914();
           SERIAL_ECHOLNPAIR_P(SP_K_STR, stepperK.homing_threshold());
         #endif
-        #if M_SENSORLESS  /**SG**/
+        #if M_SENSORLESS
           CONFIG_ECHO_START();
           say_M914();
           SERIAL_ECHOLNPAIR_P(SP_M_STR, stepperM.homing_threshold());
         #endif
-        #if O_SENSORLESS  /**SG**/
+        #if O_SENSORLESS
           CONFIG_ECHO_START();
           say_M914();
           SERIAL_ECHOLNPAIR_P(SP_O_STR, stepperO.homing_threshold());
         #endif
-        #if P_SENSORLESS  /**SG**/
+        #if P_SENSORLESS
           CONFIG_ECHO_START();
           say_M914();
           SERIAL_ECHOLNPAIR_P(SP_P_STR, stepperP.homing_threshold());
         #endif
-        #if Q_SENSORLESS  /**SG**/
+        #if Q_SENSORLESS
           CONFIG_ECHO_START();
           say_M914();
           SERIAL_ECHOLNPAIR_P(SP_Q_STR, stepperQ.homing_threshold());

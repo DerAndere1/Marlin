@@ -487,7 +487,7 @@
   #undef K_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 7   /**SG**/
+#if LINEAR_AXES >= 7
   #ifdef M_STOP_PIN
     #if O_HOME_TO_MIN
       #define M_MIN_PIN M_STOP_PIN
@@ -499,7 +499,7 @@
   #endif
 #endif
 
-#if LINEAR_AXES >= 8   /**SG**/
+#if LINEAR_AXES >= 8
   #ifdef O_STOP_PIN
     #if O_HOME_TO_MIN
       #define O_MIN_PIN O_STOP_PIN
@@ -511,7 +511,7 @@
   #endif
 #endif
 
-#if LINEAR_AXES >= 9   /**SG**/
+#if LINEAR_AXES >= 9
   #ifdef P_STOP_PIN
     #if P_HOME_TO_MIN
       #define P_MIN_PIN P_STOP_PIN
@@ -523,7 +523,7 @@
   #endif
 #endif
 
-#if LINEAR_AXES >= 10   /**SG**/
+#if LINEAR_AXES >= 10
   #ifdef Q_STOP_PIN
     #if Q_HOME_TO_MIN
       #define Q_MIN_PIN Q_STOP_PIN
@@ -586,6 +586,22 @@
   #undef K_MAX_PIN
   #define K_MAX_PIN          -1
 #endif
+#if DISABLED(USE_MMAX_PLUG)
+  #undef M_MAX_PIN
+  #define M_MAX_PIN          -1
+#endif
+#if DISABLED(USE_OMAX_PLUG)
+  #undef O_MAX_PIN
+  #define O_MAX_PIN          -1
+#endif
+#if DISABLED(USE_PMAX_PLUG)
+  #undef P_MAX_PIN
+  #define P_MAX_PIN          -1
+#endif
+#if DISABLED(USE_QMAX_PLUG)
+  #undef Q_MAX_PIN
+  #define Q_MAX_PIN          -1
+#endif
 
 #if DISABLED(USE_XMIN_PLUG)
   #undef X_MIN_PIN
@@ -642,22 +658,21 @@
   #undef K_MIN_PIN
   #define K_MIN_PIN          -1
 #endif
-/**SG**/
-#if DISABLED(USE_MMAX_PLUG)
-  #undef M_MAX_PIN
-  #define M_MAX_PIN          -1
+#if DISABLED(USE_MMIN_PLUG)
+  #undef M_MIN_PIN
+  #define M_MIN_PIN          -1
 #endif
-#if DISABLED(USE_OMAX_PLUG)
-  #undef O_MAX_PIN
-  #define O_MAX_PIN          -1
+#if DISABLED(USE_OMIN_PLUG)
+  #undef O_MIN_PIN
+  #define O_MIN_PIN          -1
 #endif
-#if DISABLED(USE_PMAX_PLUG)
-  #undef P_MAX_PIN
-  #define P_MAX_PIN          -1
+#if DISABLED(USE_PMIN_PLUG)
+  #undef P_MIN_PIN
+  #define P_MIN_PIN          -1
 #endif
-#if DISABLED(USE_QMAX_PLUG)
-  #undef Q_MAX_PIN
-  #define Q_MAX_PIN          -1
+#if DISABLED(USE_QMIN_PLUG)
+  #undef Q_MIN_PIN
+  #define Q_MIN_PIN          -1
 #endif
 
 #if HAS_FILAMENT_SENSOR

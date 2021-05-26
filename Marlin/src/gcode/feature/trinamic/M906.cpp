@@ -95,16 +95,16 @@ void GcodeSuite::M906() {
       #if AXIS_IS_TMC(K)
         case K_AXIS: TMC_SET_CURRENT(K); break;
       #endif
-      #if AXIS_IS_TMC(M)    /**SG**/
+      #if AXIS_IS_TMC(M)
         case M_AXIS: TMC_SET_CURRENT(M); break;
       #endif
-      #if AXIS_IS_TMC(O)    /**SG**/
+      #if AXIS_IS_TMC(O)
         case O_AXIS: TMC_SET_CURRENT(O); break;
       #endif
-      #if AXIS_IS_TMC(P)    /**SG**/
+      #if AXIS_IS_TMC(P)
         case P_AXIS: TMC_SET_CURRENT(P); break;
       #endif
-      #if AXIS_IS_TMC(Q)    /**SG**/
+      #if AXIS_IS_TMC(Q)
         case Q_AXIS: TMC_SET_CURRENT(Q); break;
       #endif
       
@@ -175,16 +175,16 @@ void GcodeSuite::M906() {
     #if AXIS_IS_TMC(K)
       TMC_SAY_CURRENT(K);
     #endif
-    #if AXIS_IS_TMC(M)    /**SG**/
+    #if AXIS_IS_TMC(M)
       TMC_SAY_CURRENT(M);
     #endif
-    #if AXIS_IS_TMC(O)    /**SG**/
+    #if AXIS_IS_TMC(O)
       TMC_SAY_CURRENT(O);
     #endif
-    #if AXIS_IS_TMC(P)    /**SG**/
+    #if AXIS_IS_TMC(P)
       TMC_SAY_CURRENT(P);
     #endif
-    #if AXIS_IS_TMC(Q)    /**SG**/
+    #if AXIS_IS_TMC(Q)
       TMC_SAY_CURRENT(Q);
     #endif
 

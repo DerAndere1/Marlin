@@ -332,15 +332,23 @@ void GcodeSuite::G28() {
                  homeX = needX || parser.seen_test('X'),
                  homeY = needY || parser.seen_test('Y'),
                  homeZZ = homeZ,
-                 homeI = needI || parser.seen_test(AXIS4_NAME), homeJ = needJ || parser.seen_test(AXIS5_NAME), homeK = needK || parser.seen_test(AXIS6_NAME),
+                 homeI = needI || parser.seen_test(AXIS4_NAME),
+                 homeJ = needJ || parser.seen_test(AXIS5_NAME),
+                 homeK = needK || parser.seen_test(AXIS6_NAME),
+                 homeM = needM || parser.seen_test(AXIS7_NAME),
+                 homeO = needO || parser.seen_test(AXIS8_NAME),
+                 homeP = needP || parser.seen_test(AXIS9_NAME),
+				 homeQ = needQ || parser.seen_test(AXIS10_NAME)
                ),
                home_all = LINEAR_AXIS_GANG(   // Home-all if all or none are flagged
                     homeX == homeX, && homeY == homeX, && homeZ == homeX,
-                 && homeI == homeX, && homeJ == homeX, && homeK == homeX
+                 && homeI == homeX, && homeJ == homeX, && homeK == homeX,
+                 && homeM == homeX, && homeO == homeX, && homeP == homeX, && homeQ == homeX
                ),
                LINEAR_AXIS_LIST(
                  doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ,
-                 doI = home_all || homeI, doJ = home_all || homeJ, doK = home_all || homeK
+                 doI = home_all || homeI, doJ = home_all || homeJ, doK = home_all || homeK,
+                 doM = home_all || homeM, doO = home_all || homeO, doP = home_all || homeP, doQ = home_all || homeQ
                );
 
     #if HAS_Z_AXIS
@@ -420,16 +428,16 @@ void GcodeSuite::G28() {
     #if LINEAR_AXES >= 6
       if (doK) homeaxis(K_AXIS);
     #endif
-    #if LINEAR_AXES >= 7    /**SG**/
+    #if LINEAR_AXES >= 7
       if (doM) homeaxis(M_AXIS);
     #endif
-    #if LINEAR_AXES >= 8    /**SG**/
+    #if LINEAR_AXES >= 8
       if (doO) homeaxis(O_AXIS);
     #endif
-    #if LINEAR_AXES >= 9    /**SG**/
+    #if LINEAR_AXES >= 9
       if (doP) homeaxis(P_AXIS);
     #endif
-    #if LINEAR_AXES >= 10    /**SG**/
+    #if LINEAR_AXES >= 10
       if (doQ) homeaxis(Q_AXIS);
     #endif
 
@@ -513,16 +521,16 @@ void GcodeSuite::G28() {
     #if HAS_CURRENT_HOME(K)
       stepperK.rms_current(tmc_save_current_K);
     #endif
-    #if HAS_CURRENT_HOME(M)   /**SG**/
+    #if HAS_CURRENT_HOME(M)
       stepperM.rms_current(tmc_save_current_M);
     #endif
-    #if HAS_CURRENT_HOME(O)   /**SG**/
+    #if HAS_CURRENT_HOME(O)
       stepperO.rms_current(tmc_save_current_O);
     #endif
-    #if HAS_CURRENT_HOME(P)   /**SG**/
+    #if HAS_CURRENT_HOME(P)
       stepperP.rms_current(tmc_save_current_P);
     #endif
-    #if HAS_CURRENT_HOME(Q)   /**SG**/
+    #if HAS_CURRENT_HOME(Q)
       stepperQ.rms_current(tmc_save_current_Q);
     #endif
   #endif // HAS_HOMING_CURRENT

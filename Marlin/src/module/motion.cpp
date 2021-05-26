@@ -626,15 +626,16 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_i(const_float_t ri, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyz_i(current_position, ri, fr_mm_s);
   }
+#endif
 #if LINEAR_AXES == 4
   void do_blocking_move_to_xyz_i(const xyze_pos_t &raw, const_float_t i, const_feedRate_t fr_mm_s/*=0.0f*/) {
-	  do_blocking_move_to(raw.x, raw.y, raw.z, i, fr_mm_s);
+    do_blocking_move_to(raw.x, raw.y, raw.z, i, fr_mm_s);
   }
 #endif
 
 #if LINEAR_AXES >= 5
   void do_blocking_move_to_xyz_i(const xyze_pos_t &raw, const_float_t i, const_feedRate_t fr_mm_s/*=0.0f*/) {
-	  do_blocking_move_to(raw.x, raw.y, raw.z, i, raw.j, fr_mm_s);  // TODO (DerAndere): Test if this really works for LINEAR_AXES > 5
+    do_blocking_move_to(raw.x, raw.y, raw.z, i, raw.j, fr_mm_s);  // TODO (DerAndere): Test if this really works for LINEAR_AXES > 5
   }
   void do_blocking_move_to_j(const_float_t rj, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzi_j(current_position, rj, fr_mm_s);
@@ -653,7 +654,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if LINEAR_AXES >= 7  /**SG**/
+#if LINEAR_AXES >= 7
   void do_blocking_move_to_m(const_float_t rm, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijk_m(current_position, rm, fr_mm_s);
   }
@@ -662,7 +663,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if LINEAR_AXES >= 8  /**SG**/
+#if LINEAR_AXES >= 8
   void do_blocking_move_to_o(const_float_t ro, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkm_o(current_position, ro, fr_mm_s);
   }
@@ -671,7 +672,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if LINEAR_AXES >= 9  /**SG**/
+#if LINEAR_AXES >= 9
   void do_blocking_move_to_p(const_float_t rp, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkm_p(current_position, rp, fr_mm_s);
   }
@@ -680,7 +681,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if LINEAR_AXES >= 10  /**SG**/
+#if LINEAR_AXES >= 10
   void do_blocking_move_to_q(const_float_t rq, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkmp_q(current_position, rq, fr_mm_s);
   }
@@ -693,7 +694,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_xy(const_float_t rx, const_float_t ry, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(rx, ry, current_position.z, current_position.i, current_position.j, current_position.k, \
-                       current_position.m, current_position.o, current_position.p, current_position.q),  /**SG**/
+                       current_position.m, current_position.o, current_position.p, current_position.q),
       fr_mm_s
     );
   }
@@ -706,7 +707,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_xy_z(const xy_pos_t &raw, const_float_t z, const_feedRate_t fr_mm_s/*=0.0f*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(raw.x, raw.y, z, current_position.i, current_position.j, current_position.k, \
-                     current_position.m, current_position.o, current_position.p, current_position.q),  /**SG**/
+                     current_position.m, current_position.o, current_position.p, current_position.q),
       fr_mm_s
     );
   }
@@ -892,7 +893,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if LINEAR_AXES >= 4  // TODO (DerAndere): Find out why this was missing / removed
+    #if LINEAR_AXES >= 4
       if (axis_was_homed(I_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_I)
           NOLESS(target.i, soft_endstop.min.i);
