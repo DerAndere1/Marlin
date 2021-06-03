@@ -35,8 +35,8 @@
 #endif
 
 // Strings for sanity check messages
-#define _LINEAR_AXES_STR LINEAR_AXIS_GANG("X ", "Y ", "Z ", "I ", "J ", "K ")
-#define _LOGICAL_AXES_STR LOGICAL_AXIS_GANG("E ", "X ", "Y ", "Z ", "I ", "J ", "K ")
+#define _LINEAR_AXES_STR LINEAR_AXIS_GANG("X ", "Y ", "Z ", "I ", "J ", "K ", "K ", "M ", "O ", "P ", "Q ")
+#define _LOGICAL_AXES_STR LOGICAL_AXIS_GANG("E ", "X ", "Y ", "Z ", "I ", "J ", "K ", "M ", "O ", "P ", "Q ")
 
 // Make sure macros aren't borked
 #define TEST1
@@ -1721,7 +1721,11 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal to 0."),
     static_assert(hbm[I_AXIS] >= 0, "HOMING_BUMP_MM.I must be greater than or equal to 0."),
     static_assert(hbm[J_AXIS] >= 0, "HOMING_BUMP_MM.J must be greater than or equal to 0."),
-    static_assert(hbm[K_AXIS] >= 0, "HOMING_BUMP_MM.K must be greater than or equal to 0.")
+    static_assert(hbm[K_AXIS] >= 0, "HOMING_BUMP_MM.K must be greater than or equal to 0."),
+    static_assert(hbm[M_AXIS] >= 0, "HOMING_BUMP_MM.M must be greater than or equal to 0."),
+    static_assert(hbm[O_AXIS] >= 0, "HOMING_BUMP_MM.O must be greater than or equal to 0."),
+    static_assert(hbm[P_AXIS] >= 0, "HOMING_BUMP_MM.P must be greater than or equal to 0."),
+    static_assert(hbm[Q_AXIS] >= 0, "HOMING_BUMP_MM.Q must be greater than or equal to 0.")
   );
   static_assert(COUNT(hbd) == LINEAR_AXES, "HOMING_BUMP_DIVISOR must have " _LINEAR_AXES_STR "elements (and no others).");
   LINEAR_AXIS_CODE(
@@ -1730,7 +1734,11 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     static_assert(hbd[Z_AXIS] >= 1, "HOMING_BUMP_DIVISOR.Z must be greater than or equal to 1."),
     static_assert(hbd[I_AXIS] >= 1, "HOMING_BUMP_DIVISOR.I must be greater than or equal to 1."),
     static_assert(hbd[J_AXIS] >= 1, "HOMING_BUMP_DIVISOR.J must be greater than or equal to 1."),
-    static_assert(hbd[K_AXIS] >= 1, "HOMING_BUMP_DIVISOR.K must be greater than or equal to 1.")
+    static_assert(hbd[K_AXIS] >= 1, "HOMING_BUMP_DIVISOR.K must be greater than or equal to 1."),
+    static_assert(hbd[M_AXIS] >= 1, "HOMING_BUMP_DIVISOR.M must be greater than or equal to 1."),
+    static_assert(hbd[O_AXIS] >= 1, "HOMING_BUMP_DIVISOR.O must be greater than or equal to 1."),
+    static_assert(hbd[P_AXIS] >= 1, "HOMING_BUMP_DIVISOR.P must be greater than or equal to 1."),
+    static_assert(hbd[Q_AXIS] >= 1, "HOMING_BUMP_DIVISOR.Q must be greater than or equal to 1.")
   );
 #endif
 
@@ -1743,7 +1751,11 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     static_assert(hbp[Z_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.Z must be greater than or equal to 0."),
     static_assert(hbp[I_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.I must be greater than or equal to 0."),
     static_assert(hbp[J_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.J must be greater than or equal to 0."),
-    static_assert(hbp[K_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.K must be greater than or equal to 0.")
+    static_assert(hbp[K_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.K must be greater than or equal to 0."),
+    static_assert(hbp[M_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.M must be greater than or equal to 0."),
+    static_assert(hbp[O_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.O must be greater than or equal to 0."),
+    static_assert(hbp[P_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.P must be greater than or equal to 0."),
+    static_assert(hbp[Q_AXIS] >= 0, "HOMING_BACKOFF_POST_MM.Q must be greater than or equal to 0.")
   );
 #endif
 
@@ -1756,7 +1768,11 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     static_assert(sbm[Z_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.Z must be greater than or equal to 0."),
     static_assert(sbm[I_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.I must be greater than or equal to 0."),
     static_assert(sbm[J_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.J must be greater than or equal to 0."),
-    static_assert(sbm[K_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.K must be greater than or equal to 0.")
+    static_assert(sbm[K_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.K must be greater than or equal to 0."),
+    static_assert(sbm[M_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.M must be greater than or equal to 0."),
+    static_assert(sbm[O_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.O must be greater than or equal to 0."),
+    static_assert(sbm[P_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.P must be greater than or equal to 0."),
+    static_assert(sbm[Q_AXIS] >= 0, "SENSORLESS_BACKOFF_MM.Q must be greater than or equal to 0.")
   );
 #endif
 

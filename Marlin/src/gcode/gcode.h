@@ -341,7 +341,8 @@ public:
     axis_relative = rel ? (0 LOGICAL_AXIS_GANG(
       | _BV(REL_E),
       | _BV(REL_X), | _BV(REL_Y), | _BV(REL_Z),
-      | _BV(REL_I), | _BV(REL_J), | _BV(REL_K)
+      | _BV(REL_I), | _BV(REL_J), | _BV(REL_K),
+      | _BV(REL_M), | _BV(REL_O), | _BV(REL_P), | _BV(REL_Q)
     )) : 0;
   }
   #if HAS_EXTRUDERS

@@ -1459,7 +1459,7 @@ void Planner::check_axes_activity() {
     float high = 0.0;
     for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
       block_t *block = &block_buffer[b];
-      if (LINEAR_AXIS_GANG(block->steps.x, || block->steps.y, || block->steps.z, block->steps.i, || block->steps.j, || block->steps.k, block->steps.m, || block->steps.o, || block->steps.p, || block->steps.q)) {
+      if (LINEAR_AXIS_GANG(block->steps.x, || block->steps.y, || block->steps.z, || block->steps.i, || block->steps.j, || block->steps.k, || block->steps.m, || block->steps.o, || block->steps.p, || block->steps.q)) {
         const float se = (float)block->steps.e / block->step_event_count * SQRT(block->nominal_speed_sqr); // mm/sec;
         NOLESS(high, se);
       }
@@ -2078,7 +2078,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
           LINEAR_AXIS_GANG(
               sq(steps_dist_mm.x)  + sq(steps_dist_mm.head.y) + sq(steps_dist_mm.head.z)
             + sq(steps_dist_mm.i), + sq(steps_dist_mm.j),     + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o),     + sq(steps_dist_mm.p),        + sq(steps_dist_mm.q)
+            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o),     + sq(steps_dist_mm.p),       + sq(steps_dist_mm.q)
           )
         #elif ENABLED(FOAMCUTTER_XYUV)
           // Return the largest distance move from either X/Y or I/J plane

@@ -326,7 +326,8 @@ void GcodeSuite::G28() {
     const bool homeZ = TERN0(HAS_Z_AXIS, parser.seen_test('Z')),
                LINEAR_AXIS_LIST(              // Other axes should be homed before Z safe-homing
                  needX = _UNSAFE(X), needY = _UNSAFE(Y), needZ = false, // UNUSED
-                 needI = _UNSAFE(I), needJ = _UNSAFE(J), needK = _UNSAFE(K)
+                 needI = _UNSAFE(I), needJ = _UNSAFE(J), needK = _UNSAFE(K),
+                 needM = _UNSAFE(M), needO = _UNSAFE(O), needP = _UNSAFE(P), needQ = _UNSAFE(Q)
                ),
                LINEAR_AXIS_LIST(              // Home each axis if needed or flagged
                  homeX = needX || parser.seen_test('X'),

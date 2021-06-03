@@ -626,22 +626,23 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_i(const_float_t ri, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyz_i(current_position, ri, fr_mm_s);
   }
-#endif
-#if LINEAR_AXES == 4
   void do_blocking_move_to_xyz_i(const xyze_pos_t &raw, const_float_t i, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, i, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, i, raw.j, raw.k, \
+    		           raw.m, raw.o, raw.p, raw.q),
+      fr_mm_s);
   }
 #endif
 
 #if LINEAR_AXES >= 5
-  void do_blocking_move_to_xyz_i(const xyze_pos_t &raw, const_float_t i, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, i, raw.j, fr_mm_s);  // TODO (DerAndere): Test if this really works for LINEAR_AXES > 5
-  }
   void do_blocking_move_to_j(const_float_t rj, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzi_j(current_position, rj, fr_mm_s);
   }
   void do_blocking_move_to_xyzi_j(const xyze_pos_t &raw, const_float_t j, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, j, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, j, raw.k, \
+    		           raw.m, raw.o, raw.p, raw.q),
+      fr_mm_s);
   }
 #endif
 
@@ -650,7 +651,10 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzij_k(current_position, rk, fr_mm_s);
   }
   void do_blocking_move_to_xyzij_k(const xyze_pos_t &raw, const_float_t k, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, raw.j, k, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, k, \
+    		           raw.m, raw.o, raw.p, raw.q),
+      fr_mm_s);
   }
 #endif
 
@@ -658,8 +662,11 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_m(const_float_t rm, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijk_m(current_position, rm, fr_mm_s);
   }
-  void do_blocking_move_to_xyzijk_m(const xyze_pos_t &raw, const_float_t m, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, m, fr_mm_s);
+  void do_blocking_move_to_xyzijkm_o(const xyze_pos_t &raw, const_float_t o, const_feedRate_t fr_mm_s/*=0.0f*/) {
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
+    		           m, raw.o, raw.p, raw.q),
+      fr_mm_s);
   }
 #endif
 
@@ -668,7 +675,10 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkm_o(current_position, ro, fr_mm_s);
   }
   void do_blocking_move_to_xyzijkm_o(const xyze_pos_t &raw, const_float_t o, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, raw.m, o, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
+    		           raw.m, o, raw.p, raw.q),
+      fr_mm_s);
   }
 #endif
 
@@ -677,7 +687,10 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkm_p(current_position, rp, fr_mm_s);
   }
   void do_blocking_move_to_xyzijkm_p(const xyze_pos_t &raw, const_float_t p, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, raw.m, raw.o, p, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
+    		           raw.m, raw.o, p, raw.q),
+      fr_mm_s);
   }
 #endif
 
@@ -686,7 +699,10 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkmp_q(current_position, rq, fr_mm_s);
   }
   void do_blocking_move_to_xyzijkmp_q(const xyze_pos_t &raw, const_float_t q, const_feedRate_t fr_mm_s/*=0.0f*/) {
-    do_blocking_move_to(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, raw.m, raw.o, raw.p, q, fr_mm_s);
+    do_blocking_move_to(
+      LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
+    		           raw.m, raw.o, raw.p, q),
+      fr_mm_s);
   }
 #endif
 

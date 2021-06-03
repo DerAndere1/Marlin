@@ -391,9 +391,9 @@ struct XYZval {
   FI void set(const XYval<T> pxy, const T pz)          { LINEAR_AXIS_CODE(x = pxy.x, y = pxy.y, z = pz, NOOP, NOOP, NOOP, NOOP, NOOP, NOOP, NOOP); }
   FI void set(const T (&arr)[XY])                      { x = arr[0]; y = arr[1]; }
   #if LINEAR_AXES >= XYZ
-    FI void set(const T (&arr)[LINEAR_AXES])           { LINEAR_AXIS_CODE(x = arr[0], y = arr[1], z = arr[2], i = arr[3], j = arr[4], k = arr[5]); }
-    FI void set(LINEAR_AXIS_LIST(const T px, const T py, const T pz, const T pi, const T pj, const T pk)) {
-      LINEAR_AXIS_CODE(x = px, y = py, z = pz, i = pi, j = pj, k = pk);
+    FI void set(const T (&arr)[LINEAR_AXES])           { LINEAR_AXIS_CODE(x = arr[0], y = arr[1], z = arr[2], i = arr[3], j = arr[4], k = arr[5], m = arr[6], o = arr[7], p = arr[8], q = arr[9]); }
+    FI void set(LINEAR_AXIS_LIST(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pm, const T po, const T pp, const T pq)) {
+      LINEAR_AXIS_CODE(x = px, y = py, z = pz, i = pi, j = pj, k = pk, m = pm, o = po, p = pp, q = pq);
     }
   #endif
   #if LOGICAL_AXES > LINEAR_AXES

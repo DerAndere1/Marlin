@@ -39,6 +39,10 @@ void M206_report() {
       SP_I_STR, home_offset.i,
       SP_J_STR, home_offset.j,
       SP_K_STR, home_offset.k,
+      SP_M_STR, home_offset.m,
+      SP_O_STR, home_offset.o,
+      SP_P_STR, home_offset.p,
+      SP_Q_STR, home_offset.q
     )
   );
 }
@@ -60,7 +64,7 @@ void GcodeSuite::M206() {
     if (parser.seen('P')) set_home_offset(B_AXIS, parser.value_float()); // Psi
   #endif
 
-  if (!parser.seen(LINEAR_AXIS_GANG("X", "Y", "Z", "I", "J", "K")))
+  if (!parser.seen(LINEAR_AXIS_GANG("X", "Y", "Z", "I", "J", "K", "M", "O", "P", "Q")))
     M206_report();
   else
     report_current_position();

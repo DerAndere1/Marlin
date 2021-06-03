@@ -990,8 +990,8 @@
     const bool print_x/*=true*/, const bool print_y/*=true*/, const bool print_z/*=true*/,
     const bool print_i/*=true*/, const bool print_j/*=true*/, const bool print_k/*=true*/, const bool print_m/*=true*/, const bool print_o/*=true*/, const bool print_p/*=true*/, const bool print_q/*=true*/
   )) {
-    #define TMC_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL);  tmc_debug_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k)); }while(0)
-    #define DRV_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); drv_status_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k)); }while(0)
+    #define TMC_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL);  tmc_debug_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k, print_m, print_o, print_p, print_q)); }while(0)
+    #define DRV_REPORT(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); drv_status_loop(ITEM, LOGICAL_AXIS_LIST(print_e, print_x, print_y, print_z, print_i, print_j, print_k, print_m, print_o, print_p, print_q)); }while(0)
 
     TMC_REPORT("\t",                 TMC_CODES);
     #if HAS_DRIVER(TMC2209)

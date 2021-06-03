@@ -325,7 +325,7 @@ void print_pos(
 );
 
 inline void print_pos(const xyz_pos_t &xyz, PGM_P const prefix=nullptr, PGM_P const suffix=nullptr) {
-  print_pos(LINEAR_AXIS_LIST(xyz.x, xyz.y, xyz.z, xyz.i, xyz.j, xyz.k, xyz.o, xyz.o, xyz.p, xyz.q), prefix, suffix);
+  print_pos(LINEAR_AXIS_LIST(xyz.x, xyz.y, xyz.z, xyz.i, xyz.j, xyz.k, xyz.m, xyz.o, xyz.p, xyz.q), prefix, suffix);
 }
 
 #define SERIAL_POS(SUFFIX,VAR) do { print_pos(VAR, PSTR("  " STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n")); }while(0)
