@@ -662,7 +662,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_m(const_float_t rm, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijk_m(current_position, rm, fr_mm_s);
   }
-  void do_blocking_move_to_xyzijkm_o(const xyze_pos_t &raw, const_float_t o, const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_move_to_xyzijk_m(const xyze_pos_t &raw, const_float_t o, const_feedRate_t fr_mm_s/*=0.0f*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
     		           m, raw.o, raw.p, raw.q),
@@ -684,9 +684,9 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
 
 #if LINEAR_AXES >= 9
   void do_blocking_move_to_p(const_float_t rp, const_feedRate_t fr_mm_s/*=0.0*/) {
-    do_blocking_move_to_xyzijkm_p(current_position, rp, fr_mm_s);
+    do_blocking_move_to_xyzijkmo_p(current_position, rp, fr_mm_s);
   }
-  void do_blocking_move_to_xyzijkm_p(const xyze_pos_t &raw, const_float_t p, const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_move_to_xyzijkmo_p(const xyze_pos_t &raw, const_float_t p, const_feedRate_t fr_mm_s/*=0.0f*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
     		           raw.m, raw.o, p, raw.q),

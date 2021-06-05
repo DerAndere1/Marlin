@@ -115,7 +115,7 @@ void print_pos(
 ) {
   if (prefix) serialprintPGM(prefix);
   SERIAL_ECHOPAIR_P(
-    LIST_N(DOUBLE(LINEAR_AXES), SP_X_STR, x, SP_Y_STR, y, SP_Z_STR, z, SP_I_STR, i, SP_J_STR, j, SP_K_STR, k, SP_M_STR, m, SP_O_STR, o, SP_P_STR, p, SP_Q_STR, q))
+    LIST_N(DOUBLE(LINEAR_AXES), SP_X_STR, x, SP_Y_STR, y, SP_Z_STR, z, SP_I_STR, i, SP_J_STR, j, SP_K_STR, k, SP_M_STR, m, SP_O_STR, o, SP_P_STR, p, SP_Q_STR, q)
   );
   if (suffix) serialprintPGM(suffix); else SERIAL_EOL();
 }
