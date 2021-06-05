@@ -662,7 +662,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   void do_blocking_move_to_m(const_float_t rm, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijk_m(current_position, rm, fr_mm_s);
   }
-  void do_blocking_move_to_xyzijk_m(const xyze_pos_t &raw, const_float_t o, const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_move_to_xyzijk_m(const xyze_pos_t &raw, const_float_t m, const_feedRate_t fr_mm_s/*=0.0f*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
     		           m, raw.o, raw.p, raw.q),
