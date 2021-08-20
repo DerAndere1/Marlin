@@ -939,18 +939,6 @@
     #if AXIS_IS_TMC(Q)
       if (print_q) tmc_parse_drv_status(stepperQ, i);
     #endif
-    #if AXIS_IS_TMC(M)
-      if (print_m) tmc_parse_drv_status(stepperM, i);
-    #endif
-    #if AXIS_IS_TMC(O)
-      if (print_o) tmc_parse_drv_status(stepperO, i);
-    #endif
-    #if AXIS_IS_TMC(P)
-      if (print_p) tmc_parse_drv_status(stepperP, i);
-    #endif
-    #if AXIS_IS_TMC(Q)
-      if (print_q) tmc_parse_drv_status(stepperQ, i);
-    #endif
     if (print_e) {
       #if AXIS_IS_TMC(E0)
         tmc_parse_drv_status(stepperE0, i);
