@@ -489,7 +489,7 @@
 
 #if LINEAR_AXES >= 7
   #ifdef M_STOP_PIN
-    #if O_HOME_TO_MIN
+    #if M_HOME_TO_MIN
       #define M_MIN_PIN M_STOP_PIN
       #define M_MAX_PIN -1
     #else
