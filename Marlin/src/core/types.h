@@ -577,7 +577,7 @@ struct XYZEval {
   FI operator bool()                                     { return 0 LOGICAL_AXIS_GANG(|| e, || x, || y, || z, || i, || j, || k, || m, || o, || p, || q); }
 
   // Explicit copy and copies with conversion
-  FI XYZEval<T>           ABS()   const { return LOGICAL_AXIS_ARRAY(T(_ABS(e)), T(_ABS(x)), T(_ABS(y)), T(_ABS(z)), T(_ABS(i)), T(_ABS(j)), T(_ABS(k)), T(_ABS(m)), T(_ABS(o)), (_ABS(p)), T(_ABS(q))); }
+  FI XYZEval<T>           ABS()   const { return LOGICAL_AXIS_ARRAY(T(_ABS(e)), T(_ABS(x)), T(_ABS(y)), T(_ABS(z)), T(_ABS(i)), T(_ABS(j)), T(_ABS(k)), T(_ABS(m)), T(_ABS(o)), T(_ABS(p)), T(_ABS(q))); }
   FI XYZEval<int16_t>   asInt()         { return LOGICAL_AXIS_ARRAY(int16_t(e), int16_t(x), int16_t(y), int16_t(z), int16_t(i), int16_t(j), int16_t(k), int16_t(m), int16_t(o), int16_t(p), int16_t(q)); }
   FI XYZEval<int16_t>   asInt()   const { return LOGICAL_AXIS_ARRAY(int16_t(e), int16_t(x), int16_t(y), int16_t(z), int16_t(i), int16_t(j), int16_t(k), int16_t(m), int16_t(o), int16_t(p), int16_t(q)); }
   FI XYZEval<int32_t>  asLong()         { return LOGICAL_AXIS_ARRAY(int32_t(e), int32_t(x), int32_t(y), int32_t(z), int32_t(i), int32_t(j), int32_t(k), int32_t(m), int32_t(o), int32_t(p), int32_t(q)); }
