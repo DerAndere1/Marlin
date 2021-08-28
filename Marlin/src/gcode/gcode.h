@@ -326,7 +326,7 @@ extern const char G28_STR[];
 class GcodeSuite {
 public:
 
-  static linear_axis_bits_t axis_relative;
+  static axis_bits_t axis_relative;
 
   static inline bool axis_is_relative(const AxisEnum a) {
     #if HAS_EXTRUDERS
