@@ -422,7 +422,6 @@ void restore_feedrate_and_scaling();
 /**
  * Homing and Trusted Axes
  */
-typedef IF<(LINEAR_AXES > 8), uint16_t, uint8_t>::type linear_axis_bits_t;
 constexpr linear_axis_bits_t linear_bits = _BV(LINEAR_AXES) - 1;
 
 void set_axis_is_at_home(const AxisEnum axis);

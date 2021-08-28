@@ -149,8 +149,8 @@ Stepper stepper; // Singleton
 
 block_t* Stepper::current_block; // (= nullptr) A pointer to the block currently being traced
 
-uint8_t Stepper::last_direction_bits, // = 0
-        Stepper::axis_did_move; // = 0
+linear_axis_bits_t Stepper::last_direction_bits, // = 0
+                   Stepper::axis_did_move; // = 0
 
 bool Stepper::abort_current_block;
 
