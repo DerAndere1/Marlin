@@ -444,7 +444,7 @@
 
       #if AXIS_IS_TMC(P)
         if (monitor_tmc_driver(stepperP, need_update_error_counters, need_debug_reporting))
-          step_current_down(stepperPM);
+          step_current_down(stepperP);
       #endif
 
       #if AXIS_IS_TMC(Q)

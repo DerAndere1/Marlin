@@ -298,15 +298,6 @@
 #define GANG_N_1(N,K) _GANG_N(N,K,K,K,K,K,K,K,K,K,K,K,K,K,K,K,K)
 
 // Macros for initializing arrays
-#define LIST_29(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2,Z3,Z4,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2,Z3,Z4
-#define LIST_28(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2,Z3,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2,Z3
-#define LIST_27(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,Z2
-#define LIST_26(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
-#define LIST_25(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y
-#define LIST_24(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X
-#define LIST_23(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W
-#define LIST_22(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V
-#define LIST_21(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U
 #define LIST_20(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T
 #define LIST_19(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S
 #define LIST_18(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,...) A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R            
@@ -527,6 +518,11 @@
 #define INC_13 14
 #define INC_14 15
 #define INC_15 16
+#define INC_16 17
+#define INC_17 18
+#define INC_18 19
+#define INC_19 20
+#define INC_20 21
 #define INCREMENT_(n) INC_##n
 #define INCREMENT(n) INCREMENT_(n)
 
