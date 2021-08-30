@@ -377,7 +377,7 @@ template<typename T>
 struct XYZval {
   union {
     struct { T LINEAR_AXIS_LIST(x, y, z, i, j, k, m, o, p, q); };
-    struct { T LINEAR_AXIS_LIST(a, b, c, u, v, w, ax7, ax8, a9, ax10); };
+    struct { T LINEAR_AXIS_LIST(a, b, c, u, v, w, ax7, ax8, ax9, ax10); };
     T pos[LINEAR_AXES];
   };
 
