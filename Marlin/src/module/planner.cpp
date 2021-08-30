@@ -1902,7 +1902,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   #endif // PREVENT_COLD_EXTRUSION || PREVENT_LENGTHY_EXTRUDE
 
   // Compute direction bit-mask for this block
-  uint8_t dm = 0;
+  axis_bits_t dm = 0;
   #if CORE_IS_XY
     if (da < 0) SBI(dm, X_HEAD);                // Save the toolhead's true direction in X
     if (db < 0) SBI(dm, Y_HEAD);                // ...and Y
@@ -2330,11 +2330,11 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   #ifdef XY_FREQUENCY_LIMIT
 
-    static linear_axis_bits_t old_direction_bits; // = 0
+    static axis_bits_t old_direction_bits; // = 0
 
     if (xy_freq_limit_hz) {
       // Check and limit the xy direction change frequency
-      const linear_axis_bits_t direction_change = block->direction_bits ^ old_direction_bits;
+      const axis_bits_t direction_change = block->direction_bits ^ old_direction_bits;
       old_direction_bits = block->direction_bits;
       segment_time_us = LROUND(float(segment_time_us) / speed_factor);
 

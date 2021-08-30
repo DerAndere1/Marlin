@@ -186,6 +186,9 @@
 #if LINEAR_AXES >= 9
   #define _P_HALF_PMAX ((P_BED_SIZE) / 2)
 #endif
+#if LINEAR_AXES >= 10
+  #define _Q_HALF_PMAX ((Q_BED_SIZE) / 2)
+#endif
 
 #define X_CENTER TERN(BED_CENTER_AT_0_0, 0, _X_HALF_BED)
 #if LINEAR_AXES >= XY

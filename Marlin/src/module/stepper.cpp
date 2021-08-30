@@ -149,8 +149,8 @@ Stepper stepper; // Singleton
 
 block_t* Stepper::current_block; // (= nullptr) A pointer to the block currently being traced
 
-linear_axis_bits_t Stepper::last_direction_bits, // = 0
-                   Stepper::axis_did_move; // = 0
+axis_bits_t Stepper::last_direction_bits, // = 0
+            Stepper::axis_did_move; // = 0
 
 bool Stepper::abort_current_block;
 
@@ -2216,7 +2216,7 @@ uint32_t Stepper::block_phase_isr() {
         #define Z_MOVE_TEST !!current_block->steps.c
       #endif
 
-      uint8_t axis_bits = 0;
+      axis_bits_t axis_bits = 0;
       LINEAR_AXIS_CODE(
         if (X_MOVE_TEST)            SBI(axis_bits, A_AXIS),
         if (Y_MOVE_TEST)            SBI(axis_bits, B_AXIS),
