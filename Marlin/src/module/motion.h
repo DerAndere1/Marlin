@@ -392,8 +392,8 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s=0.0f);
   void do_blocking_move_to_xyzijkmo_p(const xyze_pos_t &raw, const_float_t p, const_feedRate_t fr_mm_s=0.0f);
 #endif
 #if LINEAR_AXES >= 10
-  void do_blocking_move_to_q(const float &rq, const feedRate_t &fr_mm_s=0.0f);
-  void do_blocking_move_to_xyzijkmop_q(const xyze_pos_t &raw, const float &q, const feedRate_t &fr_mm_s=0.0f);
+  void do_blocking_move_to_q(const float rq, const feedRate_t &fr_mm_s=0.0f);
+  void do_blocking_move_to_xyzijkmop_q(const xyze_pos_t &raw, const float q, const feedRate_t &fr_mm_s=0.0f);
 #endif
 
 #if LINEAR_AXES >= XY

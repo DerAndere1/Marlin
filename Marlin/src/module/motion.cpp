@@ -696,9 +696,9 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
 
 #if LINEAR_AXES >= 10
   void do_blocking_move_to_q(const_float_t rq, const_feedRate_t fr_mm_s/*=0.0*/) {
-    do_blocking_move_to_xyzijkmp_q(current_position, rq, fr_mm_s);
+    do_blocking_move_to_xyzijkmop_q(current_position, rq, fr_mm_s);
   }
-  void do_blocking_move_to_xyzijkmp_q(const xyze_pos_t &raw, const_float_t q, const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_move_to_xyzijkmop_q(const xyze_pos_t &raw, const_float_t q, const_feedRate_t fr_mm_s/*=0.0f*/) {
     do_blocking_move_to(
       LINEAR_AXIS_LIST(raw.x, raw.y, raw.z, raw.i, raw.j, raw.k, \
     		           raw.m, raw.o, raw.p, q),
