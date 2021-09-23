@@ -54,8 +54,14 @@
  *
  *  E[distance] - Retract the filament this far
  *  Z[distance] - Move the Z axis by this distance
- *  X[position] - Move to this X position, with Y
- *  Y[position] - Move to this Y position, with X
+ *  X[position] - Move to this X position, with Y [, I[, J[, K[, C[, H[, O]]]]]] 
+ *  Y[position] - Move to this Y position, with X [, I[, J[, K[, C[, H[, O]]]]]] 
+ *  I[position] - Move to this I position, with X, Y [, J[, K[, C[, H[, O]]]]]
+ *  J[position] - Move to this J position, with X, Y, I[, K[, C[, H[, O]]]]
+ *  K[position] - Move to this K position, with X, Y, I, J[, C[, H[, O]]]
+ *  C[position] - Move to this U position, with X, Y, I, J, K[, H[, O]]
+ *  H[position] - Move to this V position, with X, Y, I, J, K, C[, O]
+ *  O[position] - Move to this W position, with X, Y, I, J, K, C, H
  *  U[distance] - Retract distance for removal (manual reload)
  *  L[distance] - Extrude distance for insertion (manual reload)
  *  B[count]    - Number of times to beep, -1 for indefinite (if equipped with a buzzer)
@@ -116,14 +122,17 @@ void GcodeSuite::M600() {
 
   xyz_pos_t park_point NOZZLE_PARK_POINT;
 
-  // Move XY axes to filament change position or given position
-  LINEAR_AXIS_CODE(
+  // Move to filament change position or given position
+  NUM_AXIS_CODE(
     if (parser.seenval('X')) park_point.x = parser.linearval('X'),
     if (parser.seenval('Y')) park_point.y = parser.linearval('Y'),
     if (parser.seenval('Z')) park_point.z = parser.linearval('Z'),    // Lift Z axis
-    if (parser.seenval(AXIS4_NAME)) park_point.i = parser.linearval(AXIS4_NAME),
-    if (parser.seenval(AXIS5_NAME)) park_point.j = parser.linearval(AXIS5_NAME),
-    if (parser.seenval(AXIS6_NAME)) park_point.k = parser.linearval(AXIS6_NAME)
+    if (parser.seenval('I')) park_point.i = parser.linearval('I'),
+    if (parser.seenval('J')) park_point.j = parser.linearval('J'),
+    if (parser.seenval('K')) park_point.k = parser.linearval('K'),
+    if (parser.seenval('C')) park_point.u = parser.linearval('C'),
+    if (parser.seenval('H')) park_point.v = parser.linearval('H'),
+    if (parser.seenval('O')) park_point.w = parser.linearval('O')
   );
 
   #if HAS_HOTEND_OFFSET && NONE(DUAL_X_CARRIAGE, DELTA)

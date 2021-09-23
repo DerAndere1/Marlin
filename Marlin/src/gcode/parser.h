@@ -309,13 +309,20 @@ public:
     }
 
     static float axis_unit_factor(const AxisEnum axis) {
-      return (
-        #if HAS_EXTRUDERS
-          axis >= E_AXIS && volumetric_enabled ? volumetric_unit_factor : linear_unit_factor
-        #else
-          linear_unit_factor
-        #endif
-      );
+      #if HAS_ROTATIONAL_AXES
+        if (false
+          || TERN0(AXIS4_ROTATES, axis == I_AXIS)
+          || TERN0(AXIS5_ROTATES, axis == J_AXIS)
+          || TERN0(AXIS6_ROTATES, axis == K_AXIS)
+          || TERN0(AXIS7_ROTATES, axis == U_AXIS)
+          || TERN0(AXIS8_ROTATES, axis == V_AXIS)
+          || TERN0(AXIS9_ROTATES, axis == W_AXIS)
+        ) return 1.0f;
+      #endif
+      #if HAS_EXTRUDERS
+        if (axis >= E_AXIS && volumetric_enabled) return volumetric_unit_factor;
+      #endif
+      return linear_unit_factor;
     }
 
     static float linear_value_to_mm(const_float_t v)                  { return v * linear_unit_factor; }

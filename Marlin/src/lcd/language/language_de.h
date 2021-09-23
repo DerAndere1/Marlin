@@ -353,6 +353,7 @@ namespace Language_de {
   LSTR MSG_VMIN                           = _UxGT("V min ");
   LSTR MSG_VTRAV_MIN                      = _UxGT("V min Leerfahrt");
   LSTR MSG_ACCELERATION                   = _UxGT("Beschleunigung");
+  LSTR MSG_AMAX                           = _UxGT("A max "); // space intentional
   LSTR MSG_AMAX_A                         = _UxGT("A max ") STR_A;
   LSTR MSG_AMAX_B                         = _UxGT("A max ") STR_B;
   LSTR MSG_AMAX_C                         = _UxGT("A max ") STR_C;
