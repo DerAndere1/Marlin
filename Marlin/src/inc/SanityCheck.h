@@ -204,9 +204,9 @@
 #elif defined(ENDSTOPS_ONLY_FOR_HOMING)
   #error "ENDSTOPS_ONLY_FOR_HOMING is deprecated. Use (disable) ENDSTOPS_ALWAYS_ON_DEFAULT instead."
 #elif defined(HOMING_FEEDRATE)
-  #error "HOMING_FEEDRATE is now set using the HOMING_FEEDRATE_MM_U array instead."
-#elif (defined(HOMING_FEEDRATE_XY) || defined(HOMING_FEEDRATE_Z)) && !defined(HOMING_FEEDRATE_MM_U)
-  #error "HOMING_FEEDRATE_XY and HOMING_FEEDRATE_Z are now set using the HOMING_FEEDRATE_MM_U array instead."
+  #error "HOMING_FEEDRATE is now set using the HOMING_FEEDRATE_MM_M array instead."
+#elif (defined(HOMING_FEEDRATE_XY) || defined(HOMING_FEEDRATE_Z)) && !defined(HOMING_FEEDRATE_MM_M)
+  #error "HOMING_FEEDRATE_XY and HOMING_FEEDRATE_Z are now set using the HOMING_FEEDRATE_MM_M array instead."
 #elif defined(MANUAL_HOME_POSITIONS)
   #error "MANUAL_HOME_POSITIONS is deprecated. Set MANUAL_[XYZ]_HOME_POS as-needed instead."
 #elif defined(PID_ADD_EXTRUSION_RATE)
@@ -3489,9 +3489,9 @@ static_assert(COUNT(sanity_arr_3) >= LOGICAL_AXES,  "DEFAULT_MAX_ACCELERATION re
 static_assert(COUNT(sanity_arr_3) <= DISTINCT_AXES, "DEFAULT_MAX_ACCELERATION has too many elements." _EXTRA_NOTE);
 static_assert(_PLUS_TEST(3), "DEFAULT_MAX_ACCELERATION values must be positive.");
 
-constexpr float sanity_arr_4[] = HOMING_FEEDRATE_MM_U;
-static_assert(COUNT(sanity_arr_4) == LINEAR_AXES,  "HOMING_FEEDRATE_MM_U requires " _LINEAR_AXES_STR "elements (and no others).");
-static_assert(_PLUS_TEST(4), "HOMING_FEEDRATE_MM_U values must be positive.");
+constexpr float sanity_arr_4[] = HOMING_FEEDRATE_MM_M;
+static_assert(COUNT(sanity_arr_4) == LINEAR_AXES,  "HOMING_FEEDRATE_MM_M requires " _LINEAR_AXES_STR "elements (and no others).");
+static_assert(_PLUS_TEST(4), "HOMING_FEEDRATE_MM_M values must be positive.");
 
 #ifdef MAX_ACCEL_EDIT_VALUES
   constexpr float sanity_arr_5[] = MAX_ACCEL_EDIT_VALUES;

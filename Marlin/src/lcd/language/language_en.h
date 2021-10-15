@@ -99,7 +99,7 @@ namespace Language_en {
   LSTR MSG_HOME_OFFSET_I                  = _UxGT("Home Offset ") LCD_STR_I;
   LSTR MSG_HOME_OFFSET_J                  = _UxGT("Home Offset ") LCD_STR_J;
   LSTR MSG_HOME_OFFSET_K                  = _UxGT("Home Offset ") LCD_STR_K;
-  LSTR MSG_HOME_OFFSET_M                  = _UxGT("Home Offset ") LCD_STR_U;
+  LSTR MSG_HOME_OFFSET_U                  = _UxGT("Home Offset ") LCD_STR_U;
   LSTR MSG_HOME_OFFSET_V                  = _UxGT("Home Offset ") LCD_STR_V;
   LSTR MSG_HOME_OFFSET_W                  = _UxGT("Home Offset ") LCD_STR_W;
   LSTR MSG_HOME_OFFSETS_APPLIED           = _UxGT("Offsets Applied");
@@ -365,9 +365,9 @@ namespace Language_en {
   LSTR MSG_VMAX_I                         = _UxGT("Max ") LCD_STR_I _UxGT(" Vel");
   LSTR MSG_VMAX_J                         = _UxGT("Max ") LCD_STR_J _UxGT(" Vel");
   LSTR MSG_VMAX_K                         = _UxGT("Max ") LCD_STR_K _UxGT(" Vel");
-  LSTR MSG_AMAX_U                         = _UxGT("Max ") LCD_STR_U _UxGT(" Vel");
-  LSTR MSG_AMAX_V                         = _UxGT("Max ") LCD_STR_V _UxGT(" Vel");
-  LSTR MSG_AMAX_W                         = _UxGT("Max ") LCD_STR_W _UxGT(" Vel");
+  LSTR MSG_VMAX_U                         = _UxGT("Max ") LCD_STR_U _UxGT(" Vel");
+  LSTR MSG_VMAX_V                         = _UxGT("Max ") LCD_STR_V _UxGT(" Vel");
+  LSTR MSG_VMAX_W                         = _UxGT("Max ") LCD_STR_W _UxGT(" Vel");
   LSTR MSG_VMAX_E                         = _UxGT("Max ") LCD_STR_E _UxGT(" Vel");
   LSTR MSG_VMAX_EN                        = _UxGT("Max * Vel");
   LSTR MSG_VMIN                           = _UxGT("Min Velocity");
