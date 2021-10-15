@@ -67,7 +67,7 @@ static void _I2C_Stop (LPC_I2C_TypeDef *I2Cx) {
 
 #define BUFFER_SIZE                     0x1  // only do single byte transfers with LCDs
 
-I2C_U_SETUP_Type transferMCfg;
+I2C_M_SETUP_Type transferMCfg;
 
 #define I2C_status (LPC_I2C1->I2STAT & I2C_STAT_CODE_BITMASK)
 

@@ -48,8 +48,8 @@
   #define MIN_ARC_SEGMENT_MM MAX_ARC_SEGMENT_MM
 #endif
 
-#define ARC_LIJKMOQ_CODE(L,I,J,K,U,V,W)    CODE_N(SUB2(LINEAR_AXES),L,I,J,K,U,V,W)
-#define ARC_LIJKMOQE_CODE(L,I,J,K,U,V,W,E) ARC_LIJKMOQ_CODE(L,I,J,K,U,V,W); CODE_ITEM_E(E)
+#define ARC_LIJKUVW_CODE(L,I,J,K,U,V,W)    CODE_N(SUB2(LINEAR_AXES),L,I,J,K,U,V,W)
+#define ARC_LIJKUVWE_CODE(L,I,J,K,U,V,W,E) ARC_LIJKUVW_CODE(L,I,J,K,U,V,W); CODE_ITEM_E(E)
 
 /**
  * Plan an arc in 2 dimensions, with linear motion in the other axes.
@@ -254,7 +254,7 @@ void plan_arc(
               cos_T = 1 - 0.5f * sq_theta_per_segment; // Small angle approximation
 
   #if DISABLED(AUTO_BED_LEVELING_UBL)
-    ARC_LIJKMOQ_CODE(
+    ARC_LIJKUVW_CODE(
       const float per_segment_L = proportion * travel_L / segments,
       const float per_segment_I = proportion * travel_I / segments,
       const float per_segment_J = proportion * travel_J / segments,
@@ -271,7 +271,7 @@ void plan_arc(
   if (tooshort) segments++;
 
   // Initialize all linear axes and E
-  ARC_LIJKMOQE_CODE(
+  ARC_LIJKUVWE_CODE(
     raw[axis_l] = current_position[axis_l],
     raw.i       = current_position.i,
     raw.j       = current_position.j,
@@ -369,7 +369,7 @@ void plan_arc(
   planner.buffer_line(raw, scaled_fr_mm_s, active_extruder, 0 OPTARG(SCARA_FEEDRATE_SCALING, inv_duration));
 
   #if ENABLED(AUTO_BED_LEVELING_UBL)
-    ARC_LIJKMOQ_CODE(
+    ARC_LIJKUVW_CODE(
       raw[axis_l] = start_L,
       raw.i = start_I, raw.j = start_J, raw.k = start_K,
       raw.u = start_U, raw.v = start_V, raw.w = start_W
