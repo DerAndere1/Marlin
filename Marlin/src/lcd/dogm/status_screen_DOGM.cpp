@@ -1,4 +1,8 @@
 /**
+ * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2022 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ *
+ * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -89,6 +93,7 @@
 #define X_VALUE_POS_IN (X_VALUE_POS - 5)
 #define XYZ_SPACING_IN (XYZ_SPACING + 9)
 
+#define IJ_BASELINE    (1 + INFO_FONT_ASCENT)
 #define XYZ_BASELINE    (30 + INFO_FONT_ASCENT)
 #define EXTRAS_BASELINE (40 + INFO_FONT_ASCENT)
 #define STATUS_BASELINE (LCD_PIXEL_HEIGHT - INFO_FONT_DESCENT)
@@ -445,6 +450,45 @@ FORCE_INLINE void _draw_axis_value(const AxisEnum axis, const char *value, const
     lcd_put_u8str(value);
 }
 
+#if ENABLED(LCD_SHOW_SECONDARY_AXES)
+  FORCE_INLINE void _draw_secondary_axis_value(const AxisEnum axis, const char *value, const bool blink) {
+    const bool is_inch = parser.using_inch_units();
+    AxisEnum a;
+      switch (axis) {
+        #if HAS_I_AXIS
+          case I_AXIS:
+            a = X_AXIS;
+            break;
+        #endif
+        #if HAS_J_AXIS
+          case J_AXIS:
+            a = Y_AXIS;
+            break;
+        #endif
+        #if HAS_K_AXIS
+          case K_AXIS:
+            a = Z_AXIS;
+            break;
+        #endif
+        default: 
+          a = axis;
+      }
+
+    const uint8_t offs = a * (is_inch ? XYZ_SPACING_IN : XYZ_SPACING);
+    lcd_put_wchar((is_inch ? X_LABEL_POS_IN : X_LABEL_POS) + offs, IJ_BASELINE, axis_codes[axis]);
+    lcd_moveto((is_inch ? X_VALUE_POS_IN : X_VALUE_POS) + offs, IJ_BASELINE);
+
+    if (blink)
+      lcd_put_u8str(value);
+    else if (axis_should_home(axis))
+      while (const char c = *value++) lcd_put_wchar(c <= '.' ? c : '?');
+    else if (NONE(HOME_AFTER_DEACTIVATE, DISABLE_REDUCED_ACCURACY_WARNING) && !axis_is_trusted(axis))
+      lcd_put_u8str(axis == Z_AXIS ? F("       ") : F("    "));
+    else
+      lcd_put_u8str(value);
+  }
+#endif
+
 /**
  * Draw the Status Screen for a 128x64 DOGM (U8glib) display.
  *
@@ -454,6 +498,15 @@ FORCE_INLINE void _draw_axis_value(const AxisEnum axis, const char *value, const
 void MarlinUI::draw_status_screen() {
   constexpr int xystorage = TERN(INCH_MODE_SUPPORT, 8, 5);
   static char xstring[TERN(LCD_SHOW_E_TOTAL, 12, xystorage)], ystring[xystorage], zstring[8];
+  #if BOTH(HAS_I_AXIS, LCD_SHOW_SECONDARY_AXES)
+    static char istring[TERN(AXIS4_ROTATES, 5, xystorage)];
+  #endif
+  #if BOTH(HAS_J_AXIS, LCD_SHOW_SECONDARY_AXES)
+    static char jstring[TERN(AXIS5_ROTATES, 5, xystorage)];
+  #endif
+  #if BOTH(HAS_K_AXIS, LCD_SHOW_SECONDARY_AXES)
+    static char kstring[TERN(AXIS6_ROTATES, 5, xystorage)];
+  #endif
 
   #if ENABLED(FILAMENT_LCD_DISPLAY)
     static char wstring[5], mstring[4];
@@ -513,6 +566,29 @@ void MarlinUI::draw_status_screen() {
     else {
       strcpy(xstring, is_inch ? ftostr53_63(LINEAR_UNIT(lpos.x)) : ftostr4sign(lpos.x));
       strcpy(ystring, is_inch ? ftostr53_63(LINEAR_UNIT(lpos.y)) : ftostr4sign(lpos.y));
+      #if ENABLED(LCD_SHOW_SECONDARY_AXES)
+        #if HAS_I_AXIS
+          #if DISABLED(AXIS4_ROTATES) && ENABLED(INCH_MODE_SUPPORT)
+            strcpy(istring, is_inch ? ftostr53_63(LINEAR_UNIT(lpos.i)) : ftostr4sign(lpos.i));
+          #else
+            strcpy(istring, ftostr4sign(lpos.i));
+          #endif
+        #endif
+        #if HAS_J_AXIS
+          #if DISABLED(AXIS5_ROTATES) && ENABLED(INCH_MODE_SUPPORT)
+            strcpy(jstring, is_inch ? ftostr53_63(LINEAR_UNIT(lpos.j)) : ftostr4sign(lpos.j));
+          #else
+            strcpy(jstring, ftostr4sign(lpos.j));
+          #endif
+        #endif
+        #if HAS_K_AXIS
+          #if DISABLED(AXIS6_ROTATES) && ENABLED(INCH_MODE_SUPPORT)
+            strcpy(kstring, is_inch ? ftostr53_63(LINEAR_UNIT(lpos.k)) : ftostr4sign(lpos.k));
+          #else
+            strcpy(kstring, ftostr4sign(lpos.k));
+          #endif
+        #endif
+      #endif
     }
 
     #if ENABLED(FILAMENT_LCD_DISPLAY)
@@ -580,6 +656,47 @@ void MarlinUI::draw_status_screen() {
 
   // Status Menu Font
   set_font(FONT_STATUSMENU);
+
+
+  #if ENABLED(LCD_SHOW_SECONDARY_AXES)
+    //
+    // IJ(K) Coordinates
+    //
+
+    #if EITHER(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
+      #define IJ_FRAME_TOP 0
+      #define IJ_FRAME_HEIGHT INFO_FONT_ASCENT + 3
+    #else
+      #define IJ_FRAME_TOP 1
+      #define IJ_FRAME_HEIGHT INFO_FONT_ASCENT + 1
+    #endif
+
+    if (PAGE_CONTAINS(IJ_FRAME_TOP, IJ_FRAME_TOP + IJ_FRAME_HEIGHT - 1)) {
+
+      #if DISABLED(XYZ_NO_FRAME)
+        #if ENABLED(XYZ_HOLLOW_FRAME)
+          u8g.drawFrame(0, IJ_FRAME_TOP, NUM_AXES * XYZ_SPACING_IN + X_LABEL_POS_IN + 3, IJ_FRAME_HEIGHT);
+        #else
+          u8g.drawBox(0, IJ_FRAME_TOP, NUM_AXES * XYZ_SPACING_IN + X_LABEL_POS_IN + 1, IJ_FRAME_HEIGHT); 
+        #endif
+      #endif
+
+      if (PAGE_CONTAINS(IJ_BASELINE - (INFO_FONT_ASCENT - 1), IJ_BASELINE)) {
+
+        #if NONE(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
+          u8g.setColorIndex(0); // white on black
+        #endif
+
+        TERN_(HAS_I_AXIS, _draw_secondary_axis_value(I_AXIS, istring, blink));
+        TERN_(HAS_J_AXIS, _draw_secondary_axis_value(J_AXIS, jstring, blink));
+        TERN_(HAS_K_AXIS, _draw_secondary_axis_value(K_AXIS, kstring, blink));
+
+        #if NONE(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
+          u8g.setColorIndex(1); // black on white
+        #endif
+      }
+    }
+  #endif
 
   #if DO_DRAW_LOGO
     if (PAGE_CONTAINS(STATUS_LOGO_Y, STATUS_LOGO_Y + STATUS_LOGO_HEIGHT - 1))
@@ -897,7 +1014,9 @@ void MarlinUI::draw_status_screen() {
 
       #endif
 
-      _draw_axis_value(Z_AXIS, zstring, blink);
+      #if DISABLED(FOAMCUTTER_XYUV)
+        _draw_axis_value(Z_AXIS, zstring, blink);
+      #endif
 
       #if NONE(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
         u8g.setColorIndex(1); // black on white

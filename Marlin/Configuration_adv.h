@@ -1375,6 +1375,9 @@
   // Show the E position (filament used) during printing
   //#define LCD_SHOW_E_TOTAL
 
+  // Show the position of secondary axes I[J[K]] instead of icons. Incompatible with LCD_SHOW_SECONDARY_AXES
+  //#define LCD_SHOW_SECONDARY_AXES
+
   /**
    * LED Control Menu
    * Add LED Control to the LCD menu
