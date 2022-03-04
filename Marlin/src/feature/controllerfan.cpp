@@ -40,6 +40,9 @@ uint8_t ControllerFan::speed;
 
 void ControllerFan::setup() {
   SET_OUTPUT(CONTROLLER_FAN_PIN);
+  #if PIN_EXISTS(CONTROLLER_FAN2)
+    SET_OUTPUT(CONTROLLER_FAN2_PIN);
+  #endif
   init();
 }
 
@@ -79,6 +82,12 @@ void ControllerFan::update() {
         hal.set_pwm_duty(pin_t(CONTROLLER_FAN_PIN), speed);
       else
         WRITE(CONTROLLER_FAN_PIN, speed > 0);
+        #if PIN_EXISTS(CONTROLLER_FAN2)
+          if (PWM_PIN(CONTROLLER_FAN2_PIN))
+            hal.set_pwm_duty(pin_t(CONTROLLER_FAN2_PIN), speed);
+          else
+            WRITE(CONTROLLER_FAN2_PIN, speed > 0);
+        #endif
     #endif
   }
 }
