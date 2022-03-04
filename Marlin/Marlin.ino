@@ -1,5 +1,8 @@
 /*==============================================================================
+  Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+  Copyright 2019 - 2022 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
 
+  Based on:
   Marlin Firmware
 
   (c) 2011-2020 MarlinFirmware

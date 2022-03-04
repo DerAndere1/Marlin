@@ -1,3 +1,7 @@
+# Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin] Arduino Project Makefile
+# Copyright 2019 - 2022 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+#
+# Makefile Based on:
 # Marlin Firmware Arduino Project Makefile
 #
 # Makefile Based on:
