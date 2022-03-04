@@ -551,25 +551,34 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
       if (current_position.z < z) { current_position.z = z; line_to_current_position(z_feedrate); }
     #endif
 
-    current_position.set(x, y); line_to_current_position(xy_feedrate);
+    #if SECONDARY_AXES >= 1
+      feedRate_t min_feedrate = xy_feedrate;
+    #endif
 
-    #if HAS_I_AXIS
-      current_position.i = i; line_to_current_position(i_feedrate);
-    #endif
-    #if HAS_J_AXIS
-      current_position.j = j; line_to_current_position(j_feedrate);
-    #endif
-    #if HAS_K_AXIS
-      current_position.k = k; line_to_current_position(k_feedrate);
-    #endif
-    #if HAS_U_AXIS
-      current_position.u = u; line_to_current_position(u_feedrate);
-    #endif
-    #if HAS_V_AXIS
-      current_position.v = v; line_to_current_position(v_feedrate);
-    #endif
-    #if HAS_W_AXIS
-      current_position.w = w; line_to_current_position(w_feedrate);
+    SECONDARY_AXIS_CODE(
+      if (!NEAR(current_position.i, i)) min_feedrate = _MIN(min_feedrate, i_feedrate),
+      if (!NEAR(current_position.j, j)) min_feedrate = _MIN(min_feedrate, j_feedrate),
+      if (!NEAR(current_position.k, k)) min_feedrate = _MIN(min_feedrate, k_feedrate),
+      if (!NEAR(current_position.u, u)) min_feedrate = _MIN(min_feedrate, u_feedrate),
+      if (!NEAR(current_position.v, v)) min_feedrate = _MIN(min_feedrate, v_feedrate),
+      if (!NEAR(current_position.w, w)) min_feedrate = _MIN(min_feedrate, w_feedrare)
+    );
+
+    current_position.set(x, y);
+    SECONDARY_AXIS_CODE(
+      current_position.i = i,
+      current_position.j = j,
+      current_position.k = k,
+      current_position.u = u,
+      current_position.v = v,
+      current_position.w = w
+    );
+
+
+    #if SECONDARY_AXES >= 1
+      line_to_current_position(min_feedrate);
+    #else
+      line_to_current_position(xy_feedrate);
     #endif
 
     #if HAS_Z_AXIS
