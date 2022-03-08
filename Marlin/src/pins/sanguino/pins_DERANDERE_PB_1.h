@@ -139,13 +139,13 @@
 #define Z_DIR_PIN                              2
 #define Z_ENABLE_PIN                          26
 
-#if NUM_AXES >= 4
+#if defined(I_DRIVER_TYPE)
   #define I_STEP_PIN                           1
   #define I_DIR_PIN                            0
   #define I_ENABLE_PIN                        14
 #endif
 
-#if NUM_AXES >= 5
+#if defined(J_DRIVER_TYPE)
   #define J_STEP_PIN                          27
   #define J_DIR_PIN                           28
   #define J_ENABLE_PIN                        29
@@ -211,11 +211,15 @@
     #define LCD_PINS_D7                       17
     #define ADC_KEYPAD_PIN                     1
 
-    #if defined(I_DRIVER_TYPE) && !defined(I_STROP_PIN)
-      #define I_STOP_PIN                    27
+    #if defined(I_DRIVER_TYPE)
+      #ifndef I_STOP_PIN
+        #define I_STOP_PIN                     5
+      #endif
     #endif
-    #if defined(J_DRIVER_TYPE) && !defined(J_STOP_PIN)
-      #define J_STOP_PIN                     6
+    #if defined(J_DRIVER_TYPE)
+      #ifndef J_STOP_PIN
+        #define J_STOP_PIN                     6
+      #endif
     #endif
 
   #elif IS_RRD_FG_SC
@@ -252,11 +256,12 @@
 
   #endif
 
-#else
+#elif defined(I_DRIVER_TYPE)
+  #ifndef I_STOP_PIN
+    #define I_STOP_PIN                        11
+  #endif
   #if defined(I_DRIVER_TYPE)
-    #ifndef I_STOP_PIN
-      #define I_STOP_PIN                      11
-    #elif defined(J_DRIVER_TYPE) && !defined(J_STOP_PIN)
+    #ifndef J_STOP_PIN
       #define J_STOP_PIN                      30
     #endif
   #endif
