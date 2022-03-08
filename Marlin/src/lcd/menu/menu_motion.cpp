@@ -360,7 +360,7 @@ void menu_move() {
     #if HAS_Y_AXIS
       GCODES_ITEM_N(Y_AXIS, MSG_AUTO_HOME_A, PSTR("G28Y"));
     #endif
-    #if HAS_Z_AXIS
+    #if HAS_Z_AXIS && DISABLED(FOAMCUTTER_XYUV)
       GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
     #endif
     #if HAS_I_AXIS
@@ -422,7 +422,7 @@ void menu_motion() {
       #if HAS_Y_AXIS
         GCODES_ITEM_N(Y_AXIS, MSG_AUTO_HOME_A, PSTR("G28Y"));
       #endif
-      #if HAS_Z_AXIS
+      #if HAS_Z_AXIS && DISABLED(FOAMCUTTER_XYUV)
         GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
       #endif
       #if HAS_I_AXIS
