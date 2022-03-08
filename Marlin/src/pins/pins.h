@@ -354,7 +354,8 @@
   #include "sanguino/pins_ANET_10.h"            // ATmega1284P                            env:sanguino1284p env:sanguino1284p_optimized env:melzi_optiboot
 #elif MB(SETHI)
   #include "sanguino/pins_SETHI.h"              // ATmega644P, ATmega644, ATmega1284P     env:sanguino1284p_optimized env:sanguino1284p env:sanguino644p
-
+#elif MB(DERANDERE_PB_1)
+  #include "sanguino/pins_DERANDERE_PB_1.h"     // ATmega1284P                            env:sanguino1284p env:sanguino1284p_optimized env:melzi_optiboot
 //
 // Teensyduino - AT90USB1286, AT90USB1286P
 //
