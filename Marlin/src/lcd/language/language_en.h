@@ -138,16 +138,28 @@ namespace Language_en {
 
   LSTR MSG_CUTTER_FREQUENCY               = _UxGT("Frequency");
   LSTR MSG_LASER_MENU                     = _UxGT("Laser Control");
-  LSTR MSG_SPINDLE_MENU                   = _UxGT("Spindle Control");
+  #if ENABLED(FOAMCUTTER_XYUV)
+    LSTR MSG_SPINDLE_MENU                   = _UxGT("Hot Wire Control");
+  #else
+    LSTR MSG_SPINDLE_MENU                   = _UxGT("Spindle Control");
+  #endif  
   LSTR MSG_LASER_POWER                    = _UxGT("Laser Power");
-  LSTR MSG_SPINDLE_POWER                  = _UxGT("Spindle Pwr");
+  #if ENABLED(FOAMCUTTER_XYUV)
+    LSTR MSG_SPINDLE_POWER                  = _UxGT("Hot Wire Pwr");
+  #else
+    LSTR MSG_SPINDLE_POWER                  = _UxGT("Spindle Pwr");
+  #endif
   LSTR MSG_LASER_TOGGLE                   = _UxGT("Toggle Laser");
   LSTR MSG_LASER_EVAC_TOGGLE              = _UxGT("Toggle Blower");
   LSTR MSG_LASER_ASSIST_TOGGLE            = _UxGT("Air Assist");
   LSTR MSG_LASER_PULSE_MS                 = _UxGT("Test Pulse ms");
   LSTR MSG_LASER_FIRE_PULSE               = _UxGT("Fire Pulse");
   LSTR MSG_FLOWMETER_FAULT                = _UxGT("Coolant Flow Fault");
-  LSTR MSG_SPINDLE_TOGGLE                 = _UxGT("Toggle Spindle");
+  #if ENABLED(FOAMCUTTER_XYUV)
+    LSTR MSG_SPINDLE_TOGGLE                 = _UxGT("Toggle Hot Wire");
+  #else
+    LSTR MSG_SPINDLE_TOGGLE                 = _UxGT("Toggle Spindle");
+  #endif
   LSTR MSG_SPINDLE_EVAC_TOGGLE            = _UxGT("Toggle Vacuum");
   LSTR MSG_SPINDLE_FORWARD                = _UxGT("Spindle Forward");
   LSTR MSG_SPINDLE_REVERSE                = _UxGT("Spindle Reverse");
