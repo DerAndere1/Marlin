@@ -137,7 +137,7 @@ typedef bool (*statusResetFunc_t)();
       static xyze_pos_t all_axes_destination;
     #endif
   public:
-    static float menu_scale;
+    static float menu_scale; // in mm (for linear axes) or ° (for rotational axes)
     #if IS_KINEMATIC
       static float offset;
     #endif
