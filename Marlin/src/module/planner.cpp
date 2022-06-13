@@ -2102,7 +2102,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
        * Assume that X, Y, Z are the primary linear axes and U, V, W are secondary linear axes and A, B, C are
        * rotational axes. Then dX, dY, dZ are the displacements of the primary linear axes and dU, dV, dW are the displacements of linear axes and
        * dA, dB, dC are the displacements of rotational axes.
-       * The time it takes to execute move command with feedrate F is t = D/F, where D is the total distance, calculated as follows:
+       * The time it takes to execute a move command with feedrate F is t = D/F plus any time for acceleration and deceleration. 
+       * Here, D is the total distance, calculated as follows:
        *   D^2 = dX^2 + dY^2 + dZ^2
        *   if D^2 == 0 (none of XYZ move but any secondary linear axes move, whether other axes are moved or not):
        *     D^2 = dU^2 + dV^2 + dW^2
@@ -2139,7 +2140,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       #if SECONDARY_LINEAR_AXES >= 1 && NONE(FOAMCUTTER_XYUV, ARTICULATED_ROBOT_ARM)
         if (NEAR_ZERO(distance_sqr)) {
           // Move does not involve any primary linear axes (xyz) but might involve secondary linear axes
-          distance_sqr = (0.0
+          distance_sqr = (0.0f
             SECONDARY_AXIS_GANG(
               IF_DISABLED(AXIS4_ROTATES, + sq(steps_dist_mm.i)),
               IF_DISABLED(AXIS5_ROTATES, + sq(steps_dist_mm.j)),
