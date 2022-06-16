@@ -1,4 +1,8 @@
 /**
+ * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2022 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ *
+ * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -438,10 +442,17 @@ void MarlinUI::clear_lcd() { lcd.clear(); }
   }
 
   static void logo_lines(FSTR_P const extra) {
-    int16_t indent = (LCD_WIDTH - 8 - utf8_strlen(extra)) / 2;
-    lcd_put_wchar(indent, 0, '\x00'); lcd_put_u8str(F( "------" ));  lcd_put_wchar('\x01');
-    lcd_put_u8str(indent, 1, F("|Marlin|")); lcd_put_u8str(extra);
-    lcd_put_wchar(indent, 2, '\x02'); lcd_put_u8str(F( "------" ));  lcd_put_wchar('\x03');
+    #if LCD_WIDTH == 16
+      int16_t indent = (LCD_WIDTH - 16 - utf8_strlen(extra)) / 2;
+      lcd_put_wchar(indent, 0, '\x00'); lcd_put_u8str(F( "------------" ));  lcd_put_wchar('\x01');
+      lcd_put_u8str(indent, 1, F("MarlinPipetBot")); lcd_put_u8str(extra);
+      lcd_put_wchar(indent, 2, '\x02'); lcd_put_u8str(F( "------------" ));  lcd_put_wchar('\x03');
+    #else
+      int16_t indent = (LCD_WIDTH - 20 - utf8_strlen(extra)) / 2;
+      lcd_put_wchar(indent, 0, '\x00'); lcd_put_u8str(F( "----------------" ));  lcd_put_wchar('\x01');
+      lcd_put_u8str(indent, 1, F("Marlin2ForPipetBot")); lcd_put_u8str(extra);
+      lcd_put_wchar(indent, 2, '\x02'); lcd_put_u8str(F( "----------------" ));  lcd_put_wchar('\x03');
+    #endif
   }
 
   void MarlinUI::show_bootscreen() {
@@ -469,7 +480,7 @@ void MarlinUI::clear_lcd() { lcd.clear(); }
       // Show the Marlin logo, splash line1, and splash line 2
       //
       logo_lines(F(" " SHORT_BUILD_VERSION));
-      CENTER_OR_SCROLL(MARLIN_WEBSITE_URL, 2000);
+      CENTER_OR_SCROLL(MARLIN_WEBSITE_URL, 6000);
     }
     else {
       //
@@ -478,9 +489,9 @@ void MarlinUI::clear_lcd() { lcd.clear(); }
       //
       logo_lines(FPSTR(NUL_STR));
       CENTER_OR_SCROLL(SHORT_BUILD_VERSION, 1500);
-      CENTER_OR_SCROLL(MARLIN_WEBSITE_URL, 1500);
+      CENTER_OR_SCROLL(MARLIN_WEBSITE_URL, 6000);
       #ifdef STRING_SPLASH_LINE3
-        CENTER_OR_SCROLL(STRING_SPLASH_LINE3, 1500);
+        CENTER_OR_SCROLL(STRING_SPLASH_LINE3, 6000);
       #endif
     }
   }

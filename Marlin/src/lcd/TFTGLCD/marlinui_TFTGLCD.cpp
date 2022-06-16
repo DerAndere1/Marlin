@@ -397,12 +397,12 @@ static void center_text(FSTR_P const fstart, const uint8_t y) {
     //
     // Show the Marlin logo, splash line1, and splash line 2
     //
-    uint8_t indent = (LCD_WIDTH - 8) / 2;
+    uint8_t indent = (LCD_WIDTH - 16) / 2;
     // symbols 217 (bottom right corner) and 218 (top left corner) are using for letters in some languages
     // and they should be moved to beginning ASCII table as special symbols
-    lcd_moveto(indent, 0); lcd.write(TLC); lcd_put_u8str(F("------")); lcd.write(TRC);
-    lcd_moveto(indent, 1); lcd.write(LR);  lcd_put_u8str(F("Marlin")); lcd.write(LR);
-    lcd_moveto(indent, 2); lcd.write(BLC); lcd_put_u8str(F("------")); lcd.write(BRC);
+    lcd_moveto(indent, 0); lcd.write(TLC); lcd_put_u8str(F("--------------")); lcd.write(TRC);
+    lcd_moveto(indent, 1); lcd.write(LR);  lcd_put_u8str(F("MarlinPipetBot")); lcd.write(LR);
+    lcd_moveto(indent, 2); lcd.write(BLC); lcd_put_u8str(F("--------------")); lcd.write(BRC);
     center_text(F(SHORT_BUILD_VERSION), 3);
     center_text(F(MARLIN_WEBSITE_URL), 4);
     picBits = ICON_LOGO;
