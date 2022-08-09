@@ -211,11 +211,11 @@ Marlin 2.0 introduces a layer of abstraction so that all the existing high-level
 
 ## Submitting Patches
 
-Proposed patches should be submitted as a Pull Request against the ([bugfix-2.1.x](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.1.x)) branch.
+Proposed patches should be submitted as a Pull Request against the ([Marlin2ForPipetBot_dev](https://github.com/DerAndere1/Marlin/tree/Marlin2ForPipetBot_dev)) branch. I sometimes rebase that branch wich results in merge conflicts when you submit a Pull Request. Please ignore merge conflics and just submit the Pull Request with unresolved conflicts. I will take care of it.
 
-- This branch is for fixing bugs and integrating any new features for the duration of the Marlin 2.0.x life-cycle.
+- This branch is for fixing bugs and integrating any new features for the duration of the Marlin2ForPipetBot life-cycle.
 - Follow the [Coding Standards](https://marlinfw.org/docs/development/coding_standards.html) to gain points with the maintainers.
-- Please submit Feature Requests and Bug Reports to the [Issue Queue](https://github.com/MarlinFirmware/Marlin/issues/new/choose). Support resources are also listed there.
+- Please submit Feature Requests and Bug Reports to the [Issue Queue](https://github.com/DerAndere1/Marlin/issues). Support resources are also listed there.
 - Whenever you add new features, be sure to add tests to `buildroot/tests` and then run your tests locally, if possible.
   - It's optional: Running all the tests on Windows might take a long time, and they will run anyway on GitHub.
   - If you're running the tests on Linux (or on WSL with the code on a Linux volume) the speed is much faster.
@@ -227,41 +227,38 @@ Proposed patches should be submitted as a Pull Request against the ([bugfix-2.1.
 The Issue Queue is reserved for Bug Reports and Feature Requests. To get help with configuration and troubleshooting, please use the following resources:
 
 - [Marlin Documentation](https://marlinfw.org) - Official Marlin documentation
-- [Marlin Discord](https://discord.gg/n5NJ59y) - Discuss issues with Marlin users and developers
-- Facebook Group ["Marlin Firmware"](https://www.facebook.com/groups/1049718498464482/)
-- RepRap.org [Marlin Forum](https://forums.reprap.org/list.php?415)
-- Facebook Group ["Marlin Firmware for 3D Printers"](https://www.facebook.com/groups/3Dtechtalk/)
+- [Multi-Axis-Marlin Wiki](https://github.com/DerAndere1/Marlin/wiki) - Information related to machines with more than 3 axes
 - [Marlin Configuration](https://www.youtube.com/results?search_query=marlin+configuration) on YouTube
+- [Marlin2ForPipetBot issue queue](https://github.com/DerAndere1/Marlin/issues)
 
 ## Contributors
 
-Marlin is constantly improving thanks to a huge number of contributors from all over the world bringing their specialties and talents. Huge thanks are due to [all the contributors](https://github.com/MarlinFirmware/Marlin/graphs/contributors) who regularly patch up bugs, help direct traffic, and basically keep Marlin from falling apart. Marlin's continued existence would not be possible without them.
+Marlin is constantly improving thanks to a huge number of contributors from all over the world bringing their specialties and talents. Huge thanks are due to [all the contributors](https://github.com/DerAndere1/Marlin/graphs/contributors) who regularly patch up bugs, help direct traffic, and basically keep Marlin from falling apart. Marlin's continued existence would not be possible without them.
 
 
 ## Credits
 
-Regular users can open and close their own issues, but only the administrators can do project-related things like add labels, merge changes, set milestones, and kick trolls. The current Marlin admin team consists of:
+Marlin2ForPipetBot (https://github.com/DerAndere1/Marlin)
 
- - Scott Lahteine [[@thinkyhead](https://github.com/thinkyhead)] - USA - Project Maintainer &nbsp; [💸 Donate](https://www.thinkyhead.com/donate-to-marlin)
- - Roxanne Neufeld [[@Roxy-3D](https://github.com/Roxy-3D)] - USA
- - Keith Bennett [[@thisiskeithb](https://github.com/thisiskeithb)] - USA &nbsp; [💸 Donate](https://github.com/sponsors/thisiskeithb)
- - Peter Ellens [[@ellensp](https://github.com/ellensp)] - New Zealand
- - Victor Oliveira [[@rhapsodyv](https://github.com/rhapsodyv)] - Brazil
- - Chris Pepper [[@p3p](https://github.com/p3p)] - UK
- - Jason Smith [[@sjasonsmith](https://github.com/sjasonsmith)] - USA
- - Luu Lac [[@shitcreek](https://github.com/shitcreek)] - USA
- - Bob Kuhn [[@Bob-the-Kuhn](https://github.com/Bob-the-Kuhn)] - USA
- - Erik van der Zalm [[@ErikZalm](https://github.com/ErikZalm)] - Netherlands &nbsp; [💸 Donate](https://flattr.com/submit/auto?user_id=ErikZalm&url=https://github.com/MarlinFirmware/Marlin&title=Marlin&language=&tags=github&category=software)
+Copyright 2022 DerAndere
 
 Marlin2ForPipetBot is modified by:
 
- - DerAndere [[@DerAndere1](https://github.com/DerAndere1)] - Germany
+ - DerAndere [[@DerAndere1](https://github.com/DerAndere1)] - Germany - Marlin2ForPipetBot Project Maintainer &nbsp; [💸 Donate](https://www.paypal.com/donate/?hosted_button_id=TNGG65GVA9UHE)
  - Garbriel Beraldo [@GabrielBeraldo](https://github.com/GabrielBeraldo)] - Brasil
  - Olivier Briand [@hobiseven](https://github.com/hobiseven)] - France
  - Wolverine [@MohammadSDGHN](https://github.com/MohammadSDGHN) - Undisclosed
  - bilsef [@bilsef](https://github.com/bilsef) - Undisclosed
  - FNeo31 [@FNeo31](https://github.com/FNeo31) - Undisclosed
  - HendrikJan-5D [@HendrikJan-5D](https://github.com/HendrikJan-5D) - Undisclosed
+ - Scott Lahteine [[@thinkyhead](https://github.com/thinkyhead)] - USA - MarlinFirmware Maintainer &nbsp; [💸 Donate](https://www.thinkyhead.com/donate-to-marlin)
+
+
+Marlin2ForPipetBot is based on: 
+
+MarlinFirmware/Marlin Marlin 3D Printer Firmware (https://github.com/MarlinFirmware/Marlin)
+
+Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
 
 ## License
 
