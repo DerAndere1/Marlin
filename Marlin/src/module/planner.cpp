@@ -2307,23 +2307,25 @@ bool Planner::_populate_block(
     }
   #endif // HAS_EXTRUDERS
 
-  if (esteps)
-    NOLESS(fr_mm_s, settings.min_feedrate_mm_s);
-  else
-    NOLESS(fr_mm_s, settings.min_travel_feedrate_mm_s);
+    if (TERN1(HAS_ROTATIONAL_AXES, cartesian_move)) {
+      if (esteps)
+        NOLESS(fr_mm_s, settings.min_feedrate_mm_s);
+      else
+        NOLESS(fr_mm_s, settings.min_travel_feedrate_mm_s);
+    }
+    else {
+      if (esteps)
+        NOLESS(fr_mm_s, settings.min_travel_feedrate_deg_s);
+      else
+        NOLESS(fr_mm_s, settings.min_feedrate_deg_s);
+    }
 
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   // Calculate inverse time for this move. No divide by zero due to previous checks.
   // Example: At 120mm/s a 60mm move involving XYZ axes takes 0.5s. So this will give 2.0.
   // Example 2: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
-  float inverse_secs = inverse_millimeters * (
-    #if BOTH(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-      cartesian_move ? fr_mm_s : LINEAR_UNIT(fr_mm_s)
-    #else
-      fr_mm_s
-    #endif
-  );
+  float inverse_secs = inverse_millimeters * (TERN_(HAS_ROTATIONAL_AXES, !cartesian_move ? LINEAR_UNIT(fr_mm_s) :) fr_mm_s);
 
   // Get the number of non busy movements in queue (non busy means that they can be altered)
   const uint8_t moves_queued = nonbusy_movesplanned();
@@ -2489,7 +2491,10 @@ bool Planner::_populate_block(
     }while(0)
 
     // Start with print or travel acceleration
-    accel = CEIL((esteps ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
+    accel = CEIL(steps_per_mm * (
+      esteps ? (TERN_(HAS_ROTATIONAL_AXES, !cartesian_move ? settings.angular_acceleration :) settings.acceleration)
+             : (TERN_(HAS_ROTATIONAL_AXES, !cartesian_move ? settings.angular_travel_acceleration :) settings.travel_acceleration)
+    ));
 
     #if ENABLED(LIN_ADVANCE)
       // Linear advance is currently not ready for HAS_I_AXIS

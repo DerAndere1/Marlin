@@ -100,12 +100,15 @@ feedRate_t get_homing_bump_feedrate(const AxisEnum axis);
  * The default feedrate for many moves, set by the most recent move
  */
 extern feedRate_t feedrate_mm_s;
+#if HAS_ROTATIONAL_AXES
+  extern feedRate_t feedrate_deg_s;
+#endif
 
 /**
  * Feedrate scaling is applied to all G0/G1, G2/G3, and G5 moves
  */
 extern int16_t feedrate_percentage;
-#define MMS_SCALED(V) ((V) * 0.01f * feedrate_percentage)
+#define FR_SCALED(V) ((V) * 0.01f * feedrate_percentage)
 
 // The active extruder (tool). Set with T<extruder> command.
 #if HAS_MULTI_EXTRUDER

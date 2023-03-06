@@ -133,6 +133,9 @@ xyze_pos_t destination; // {0}
 // Set by the last G0 through G5 command's "F" parameter.
 // Functions that override this for custom moves *must always* restore it!
 feedRate_t feedrate_mm_s = MMM_TO_MMS(1500);
+#if HAS_ROTATIONAL_AXES
+  feedRate_t feedrate_deg_s = DPM_TO_DPS(1350);
+#endif
 int16_t feedrate_percentage = 100;
 
 // Cartesian conversion result goes here:
@@ -526,7 +529,14 @@ void _internal_move_to_destination(const_feedRate_t fr_mm_s/*=0.0f*/
   OPTARG(IS_KINEMATIC, const bool is_fast/*=false*/)
 ) {
   const feedRate_t old_feedrate = feedrate_mm_s;
-  if (fr_mm_s) feedrate_mm_s = fr_mm_s;
+  #if HAS_ROTATIONAL_AXES
+    const feedRate_t old_angular_feedrate = feedrate_deg_s;
+  #endif
+
+  if (fr_mm_s) {
+    feedrate_mm_s = fr_mm_s;
+    TERN_(HAS_ROTATIONAL_AXES, feedrate_deg_s = LINEAR_UNIT(fr_mm_s);
+  }
 
   const uint16_t old_pct = feedrate_percentage;
   feedrate_percentage = 100;
@@ -542,6 +552,7 @@ void _internal_move_to_destination(const_feedRate_t fr_mm_s/*=0.0f*/
     prepare_line_to_destination();
 
   feedrate_mm_s = old_feedrate;
+  TERN_(HAS_ROTATIONAL_AXES, feedrate_deg_s = old_angular_feedrate);
   feedrate_percentage = old_pct;
   TERN_(HAS_EXTRUDERS, planner.e_factor[active_extruder] = old_fac);
 }
@@ -582,6 +593,9 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const_float_t), const_feedRate_t fr_mm_s/
   #if ENABLED(DELTA)
 
     REMEMBER(fr, feedrate_mm_s, xy_feedrate);
+    #if HAS_ROTATIONAL_AXES
+      REMEMBER(angular_fr, feedrate_deg_s, i_feedrate);
+    #endif
 
     if (DEBUGGING(LEVELING)) DEBUG_POS("destination = current_position", destination);
 
@@ -800,9 +814,13 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
 //  - Save / restore current feedrate and multiplier
 //
 static float saved_feedrate_mm_s;
+#if HAS_ROTATIONAL_AXES
+  static float saved_feedrate_deg_s;
+#endif
 static int16_t saved_feedrate_percentage;
 void remember_feedrate_and_scaling() {
   saved_feedrate_mm_s = feedrate_mm_s;
+  TERN_(HAS_ROTATIONAL_AXES, saved_feedrate_deg_s = feedrate_deg_s);
   saved_feedrate_percentage = feedrate_percentage;
 }
 void remember_feedrate_scaling_off() {
@@ -811,6 +829,7 @@ void remember_feedrate_scaling_off() {
 }
 void restore_feedrate_and_scaling() {
   feedrate_mm_s = saved_feedrate_mm_s;
+  TERN_(HAS_ROTATIONAL_AXES, feedrate_deg_s = saved_feedrate_deg_s);
   feedrate_percentage = saved_feedrate_percentage;
 }
 
@@ -1177,7 +1196,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
   inline bool line_to_destination_kinematic() {
 
     // Get the top feedrate of the move in the XY plane
-    const float scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
+    const float scaled_fr_mm_s = FR_SCALED(feedrate_mm_s);
 
     const xyze_float_t diff = destination - current_position;
 
@@ -1338,7 +1357,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
    * Return true if 'current_position' was set to 'destination'
    */
   inline bool line_to_destination_cartesian() {
-    const float scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
+    const float scaled_fr_mm_s = FR_SCALED(feedrate_mm_s);
     #if HAS_MESH
       if (planner.leveling_active && planner.leveling_active_at_z(destination.z)) {
         #if ENABLED(AUTO_BED_LEVELING_UBL)
@@ -1553,7 +1572,7 @@ void prepare_line_to_destination() {
   if (
     #if UBL_SEGMENTED
       #if IS_KINEMATIC // UBL using Kinematic / Cartesian cases as a workaround for now.
-        bedlevel.line_to_destination_segmented(MMS_SCALED(feedrate_mm_s))
+        bedlevel.line_to_destination_segmented(FR_SCALED(feedrate_mm_s))
       #else
         line_to_destination_cartesian()
       #endif
@@ -1608,9 +1627,7 @@ void prepare_line_to_destination() {
    * Homing bump feedrate (mm/s)
    */
   feedRate_t get_homing_bump_feedrate(const AxisEnum axis) {
-    #if HOMING_Z_WITH_PROBE
-      if (axis == Z_AXIS) return MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW);
-    #endif
+    TERN_(HOMING_Z_WITH_PROBE, if (axis == Z_AXIS) return MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW));
     static const uint8_t homing_bump_divisor[] PROGMEM = HOMING_BUMP_DIVISOR;
     uint8_t hbd = pgm_read_byte(&homing_bump_divisor[axis]);
     if (hbd < 1) {
@@ -1818,14 +1835,14 @@ void prepare_line_to_destination() {
   void do_homing_move(const AxisEnum axis, const float distance, const feedRate_t fr_mm_s=0.0, const bool final_approach=true) {
     DEBUG_SECTION(log_move, "do_homing_move", DEBUGGING(LEVELING));
 
-    const feedRate_t home_fr_mm_s = fr_mm_s ?: homing_feedrate(axis);
+    const feedRate_t home_fr = fr_mm_s ?: homing_feedrate(axis);
 
     if (DEBUGGING(LEVELING)) {
       DEBUG_ECHOPGM("...(", AS_CHAR(AXIS_CHAR(axis)), ", ", distance, ", ");
       if (fr_mm_s)
         DEBUG_ECHO(fr_mm_s);
       else
-        DEBUG_ECHOPGM("[", home_fr_mm_s, "]");
+        DEBUG_ECHOPGM("[", home_fr, "]");
       DEBUG_ECHOLNPGM(")");
     }
 
@@ -1882,7 +1899,7 @@ void prepare_line_to_destination() {
 
       // Set delta/cartesian axes directly
       target[axis] = distance;                  // The move will be towards the endstop
-      planner.buffer_segment(target OPTARG(HAS_DIST_MM_ARG, cart_dist_mm), home_fr_mm_s, active_extruder);
+      planner.buffer_segment(target OPTARG(HAS_DIST_MM_ARG, cart_dist_mm), home_fr, active_extruder);
     #endif
 
     planner.synchronize();
