@@ -535,7 +535,7 @@ void _internal_move_to_destination(const_feedRate_t fr_mm_s/*=0.0f*/
 
   if (fr_mm_s) {
     feedrate_mm_s = fr_mm_s;
-    TERN_(HAS_ROTATIONAL_AXES, feedrate_deg_s = LINEAR_UNIT(fr_mm_s);
+    TERN_(HAS_ROTATIONAL_AXES, feedrate_deg_s = LINEAR_UNIT(fr_mm_s));
   }
 
   const uint16_t old_pct = feedrate_percentage;
