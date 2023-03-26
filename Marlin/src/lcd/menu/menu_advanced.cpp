@@ -674,7 +674,7 @@ void menu_advanced_settings() {
     EDIT_ITEM(bool, MSG_ENDSTOP_ABORT, &planner.abort_on_endstop_hit);
   #endif
 
-  // M541 S - Abort on software endstop hit
+  // M211 H - Abort on software endstop hit
   #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
     EDIT_ITEM(bool, MSG_SOFTWARE_ENDSTOP_ABORT, &planner.abort_on_software_endstop);
   #endif
