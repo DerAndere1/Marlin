@@ -1751,7 +1751,7 @@
 
   /**
    * Abort printing when any software endstop is triggered.
-   * This feature is enabled with 'M541 S1' or from the LCD menu.
+   * This feature is enabled with 'M211 H1' or from the LCD menu.
    * Software endstops must be activated for this option to work.
    */
   //#define ABORT_ON_SOFTWARE_ENDSTOP
