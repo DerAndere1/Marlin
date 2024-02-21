@@ -1663,7 +1663,7 @@
    * Endstops must be activated for this option to work.
    */
   //#define SD_ABORT_ON_ENDSTOP_HIT
-  #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
+  #if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_SOFTWARE_ENDSTOP)
     //#define SD_ABORT_ON_ENDSTOP_HIT_GCODE "G28XY" // G-code to run on endstop hit (e.g., "G28XY" or "G27")
   #endif
 
