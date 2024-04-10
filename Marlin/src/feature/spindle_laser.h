@@ -117,7 +117,14 @@ public:
   static void init();
 
   #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
-    static void refresh_frequency() { hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency); }
+    static void refresh_frequency() { 
+      if (active_tool_type == TYPE_LASER) {
+        hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), frequency);
+      } 
+      elif (active_tool_type == TYPE_SPINDLE) {
+        hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency); 
+      }
+    }
   #endif
 
   // Modifying this function should update everywhere
@@ -211,6 +218,9 @@ public:
         enable = false;
         apply_power(0);
     }
+    #if PIN_EXISTS(LASER_ENA)
+      WRITE(LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+    #endif
     #if PIN_EXISTS(SPINDLE_LASER_ENA)
       WRITE(SPINDLE_LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
     #endif

@@ -186,6 +186,7 @@
 #define STR_SD_CANT_ENTER_SUBDIR            "Cannot enter subdir: "
 
 #define STR_ENDSTOPS_HIT                    "endstops hit: "
+#define STR_ERR_SW_ENDSTOP                  "software endstops hit"
 #define STR_ERR_COLD_EXTRUDE_STOP           " cold extrusion prevented"
 #define STR_ERR_LONG_EXTRUDE_STOP           " too long extrusion prevented"
 #define STR_ERR_HOTEND_TOO_COLD             "Hotend too cold"
@@ -283,6 +284,8 @@
 #define STR_SCARA_SETTINGS                  "SCARA"
 #define STR_POLAR_SETTINGS                  "Polar"
 #define STR_POLARGRAPH_SETTINGS             "Polargraph"
+#define STR_PAX_TRT_SETTINGS                "Penta-Axis-TRT"
+#define STR_PAX_HT_SETTINGS                 "Penta-Axis-Head-Table"
 #define STR_SCARA_P_T_Z                     "P<theta-psi-offset> T<theta-offset> Z<home-offset>"
 #define STR_ENDSTOP_ADJUSTMENT              "Endstop adjustment"
 #define STR_SKEW_FACTOR                     "Skew Factor"

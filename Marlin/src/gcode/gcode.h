@@ -515,8 +515,11 @@ private:
     static void G6();
   #endif
 
-  #if ENABLED(FWRETRACT)
+#if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS)
     static void G10();
+  #endif
+
+  #if ENABLED(FWRETRACT)
     static void G11();
   #endif
 
@@ -892,7 +895,7 @@ private:
   static void M211();
   static void M211_report(const bool forReplay=true);
 
-  #if HAS_MULTI_EXTRUDER
+  #if HAS_MULTI_TOOLS
     static void M217();
     static void M217_report(const bool forReplay=true);
   #endif

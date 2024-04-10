@@ -326,7 +326,14 @@
  */
 //#define ELECTROMAGNETIC_SWITCHING_TOOLHEAD
 
+
+// Safe toolchange start Z position.
+//#define SAFE_TOOLCHANGE_START_Z           200
+
 #if ANY(SWITCHING_TOOLHEAD, MAGNETIC_SWITCHING_TOOLHEAD, ELECTROMAGNETIC_SWITCHING_TOOLHEAD)
+  //#define SWITCHING_TOOLHEAD_Z_POS        100         // (mm) Z position of the toolhead dock.
+                                                        // Leave this option disabled if the bed can move in Z direction
+  //#define SWITCHING_TOOLHEAD_Z_CLEAR       60         // (mm) Minimum distance from dock along Z for unobstructed X axis if the tools are placed onto the dock in Z direction
   #define SWITCHING_TOOLHEAD_Y_POS          235         // (mm) Y position of the toolhead dock
   #define SWITCHING_TOOLHEAD_Y_SECURITY      10         // (mm) Security distance Y axis
   #define SWITCHING_TOOLHEAD_Y_CLEAR         60         // (mm) Minimum distance from dock for unobstructed X axis
@@ -371,7 +378,7 @@
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
-// For the other hotends it is their distance from the extruder 0 hotend.
+// For the other hotends it is their distance from the extruder 0 hotend in positive axis direction.
 //#define HOTEND_OFFSET_X { 0.0, 20.00 } // (mm) relative X-offset for each nozzle
 //#define HOTEND_OFFSET_Y { 0.0, 5.00 }  // (mm) relative Y-offset for each nozzle
 //#define HOTEND_OFFSET_Z { 0.0, 0.00 }  // (mm) relative Z-offset for each nozzle
@@ -1114,6 +1121,75 @@
   #define POLAR_CENTER_OFFSET 0.0f          // (mm)
 
   #define FEEDRATE_SCALING                  // Convert XY feedrate from mm/s to degrees/s on the fly
+#endif
+
+// @section PENTA_AXIS_TRT
+
+/** 
+ * For a 5 axis CNC machine in tilting rotary table configuration. 
+ * This machine has a rotary table (C axis) mounted on a tilting table
+ * (A axis parallel to the X axis, or B axis parallel to the Y axis).
+ * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
+ */
+//#define PENTA_AXIS_TRT
+#if ENABLED(PENTA_AXIS_TRT)
+
+  // Machine rotary zero point offsets  
+  // The distance along the X axis from machine zero point to the center of rotation. The center of rotation is
+  // usually the center of the top surface of the table when all axes are at machine position 0.
+  #define DEFAULT_MRZP_OFFSET_X 0.0 // (mm)
+
+  // The distance along the Y axis from machine zero point to the center of rotation. The center of rotation is
+  // usually the center of the top surface of the table when all axes are at machine position 0.
+  #define DEFAULT_MRZP_OFFSET_Y 0.0 // (mm)
+  
+  // The distance along the Z axis from machine zero point to the center of rotation. The center of rotation is
+  // usually the center of the top surface of the table when all axes are at machine position 0.
+  #define DEFAULT_MRZP_OFFSET_Z 0.0 // (mm)
+
+  // For a machine with XYZBC axes, this is the distance along the x axis from the vertical centerline of the
+  // joint of the horizontal rotary table to the horizontal centerline of the joint that tilts the table.
+  // Measured when the table is oriented horizontally.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_X 0.0 // (mm)
+
+  // For a machine with XYZAC axes, this is the distance along the y axis from the vertical centerline of the
+  // joint of the horizontal table to the horizontal centerline of the joint that tilts the table. 
+  // Measured when the table is oriented horizontally.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
+
+  // This is the distance along the Z axis from the surface at the top of the table to the horizontal
+  // centerline of the joint that tilts the table when the table is oriented horizontally.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 0.0 // (mm)
+
+  // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive sqrt calls).
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+
+  // Print surface diameter/2
+  #define PRINTABLE_RADIUS 100.0    // (mm)
+#endif
+
+// @section PENTA_AXIS_HT
+
+/**
+ * For a 5 axis CNC machine in head-table configuration. 
+ * This machine has a swivel head and a horizontal rotary table.
+ */
+//#define PENTA_AXIS_HT
+#if ENABLED(PENTA_AXIS_HT)
+
+  // Machine rotary zero point offset is the distance from the gage line at the tool head (tip of the nozzle of tool 0) to the horizontal 
+  // centerline of the joint that tilts the tool head. Measured when all axes are at machine position 0.
+  #define DEFAULT_MRZP_OFFSET_Z 100.0 // (mm)
+
+  // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive sqrt calls).
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+
+  // Print surface diameter/2
+  #define PRINTABLE_RADIUS 100.0    // (mm)
 #endif
 
 // @section machine
@@ -1899,6 +1975,13 @@
 #endif
 
 #if ANY(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
+  /**
+   * Abort printing when any software endstop is triggered.
+   * This feature is enabled with 'M541 S1' or from the LCD menu.
+   * Software endstops must be activated for this option to work.
+   */
+  //#define ABORT_ON_SOFTWARE_ENDSTOP
+
   //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif
 

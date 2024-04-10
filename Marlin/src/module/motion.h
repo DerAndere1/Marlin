@@ -57,9 +57,16 @@ extern xyze_pos_t current_position,  // High-level current tool position
 // Scratch space for a cartesian result
 extern xyz_pos_t cartes;
 
+#if HAS_TOOL_LENGTH_COMPENSATION
+  extern bool simple_tool_length_compensation;
+#endif
+
 // Until kinematics.cpp is created, declare this here
 #if IS_KINEMATIC
   extern abce_pos_t delta;
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    extern bool tool_centerpoint_control;
+  #endif
 #endif
 
 #if HAS_ABL_NOT_UBL
@@ -112,7 +119,7 @@ extern int16_t feedrate_percentage;
 #define MMS_SCALED(V) ((V) * 0.01f * feedrate_percentage)
 
 // The active extruder (tool). Set with T<extruder> command.
-#if HAS_MULTI_EXTRUDER
+#if HAS_MULTI_TOOLS
   extern uint8_t active_extruder;
 #else
   constexpr uint8_t active_extruder = 0;
@@ -155,10 +162,10 @@ inline float home_bump_mm(const AxisEnum axis) {
 }
 
 #if HAS_HOTEND_OFFSET
-  extern xyz_pos_t hotend_offset[HOTENDS];
+  extern xyz_pos_t hotend_offset[TOOLS];
   void reset_hotend_offsets();
 #elif HOTENDS
-  constexpr xyz_pos_t hotend_offset[HOTENDS] = { { TERN_(HAS_X_AXIS, 0) } };
+  constexpr xyz_pos_t hotend_offset[TOOLS] = { { TERN_(HAS_X_AXIS, 0) } };
 #else
   constexpr xyz_pos_t hotend_offset[1] = { { TERN_(HAS_X_AXIS, 0) } };
 #endif
@@ -550,7 +557,7 @@ void home_if_needed(const bool keeplev=false);
 /**
  * position_is_reachable family of functions
  */
-#if IS_KINEMATIC // (DELTA or SCARA)
+#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT)  // (DELTA or SCARA)
 
   #if HAS_SCARA_OFFSET
     extern abc_pos_t scara_home_offset; // A and B angular offsets, Z mm offset
@@ -571,6 +578,14 @@ void home_if_needed(const bool keeplev=false);
     return position_is_reachable(TERN_(HAS_X_AXIS, pos.x) OPTARG(HAS_Y_AXIS, pos.y));
   }
 
+#endif
+
+#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+
+  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw));
+  inline bool position_is_reachable_xyijkuvw(const xyz_pos_t &pos) {
+    return position_is_reachable_xyijkuvw(NUM_AXIS_LIST(pos.x, pos.y, pos.z, pos.i, pos.j, pos.k, pos.u, pos.v, pos.w));
+  }
 #endif
 
 /**

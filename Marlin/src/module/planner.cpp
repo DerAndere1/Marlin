@@ -164,6 +164,10 @@ uint32_t Planner::max_acceleration_steps_per_s2[DISTINCT_AXES]; // (steps/s^2) D
   bool Planner::abort_on_endstop_hit = false;
 #endif
 
+#if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+  bool Planner::abort_on_software_endstop = false;
+#endif
+
 #if ENABLED(DISTINCT_E_FACTORS)
   uint8_t Planner::last_extruder = 0;     // Respond to extruder change
 #endif
@@ -2977,12 +2981,19 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const_feedRate_t fr_mm_s
       );
     #endif
 
-    // Cartesian XYZ to kinematic ABC, stored in global 'delta'
-    inverse_kinematics(machine);
-
     PlannerHints ph = hints;
     if (!hints.millimeters)
       ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, ph.cartesian_move));
+
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) 
+      if (NEAR_ZERO(cart_dist_mm.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(cart_dist_mm.j))) {
+        delta += cart_dist_mm;
+      }
+      else
+    #endif
+
+    // Cartesian XYZ to kinematic ABC, stored in global 'delta'
+    inverse_kinematics(machine);
 
     #if DISABLED(FEEDRATE_SCALING)
 

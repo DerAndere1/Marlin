@@ -175,6 +175,10 @@
   #include "module/scara.h"
 #elif ENABLED(POLAR)
   #include "module/polar.h"
+#elif ENABLED(PENTA_AXIS_TRT)
+  #include "module/penta_axis_trt.h"
+#elif ENABLED(PENTA_AXIS_HT)
+  #include "module/penta_axis_ht.h"
 #endif
 
 #if HAS_LEVELING

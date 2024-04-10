@@ -935,6 +935,9 @@
 //#define XY_COUNTERPART_BACKOFF_MM 0         // (mm) Backoff X after homing Y, and vice-versa
 
 //#define QUICK_HOME                          // If G28 contains XY do a diagonal move first
+#if ENABLED(QUICK_HOME)
+  //#define QUICK_HOME_SECONDARY_AXES          // If G28 contains XYABCUVW, first do a coordinated move of axes XYABCUVW towards the limit used for homing.
+#endif
 //#define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
 //#define HOME_Z_FIRST                        // Home Z first. Requires a real endstop (not a probe).
 //#define CODEPENDENT_XY_HOMING               // If X/Y can't home without homing Y/X first
@@ -2765,7 +2768,7 @@
  * Universal tool change settings.
  * Applies to all types of extruders except where explicitly noted.
  */
-#if HAS_MULTI_EXTRUDER
+#if HAS_MULTI_TOOLS
   // Z raise distance for tool-change, as needed for some extruders
   #define TOOLCHANGE_ZRAISE                 2 // (mm)
   //#define TOOLCHANGE_ZRAISE_BEFORE_RETRACT  // Apply raise before swap retraction (if enabled)
@@ -2872,7 +2875,7 @@
       //#define TOOLCHANGE_MIGRATION_DO_PARK  // Force park (or no-park) on migration
     #endif
   #endif
-#endif // HAS_MULTI_EXTRUDER
+#endif // HAS_MULTI_TOOLS
 
 // @section advanced pause
 
