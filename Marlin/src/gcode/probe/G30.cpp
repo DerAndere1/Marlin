@@ -26,6 +26,7 @@
 
 #include "../gcode.h"
 #include "../../module/motion.h"
+#include "../../MarlinCore.h"
 #include "../../module/probe.h"
 #include "../../feature/bedlevel/bedlevel.h"
 #include "../../lcd/marlinui.h"
@@ -54,6 +55,8 @@
  */
 void GcodeSuite::G30() {
 
+  if (!MOTION_CONDITIONS) return; // TODO (DerAndere1): Update
+  
   xy_pos_t probepos = motion.position;
 
   const bool seenX = parser.seenval('X');

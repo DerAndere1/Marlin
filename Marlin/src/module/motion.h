@@ -39,6 +39,7 @@
 #if ENABLED(AUTO_REPORT_POSITION)
   #include "../libs/autoreport.h"
 #endif
+#endif
 
 // Error margin to work around float imprecision
 constexpr float fslop = 0.0001;
@@ -97,7 +98,7 @@ public:
       | (ENABLED(AXIS7_ROTATES)<<U_AXIS), | (ENABLED(AXIS8_ROTATES)<<V_AXIS), | (ENABLED(AXIS9_ROTATES)<<W_AXIS))
   };
 
-  #if HAS_MULTI_EXTRUDER
+  #if HAS_MULTI_TOOLS
     static uint8_t extruder;            // Selected extruder (tool) - T<extruder>
   #else
     static constexpr uint8_t extruder = 0;
@@ -114,18 +115,31 @@ public:
     return f * 0.01f * feedrate_percentage;
   }
 
+#if HAS_TOOL_LENGTH_COMPENSATION
+  extern bool simple_tool_length_compensation;
+#endif
+
+
   #if IS_KINEMATIC
     static abce_pos_t delta;            // Scratch space for a kinematic result
   #endif
+
+// Until kinematics.cpp is created, declare this here
+#if IS_KINEMATIC
+  extern abce_pos_t delta;
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    extern bool tool_centerpoint_control;
+  #endif
+
   #if HAS_SCARA_OFFSET
     static abc_pos_t scara_home_offset; // A and B angular offsets, Z mm offset
   #endif
 
   #if HAS_HOTEND_OFFSET
-    static xyz_pos_t hotend_offset[HOTENDS];
+    static xyz_pos_t hotend_offset[TOOLS];
     static void reset_hotend_offsets();
   #elif HOTENDS
-    static constexpr xyz_pos_t hotend_offset[HOTENDS] = { { TERN_(HAS_X_AXIS, 0) } };
+    static constexpr xyz_pos_t hotend_offset[TOOLS] = { { TERN_(HAS_X_AXIS, 0) } };
   #else
     static constexpr xyz_pos_t hotend_offset[1] = { { TERN_(HAS_X_AXIS, 0) } };
   #endif
@@ -487,7 +501,7 @@ public:
   //
   // Reachability Tests
   //
-  #if IS_KINEMATIC
+  #if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)  // (DELTA or SCARA)
 
     // Return true if the given point is within the printable area
     static bool can_reach(const float rx, const float ry, const float inset=0);
@@ -504,6 +518,13 @@ public:
       return can_reach(XY_LIST(pos.x, pos.y));
     }
 
+  #endif
+
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+    bool can_reach_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw));
+    inline bool can_reach_xyijkuvw(const xyz_pos_t &pos) {
+      return can_reach_xyijkuvw(NUM_AXIS_LIST(pos.x, pos.y, pos.z, pos.i, pos.j, pos.k, pos.u, pos.v, pos.w));
+    }
   #endif
 
   // Hard Stop with potential step loss, used in rare situations

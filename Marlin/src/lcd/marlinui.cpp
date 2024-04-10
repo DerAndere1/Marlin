@@ -866,7 +866,7 @@ void MarlinUI::init() {
 
       #if IS_KINEMATIC
 
-        #if HAS_MULTI_EXTRUDER
+        #if HAS_MULTI_TOOLS
           REMEMBER(ae, motion.extruder);
           #if MULTI_E_MANUAL
             if (axis == E_AXIS) motion.extruder = e_index;

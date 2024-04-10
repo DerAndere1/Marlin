@@ -28,6 +28,7 @@
 
 #include "../../module/endstops.h"
 #include "../../module/motion.h"
+#include "../../MarlinCore.h"
 #include "../../module/planner.h"
 #include "../../module/probe.h"
 
@@ -114,6 +115,8 @@ FORCE_INLINE bool G38_run_probe() {
  *  G38.5 - Probe away from workpiece, stop on contact break
  */
 void GcodeSuite::G38(const int8_t subcode) {
+
+  if (!MOTION_CONDITIONS) return; // TODO (DerAndere1): Update
 
   // Get X Y Z E F
   get_destination_from_command();
