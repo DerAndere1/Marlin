@@ -207,6 +207,69 @@
     SERIAL_ECHOLNPGM_P(PSTR("  M665 S"), segments_per_second);
   }
 
-#endif // POLAR
+#elif ENABLED(PENTA_AXIS_TRT)
+
+  #include "../../module/penta_axis_trt.h"
+
+  /**
+   * M665: Set PENTA_AXIS_TRT settings
+   * Parameters:
+   *   S[segments]             - Segments-per-second
+   *   X[mrzp_offset_x]        - mrzp_offset_x
+   *   Y[mrzp_offset_y]        - mrzp_offset_y
+   *   Z[mrzp_offset_z]        - mrzp_offset_z
+   *   I[rotational_offset_x]  - rotational_offset_x
+   *   J[rotational_offset_y]  - rotational_offset_y
+   *   K[rotational_offset_z]  - rotational_offset_z
+   */
+  void GcodeSuite::M665() {
+    if (!parser.seen_any()) return M665_report();
+    if (parser.seenval('S')) segments_per_second = parser.value_float();
+    if (parser.seenval('X')) mrzp_offset_x = parser.value_linear_units();
+    if (parser.seenval('Y')) mrzp_offset_y = parser.value_linear_units();
+    if (parser.seenval('Z')) mrzp_offset_z = parser.value_linear_units();
+    if (parser.seenval('I')) rotational_offset_x = parser.value_linear_units();
+    if (parser.seenval('J')) rotational_offset_y = parser.value_linear_units();
+    if (parser.seenval('K')) rotational_offset_z = parser.value_linear_units();
+  }
+
+  void GcodeSuite::M665_report(const bool forReplay/*=true*/) {
+    report_heading_etc(forReplay, F(STR_PAX_TRT_SETTINGS));
+    SERIAL_ECHOLNPGM_P(
+      PSTR("  M665 S"), LINEAR_UNIT(segments_per_second),
+      PSTR(" X"), LINEAR_UNIT(mrzp_offset_x),
+      PSTR(" Y"), LINEAR_UNIT(mrzp_offset_y),
+      PSTR(" Z"), LINEAR_UNIT(mrzp_offset_z),
+      PSTR(" I"), LINEAR_UNIT(rotational_offset_x),
+      PSTR(" J"), LINEAR_UNIT(rotational_offset_y),
+      PSTR(" K"), LINEAR_UNIT(rotational_offset_z)
+    );
+  }
+
+#elif ENABLED(PENTA_AXIS_HT)
+
+  #include "../../module/penta_axis_ht.h"
+
+  /**
+   * M665: Set PENTA_AXIS_HT settings
+   * Parameters:
+   *   S[segments]             - Segments-per-second
+   *   Z[mrzp_offset_z]        - mrzp_offset_z
+   */
+  void GcodeSuite::M665() {
+    if (!parser.seen_any()) return M665_report();
+    if (parser.seenval('S')) segments_per_second = parser.value_float();
+    if (parser.seenval('Z')) mrzp_offset_z = parser.value_linear_units();
+  }
+
+  void GcodeSuite::M665_report(const bool forReplay/*=true*/) {
+    report_heading_etc(forReplay, F(STR_PAX_HT_SETTINGS));
+    SERIAL_ECHOLNPGM_P(
+      PSTR("  M665 S"), LINEAR_UNIT(segments_per_second),
+      PSTR(" Z"), LINEAR_UNIT(mrzp_offset_z)
+    );
+  }
+
+#endif // PENTA_AXIS_HT
 
 #endif // IS_KINEMATIC

@@ -47,6 +47,7 @@
   #define HAS_EXTRUDERS 1
   #if EXTRUDERS > 1
     #define HAS_MULTI_EXTRUDER 1
+    #define HAS_MULTI_TOOLS 1
   #endif
   #define E_AXIS_N(E) AxisEnum(E_AXIS + E_INDEX_N(E))
 #else
@@ -198,6 +199,9 @@
 // More than one hotend...
 #if HOTENDS > 1
   #define HAS_MULTI_HOTEND 1
+  #ifndef HAS_MULTI_TOOLS
+    #define HAS_MULTI_TOOLS 1
+  #endif
   #define HAS_HOTEND_OFFSET 1
   #ifndef HOTEND_OFFSET_X
     #define HOTEND_OFFSET_X { 0 } // X offsets for each extruder
@@ -212,6 +216,23 @@
   #undef HOTEND_OFFSET_X
   #undef HOTEND_OFFSET_Y
   #undef HOTEND_OFFSET_Z
+#endif
+
+/**
+ * Tools include non-extruder/hotend-tools and extruder/hotend-tools. Non-extruder/hotend-tools have no stepper motor and no hotend.
+ * 
+ * TOOLS         - Number of Selectable Tools
+ */
+#if !defined(TOOLS)
+  #define TOOLS HOTENDS
+#else
+  #if TOOLS > 0
+    #define HAS_TOOL_LENGTH_COMPENSATION 1
+  #endif
+  #if TOOLS > 1
+    #define HAS_MULTI_TOOLS 1
+    #define HAS_HOTEND_OFFSET 1
+  #endif
 #endif
 
 /**

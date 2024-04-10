@@ -151,7 +151,7 @@
 #endif
 
 // Probing tool change
-#if !HAS_MULTI_EXTRUDER
+#if !HAS_MULTI_TOOLS
   #undef PROBING_TOOL
 #endif
 #if HAS_BED_PROBE && defined(PROBING_TOOL)
@@ -642,6 +642,9 @@
   #define IS_KINEMATIC 1
 #elif ANY(DELTA, POLARGRAPH, POLAR)
   #define IS_KINEMATIC 1
+#elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #define IS_KINEMATIC 1
+  #define HAS_TOOL_CENTERPOINT_CONTROL 1
 #else
   #define IS_CARTESIAN 1
   #if !IS_CORE

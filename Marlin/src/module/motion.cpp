@@ -70,6 +70,10 @@
   #include "../feature/babystep.h"
 #endif
 
+#if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
 
@@ -114,7 +118,7 @@ xyze_pos_t destination; // {0}
 #endif
 
 // The active extruder (tool). Set with T<extruder> command.
-#if HAS_MULTI_EXTRUDER
+#if HAS_MULTI_TOOLS
   uint8_t active_extruder = 0; // = 0
 #endif
 
@@ -124,15 +128,19 @@ xyze_pos_t destination; // {0}
 
 // Extruder offsets
 #if HAS_HOTEND_OFFSET
-  xyz_pos_t hotend_offset[HOTENDS]; // Initialized by settings.load()
+  xyz_pos_t hotend_offset[TOOLS]; // Initialized by settings.load()
   void reset_hotend_offsets() {
-    constexpr float tmp[XYZ][HOTENDS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
+    constexpr float tmp[XYZ][TOOLS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
     static_assert(
       !tmp[X_AXIS][0] && !tmp[Y_AXIS][0] && !tmp[Z_AXIS][0],
       "Offsets for the first hotend must be 0.0."
     );
     // Transpose from [XYZ][HOTENDS] to [HOTENDS][XYZ]
-    HOTEND_LOOP() LOOP_ABC(a) hotend_offset[e][a] = tmp[a][e];
+    for (uint8_t e = 0; e < TOOLS; e++) {
+      for (uint8_t a = 0; a < XYZ; a++) {
+        hotend_offset[e][a] = tmp[a][e];
+      }
+    }
     TERN_(DUAL_X_CARRIAGE, hotend_offset[1].x = _MAX(X2_HOME_POS, X2_MAX_POS));
   }
 #endif
@@ -150,9 +158,13 @@ int16_t feedrate_percentage = 100;
 // Cartesian conversion result goes here:
 xyz_pos_t cartes;
 
+#if HAS_TOOL_LENGTH_COMPENSATION
+  bool simple_tool_length_compensation = false;
+#endif
+
 #if IS_KINEMATIC
 
-  abce_pos_t delta;
+  abce_pos_t delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if HAS_SCARA_OFFSET
     abc_pos_t scara_home_offset;
@@ -169,6 +181,11 @@ xyz_pos_t cartes;
   #else // DELTA
     constexpr float delta_max_radius = PRINTABLE_RADIUS,
                     delta_max_radius_2 = sq(PRINTABLE_RADIUS);
+  #endif
+
+
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    bool tool_centerpoint_control = true;
   #endif
 
 #endif
@@ -871,7 +888,7 @@ void report_current_position_projected() {
 
 #endif // REALTIME_REPORTING_COMMANDS
 
-#if IS_KINEMATIC
+#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT)
 
   bool position_is_reachable(const_float_t rx, const_float_t ry, const float inset/*=0*/) {
 
@@ -938,6 +955,28 @@ void report_current_position_projected() {
   }
 
 #endif // CARTESIAN
+
+#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw)) {
+
+    const bool can_reach = (
+      NUM_AXIS_GANG(
+           COORDINATE_OKAY(rx, X_MIN_POS - fslop, X_MAX_POS + fslop),
+        && COORDINATE_OKAY(ry, Y_MIN_POS - fslop, Y_MAX_POS + fslop),
+        && true,
+        && COORDINATE_OKAY(ri, I_MIN_POS - fslop, I_MAX_POS + fslop),
+        && COORDINATE_OKAY(rj, J_MIN_POS - fslop, J_MAX_POS + fslop),
+        && COORDINATE_OKAY(rk, K_MIN_POS - fslop, K_MAX_POS + fslop),
+        && COORDINATE_OKAY(ru, U_MIN_POS - fslop, U_MAX_POS + fslop),
+        && COORDINATE_OKAY(rv, V_MIN_POS - fslop, V_MAX_POS + fslop),
+        && COORDINATE_OKAY(rw, W_MIN_POS - fslop, W_MAX_POS + fslop)
+      )
+    );
+
+    return can_reach;
+  }
+#endif
+
 
 void home_if_needed(const bool keeplev/*=false*/) {
   if (!all_axes_trusted()) gcode.home_all_axes(keeplev);
@@ -1136,9 +1175,12 @@ void do_blocking_move_to(NUM_AXIS_ARGS_(const_float_t) const_feedRate_t fr_mm_s/
     const feedRate_t z_feedrate = fr_mm_s ?: homing_feedrate(Z_AXIS);
   #endif
 
-  #if IS_KINEMATIC && DISABLED(POLARGRAPH)
+  #if IS_KINEMATIC && NONE(POLARGRAPH, PENTA_AXIS_TRT, PENTA_AXIS_HT)
     // kinematic machines are expected to home to a point 1.5x their range? never reachable.
     if (!position_is_reachable(x, y)) return;
+    destination = current_position;          // sync destination at the start
+  #elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      if (!position_is_reachable_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) return;
     destination = current_position;          // sync destination at the start
   #endif
 
@@ -1498,6 +1540,51 @@ void restore_feedrate_and_scaling() {
       SERIAL_ECHOLNPGM("Axis ", C(AXIS_CHAR(axis)), " min:", soft_endstop.min[axis], " max:", soft_endstop.max[axis]);
   }
 
+
+  void handle_min_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
+    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+      if (planner.abort_on_software_endstop) {
+        if (target_pos[axis] < soft_endstop.min[axis]) {
+          NOLESS(target_pos[axis], soft_endstop.min[axis]);
+          SERIAL_ERROR_MSG(STR_ERR_SW_ENDSTOP);
+          quickstop_stepper();
+          #if HAS_CUTTER
+            TERN_(SPINDLE_FEATURE, safe_delay(1000));
+            cutter.kill();
+          #endif
+          stop();
+        }
+        else {
+          NOLESS(target_pos[axis], soft_endstop.min[axis]);
+        }
+      }
+    #else
+      NOLESS(target_pos[axis], soft_endstop.min[axis]);
+    #endif
+  }
+
+  void handle_max_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
+    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+      if (planner.abort_on_software_endstop) {
+        if (target_pos[axis] > soft_endstop.max[axis]) {
+          NOMORE(target_pos[axis], soft_endstop.max[axis]);
+          SERIAL_ERROR_MSG(STR_ERR_SW_ENDSTOP);
+          quickstop_stepper();
+          #if HAS_CUTTER
+            TERN_(SPINDLE_FEATURE, safe_delay(1000));
+            cutter.kill();
+          #endif
+          stop();
+        }
+        else {
+          NOMORE(target_pos[axis], soft_endstop.max[axis]);
+        }
+      }
+    #else
+      NOMORE(target_pos[axis], soft_endstop.max[axis]);
+    #endif
+  }
+
   /**
    * Constrain the given coordinates to the software endstops.
    *
@@ -1508,7 +1595,7 @@ void restore_feedrate_and_scaling() {
 
     if (!soft_endstop._enabled) return;
 
-    #if IS_KINEMATIC
+    #if IS_KINEMATIC && NONE(PENTA_AXIS_HT, PENTA_AXIS_TRT)
 
       if (TERN0(DELTA, !all_axes_homed())) return;
 
@@ -1542,10 +1629,10 @@ void restore_feedrate_and_scaling() {
       #if HAS_X_AXIS
         if (axis_was_homed(X_AXIS)) {
           #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_X)
-            NOLESS(target.x, soft_endstop.min.x);
+            handle_min_software_endstop(X_AXIS, target);
           #endif
           #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_X)
-            NOMORE(target.x, soft_endstop.max.x);
+            handle_max_software_endstop(X_AXIS, target);
           #endif
         }
       #endif
@@ -1553,10 +1640,10 @@ void restore_feedrate_and_scaling() {
       #if HAS_Y_AXIS
         if (axis_was_homed(Y_AXIS)) {
           #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_Y)
-            NOLESS(target.y, soft_endstop.min.y);
+            handle_min_software_endstop(Y_AXIS, target);
           #endif
           #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_Y)
-            NOMORE(target.y, soft_endstop.max.y);
+            handle_max_software_endstop(Y_AXIS, target);
           #endif
         }
       #endif
@@ -1566,70 +1653,70 @@ void restore_feedrate_and_scaling() {
     #if HAS_Z_AXIS
       if (axis_was_homed(Z_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_Z)
-          NOLESS(target.z, soft_endstop.min.z);
+          handle_min_software_endstop(Z_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_Z)
-          NOMORE(target.z, soft_endstop.max.z);
+          handle_max_software_endstop(Z_AXIS, target);
         #endif
       }
     #endif
     #if HAS_I_AXIS
       if (axis_was_homed(I_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_I)
-          NOLESS(target.i, soft_endstop.min.i);
+          handle_min_software_endstop(I_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_I)
-          NOMORE(target.i, soft_endstop.max.i);
+          handle_max_software_endstop(I_AXIS, target); 
         #endif
       }
     #endif
     #if HAS_J_AXIS
       if (axis_was_homed(J_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_J)
-          NOLESS(target.j, soft_endstop.min.j);
+          handle_min_software_endstop(J_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_J)
-          NOMORE(target.j, soft_endstop.max.j);
+          handle_max_software_endstop(J_AXIS, target);
         #endif
       }
     #endif
     #if HAS_K_AXIS
       if (axis_was_homed(K_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_K)
-          NOLESS(target.k, soft_endstop.min.k);
+          handle_min_software_endstop(K_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_K)
-          NOMORE(target.k, soft_endstop.max.k);
+          handle_max_software_endstop(K_AXIS, target);
         #endif
       }
     #endif
     #if HAS_U_AXIS
       if (axis_was_homed(U_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_U)
-          NOLESS(target.u, soft_endstop.min.u);
+          handle_min_software_endstop(U_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_U)
-          NOMORE(target.u, soft_endstop.max.u);
+          handle_max_software_endstop(U_AXIS, target);
         #endif
       }
     #endif
     #if HAS_V_AXIS
       if (axis_was_homed(V_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_V)
-          NOLESS(target.v, soft_endstop.min.v);
+          handle_min_software_endstop(V_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_V)
-          NOMORE(target.v, soft_endstop.max.v);
+          handle_max_software_endstop(V_AXIS, target);
         #endif
       }
     #endif
     #if HAS_W_AXIS
       if (axis_was_homed(W_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_W)
-          NOLESS(target.w, soft_endstop.min.w);
+          handle_min_software_endstop(W_AXIS, target);
         #endif
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MAX_SOFTWARE_ENDSTOP_W)
-          NOMORE(target.w, soft_endstop.max.w);
+          handle_max_software_endstop(W_AXIS, target);
         #endif
       }
     #endif
@@ -1783,14 +1870,35 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
 
     const xyze_float_t diff = destination - current_position;
 
-    // If the move is only in Z/E don't split up the move
-    if (!diff.x && !diff.y) {
+
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      // If the move is only in X/Y/Z/E don't split up the move
+      if ((!tool_centerpoint_control) || (NEAR_ZERO(diff.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(diff.j)))) {
+    #else
+      // If the move is only in Z/E don't split up the move
+      if (!diff.x && !diff.y) {
+    #endif
       planner.buffer_line(destination, scaled_fr_mm_s);
       return false; // caller will update current_position
     }
 
     // Fail if attempting move outside printable radius
-    if (!position_is_reachable(destination)) return true;
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      // Abort if attempting move outside printable radius
+      if (!position_is_reachable(destination)) {
+        SERIAL_ERROR_MSG("Position not reachable.");
+        quickstop_stepper();
+        #if HAS_CUTTER
+          TERN_(SPINDLE_FEATURE, safe_delay(1000));
+          cutter.kill();
+        #endif
+        stop();
+        return true;
+      }
+    #else
+      // Fail if attempting move outside printable radius
+      if (!position_is_reachable(destination)) return true;
+    #endif
 
     // Get the linear distance in XYZ
     #if HAS_ROTATIONAL_AXES
@@ -3057,6 +3165,12 @@ void set_axis_is_at_home(const AxisEnum axis) {
     current_position[axis] = (axis == Z_AXIS) ? DIFF_TERN(HAS_BED_PROBE, delta_height, probe.offset.z) : base_home_pos(axis);
   #else
     current_position[axis] = SUM_TERN(HAS_HOME_OFFSET, base_home_pos(axis), home_offset[axis]);
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      // TODO (DerAndere): Introduce a function like scara_set_axis_is_at_home.
+      delta[axis] = current_position[axis];
+      if (axis == J_AXIS)
+        delta = SUM_TERN(HAS_HOME_OFFSET, base_home_pos(axis), home_offset[axis]);
+    #endif
   #endif
 
   /**

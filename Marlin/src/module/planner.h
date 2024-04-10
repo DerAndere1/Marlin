@@ -52,6 +52,10 @@
   #include "polargraph.h"
 #elif ENABLED(POLAR)
   #include "polar.h"
+#elif ENABLED(PENTA_AXIS_TRT)
+  #include "penta_axis_trt.h"
+#elif ENABLED(PENTA_AXIS_HT)
+  #include "penta_axis_ht.h"
 #endif
 
 #if ABL_PLANAR
@@ -534,6 +538,11 @@ class Planner {
     #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
       static bool abort_on_endstop_hit;
     #endif
+
+    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+      static bool abort_on_software_endstop;
+    #endif
+
     #ifdef XY_FREQUENCY_LIMIT
       static int8_t xy_freq_limit_hz;         // Minimum XY frequency setting
       static float xy_freq_min_speed_factor;  // Minimum speed factor setting

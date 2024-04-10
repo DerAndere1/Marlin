@@ -125,7 +125,7 @@
   extern float other_extruder_advance_K[DISTINCT_E];
 #endif
 
-#if HAS_MULTI_EXTRUDER
+#if HAS_MULTI_TOOLS
   #include "tool_change.h"
   void M217_report(const bool eeprom);
 #endif
@@ -249,7 +249,7 @@ typedef struct SettingsDataStruct {
   // Hotend Offset
   //
   #if HAS_HOTEND_OFFSET
-    xyz_pos_t hotend_offset[HOTENDS - 1];               // M218 XYZ
+    xyz_pos_t hotend_offset[TOOLS - 1];               // M218 XYZ
   #endif
 
   //
@@ -354,7 +354,16 @@ typedef struct SettingsDataStruct {
   //
   #if IS_KINEMATIC
     float segments_per_second;                          // M665 S
-    #if ENABLED(DELTA)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      #if ENABLED(PENTA_AXIS_TRT)
+        float mrzp_offset_x;                              // M665 X
+        float mrzp_offset_y;                              // M665 Y
+        float rotational_offset_x;                        // M665 I
+        float rotational_offset_y;                        // M665 J
+        float rotational_offset_z;                        // M665 K
+      #endif 
+      float mrzp_offset_z;                              // M665 Z
+    #elif ENABLED(DELTA)
       float delta_height;                               // M666 H
       abc_float_t delta_endstop_adj;                    // M666 X Y Z
       float delta_radius,                               // M665 R
@@ -529,7 +538,7 @@ typedef struct SettingsDataStruct {
   //
   // Tool-change settings
   //
-  #if HAS_MULTI_EXTRUDER
+  #if HAS_MULTI_TOOLS
     toolchange_settings_t toolchange_settings;          // M217 S P R
   #endif
 
@@ -925,7 +934,7 @@ void MarlinSettings::postprocess() {
     {
       #if HAS_HOTEND_OFFSET
         // Skip hotend 0 which must be 0
-        for (uint8_t e = 1; e < HOTENDS; ++e)
+        for (uint8_t e = 1; e < TOOLS; ++e)
           EEPROM_WRITE(hotend_offset[e]);
       #endif
     }
@@ -1135,7 +1144,22 @@ void MarlinSettings::postprocess() {
     #if IS_KINEMATIC
     {
       EEPROM_WRITE(segments_per_second);
-      #if ENABLED(DELTA)
+      #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+        #if ENABLED(PENTA_AXIS_TRT)
+          _FIELD_TEST(mrzp_offset_x);
+          EEPROM_WRITE(mrzp_offset_x);               // 1 float
+          _FIELD_TEST(mrzp_offset_y);
+          EEPROM_WRITE(mrzp_offset_y);               // 1 float
+          _FIELD_TEST(rotational_offset_x);
+          EEPROM_WRITE(rotational_offset_x);         // 1 float
+          _FIELD_TEST(rotational_offset_y);
+          EEPROM_WRITE(rotational_offset_y);         // 1 float
+          _FIELD_TEST(rotational_offset_z);
+          EEPROM_WRITE(rotational_offset_z);         // 1 float
+        #endif
+        _FIELD_TEST(mrzp_offset_z);
+        EEPROM_WRITE(mrzp_offset_z);                 // 1 float
+      #elif ENABLED(DELTA)
         _FIELD_TEST(delta_height);
         EEPROM_WRITE(delta_height);              // 1 float
         EEPROM_WRITE(delta_endstop_adj);         // 3 floats
@@ -1610,7 +1634,7 @@ void MarlinSettings::postprocess() {
     // Multiple Extruders
     //
 
-    #if HAS_MULTI_EXTRUDER
+    #if HAS_MULTI_TOOLS
       _FIELD_TEST(toolchange_settings);
       EEPROM_WRITE(toolchange_settings);
     #endif
@@ -1990,7 +2014,7 @@ void MarlinSettings::postprocess() {
       {
         #if HAS_HOTEND_OFFSET
           // Skip hotend 0 which must be 0
-          for (uint8_t e = 1; e < HOTENDS; ++e)
+          for (uint8_t e = 1; e < TOOLS; ++e)
             EEPROM_READ(hotend_offset[e]);
         #endif
       }
@@ -2218,7 +2242,22 @@ void MarlinSettings::postprocess() {
       #if IS_KINEMATIC
       {
         EEPROM_READ(segments_per_second);
-        #if ENABLED(DELTA)
+        #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+          #if ENABLED(PENTA_AXIS_TRT)
+            _FIELD_TEST(mrzp_offset_x);
+            EEPROM_READ(mrzp_offset_x);
+            _FIELD_TEST(mrzp_offset_y);
+            EEPROM_READ(mrzp_offset_y);
+            _FIELD_TEST(rotational_offset_x);
+            EEPROM_READ(rotational_offset_x);
+            _FIELD_TEST(rotational_offset_y);
+            EEPROM_READ(rotational_offset_y);
+            _FIELD_TEST(rotational_offset_z);
+            EEPROM_READ(rotational_offset_z);
+          #endif
+          _FIELD_TEST(mrzp_offset_z);
+          EEPROM_READ(mrzp_offset_z);
+        #elif ENABLED(DELTA)
           _FIELD_TEST(delta_height);
           EEPROM_READ(delta_height);              // 1 float
           EEPROM_READ(delta_endstop_adj);         // 3 floats
@@ -2724,7 +2763,7 @@ void MarlinSettings::postprocess() {
       //
       // Tool-change settings
       //
-      #if HAS_MULTI_EXTRUDER
+      #if HAS_MULTI_TOOLS
         _FIELD_TEST(toolchange_settings);
         EEPROM_READ(toolchange_settings);
       #endif
@@ -3445,7 +3484,16 @@ void MarlinSettings::reset() {
 
   #if IS_KINEMATIC
     segments_per_second = DEFAULT_SEGMENTS_PER_SECOND;
-    #if ENABLED(DELTA)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      #if ENABLED(PENTA_AXIS_TRT)
+        mrzp_offset_x = DEFAULT_MRZP_OFFSET_X;
+        mrzp_offset_y = DEFAULT_MRZP_OFFSET_Y;
+        rotational_offset_x = DEFAULT_ROTATIONAL_JOINT_OFFSET_X;
+        rotational_offset_y = DEFAULT_ROTATIONAL_JOINT_OFFSET_Y;
+        rotational_offset_z = DEFAULT_ROTATIONAL_JOINT_OFFSET_Z;
+      #endif
+      mrzp_offset_z = DEFAULT_MRZP_OFFSET_Z;
+    #elif ENABLED(DELTA)
       const abc_float_t adj = DELTA_ENDSTOP_ADJ, dta = DELTA_TOWER_ANGLE_TRIM, ddr = DELTA_DIAGONAL_ROD_TRIM_TOWER;
       delta_height = DELTA_HEIGHT;
       delta_endstop_adj = adj;

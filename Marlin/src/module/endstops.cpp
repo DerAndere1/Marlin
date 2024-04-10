@@ -58,6 +58,10 @@
   #include "probe.h"
 #endif
 
+#if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 #define DEBUG_OUT ALL(USE_SENSORLESS, DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
 
@@ -393,6 +397,21 @@ void Endstops::event_handler() {
           queue.inject(F(SD_ABORT_ON_ENDSTOP_HIT_GCODE));
         #endif
         print_job_timer.stop();
+      }
+
+    #elif ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+      if (planner.abort_on_software_endstop) {
+        TERN_(ADVANCED_PAUSE_FEATURE, did_pause_print = 0);
+        quickstop_stepper();
+        #if HAS_CUTTER
+          TERN_(SPINDLE_FEATURE, safe_delay(1000));
+          cutter.kill();
+        #endif
+        #ifdef SD_ABORT_ON_ENDSTOP_HIT_GCODE
+          queue.clear();
+          queue.inject(F(SD_ABORT_ON_ENDSTOP_HIT_GCODE));
+        #endif
+        stop();
       }
     #endif
   }
