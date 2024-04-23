@@ -58,6 +58,10 @@
   #include "probe.h"
 #endif
 
+#if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 Endstops endstops;
 
 // private:

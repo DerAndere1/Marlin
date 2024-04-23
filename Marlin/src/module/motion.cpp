@@ -74,6 +74,10 @@
   #include "../feature/babystep.h"
 #endif
 
+#if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
 
