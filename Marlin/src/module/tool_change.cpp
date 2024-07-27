@@ -1323,7 +1323,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       // Raise to safe Z
       #if defined(SAFE_TOOLCHANGE_START_Z)
         if (can_move_away && TERN1(TOOLCHANGE_PARK, toolchange_settings.enable_park)) {
-          motion.position.z = SUM_TERN(HAS_HOTEND_OFFSET, (SAFE_TOOLCHANGE_START_Z), motion.hotend_offset[old_tool].z);
+          motion.position.z = (SAFE_TOOLCHANGE_START_Z);
           TERN_(HAS_SOFTWARE_ENDSTOPS, NOMORE(motion.position.z, motion.soft_endstop.max.z));
           fast_line_to_current(Z_AXIS);
           planner.synchronize();
@@ -1478,7 +1478,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
             // Raise to safe Z
             #if defined(SAFE_TOOLCHANGE_START_Z)
               if (TERN1(TOOLCHANGE_PARK, toolchange_settings.enable_park)) {
-                motion.blocking_move_to_z(SUM_TERN(HAS_HOTEND_OFFSET, (SAFE_TOOLCHANGE_START_Z), motion.hotend_offset[new_tool].z), planner.settings.max_feedrate_mm_s[Z_AXIS]);
+                motion.blocking_move_to_z((SAFE_TOOLCHANGE_START_Z), planner.settings.max_feedrate_mm_s[Z_AXIS]);
               }
             #endif
 
