@@ -159,7 +159,7 @@ xyz_pos_t cartes;
 
 #if IS_KINEMATIC
 
-  abce_pos_t delta;
+  abce_pos_t delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if HAS_SCARA_OFFSET
     abc_pos_t scara_home_offset;
@@ -2700,6 +2700,10 @@ void set_axis_is_at_home(const AxisEnum axis) {
     current_position[axis] = (axis == Z_AXIS) ? DIFF_TERN(HAS_BED_PROBE, delta_height, probe.offset.z) : base_home_pos(axis);
   #else
     current_position[axis] = base_home_pos(axis);
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      // TODO (DerAndere): Introduce a function like scara_set_axis_is_at_home.
+      delta[axis] = current_position[axis];
+    #endif
   #endif
 
   /**
