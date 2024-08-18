@@ -54,7 +54,7 @@ void GcodeSuite::M211() {
     if (parser.seen('H'))
       planner.abort_on_software_endstop = parser.value_bool();
   #endif
-  if (!(parser.seen('S') || TERN0(HABORT_ON_SOFTWARE_ENDSTOP, parser.seen('H'))))
+  if (!(parser.seen('S') || TERN0(ABORT_ON_SOFTWARE_ENDSTOP, parser.seen('H'))))
     M211_report();
 }
 
