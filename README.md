@@ -45,7 +45,7 @@ Feedrate as defined by LinuxCNC:
 - For motion involving one or more of the secondary linear axes (axis names 'U', 'V', or 'W') with the X, Y , and Z axes not moving (with or without motion of rotational axes), the feed rate means length units per minute along the programmed UVW path (using the usual Euclidean metric in the UVW coordinate system), as if the rotational axes were not moving.
 - For motion involving one or more of the rotational axes (axis names 'A', 'B' or 'C') with linear axes not moving, the rate is applied as follows. Let `dA`, `dB`, and `dC` be the angles of rotation around axes A, B, and C axes, respectively, in units of degrees. Let `D = sqrt((dA)^2 + (dB)^2 + (dC)^2)`. Conceptually, `D` is a measure of total angular motion, using the usual Euclidean metric. The motion involving rotational axes should be a coordinated linear motion so that the elapsed total time (in minutes) from the start to the end of the motion is `T = D / F` plus any time required for acceleration or deceleration.
 
-To change the feed rate interpretation the option `ARTICULATED_ROBOT_ARM` can be defined. With that option enabled, feed reference are all axes. This means that in all cases all axes are moved in coordinated linear motion so that the time (in minutes) required for the move is `T = sqrt((dA)^2 + (dB)^2 + (dC)^2 + (dU)^2 + (dV)^2 + (dW)^2) / F` plus any time for acceleration or deceleration.
+To change the feed rate interpretation, the option `ARTICULATED_ROBOT_ARM` can be defined. With that option enabled, feed reference are all axes. This means that in all cases all axes are moved in coordinated linear motion so that the time (in minutes) required for the move is `T = sqrt((dA)^2 + (dB)^2 + (dC)^2 + (dU)^2 + (dV)^2 + (dW)^2) / F` plus any time for acceleration or deceleration.
 
 ### G10 (Set offsets)
 
@@ -133,7 +133,7 @@ Whether (1) or not (0) to enable software endstops.
 
 ##### `H<flag>`
 
-Whether (1) to abort machining on software endstops hit or whether to clamp moves to the software endstops (0). Requires `ABORT_ON_SOFTWARE_ENDSTOP`
+Whether to abort machining on software endstops hit (1) or whether to clamp moves to the software endstops (0). Requires `ABORT_ON_SOFTWARE_ENDSTOP`
 
 ## Configuration
 
@@ -162,9 +162,10 @@ Each axis gets its own stepper control and endstops depending on the following s
 `[I, [J, [K...]]]_MAX_POS`, `[I, [J, [K...]]]_HOME_DIR`, possibly `DEFAULT_[I, [J, [K...]]]JERK`, 
 and definition of the respective values of `DEFAULT_AXIS_STEPS_PER_UNIT`, `DEFAULT_MAX_FEEDRATE`,
 `DEFAULT_MAX_ACCELERATION`, `HOMING_FEEDRATE_MM_M`, `AXIS_RELATIVE_MODES`, `MICROSTEP_MODES`,
-`MANUAL_FEEDRATE` and possibly also values of `HOMING_BUMP_DIVISOR`,  
-`HOMING_BACKOFF_POST_MM`, `BACKLASH_DISTANCE_MM`.
-For bed-leveling, `NOZZLE_TO_PROBE_OFFSETS` has to be extended with elemets of value 0
+`HOMING_BUMP_MM`, `HOMING_BUMP_DIVISOR`, and possibly also values of
+`MAX_FEEDRATE_EDIT_VALUES`, `MAX_ACCEL_EDIT_VALUES`, `MAX_JERK_EDIT_VALUES`, `MANUAL_FEEDRATE`, 
+`SENSORLESS_BACKOFF_MM`, `HOMING_BACKOFF_POST_MM`, `BACKLASH_DISTANCE_MM`.
+`NOZZLE_TO_PROBE_OFFSETS` has to be extended with elemets of value 0
 until the number of elements is equal to the value of `NUM_AXES`.
 
 Allowed values: [A4988, A5984, DRV8825, LV8729, L6470, L6474, POWERSTEP01, TB6560, TB6600, TMC2100, TMC2130, TMC2130_STANDALONE, TMC2160, TMC2160_STANDALONE, TMC2208, TMC2208_STANDALONE, TMC2209, TMC2209_STANDALONE, TMC26X, TMC26X_STANDALONE, TMC2660, TMC2660_STANDALONE, TMC5130, TMC5130_STANDALONE, TMC5160, TMC5160_STANDALONE]
@@ -282,6 +283,10 @@ Show the position of secondary axes I[J[K]] instead of icons on an DOGM LCD (e.g
 ### `QUICK_HOME_SECONDARY_AXES`
 
 If all axes are homed, first raise Z, then move all axes except Z simultaneously to their home position. Once the first axis reaches its home position, the axes will be homed individually in sequence XYZIJKUVW. Requires `QUICK_HOME`.
+
+### `CLASSIC_JERK`
+
+For multi-axis machines it is highly recommended to enable `CLASSIC_JERK`.
 
 ## Marlin2ForPipetBot Branch
 
