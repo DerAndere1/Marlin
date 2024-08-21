@@ -989,8 +989,10 @@ void Motion::blocking_move(NUM_AXIS_ARGS_(const float) const feedRate_t fr_mm_s/
     if (!can_reach(x, y)) return;
     destination = position;          // sync destination at the start
   #elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-    if (!can_reach_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) return;
-    destination = position;          // sync destination at the start
+    if (!can_reach_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) {
+      if (DEBUGGING(LEVELING)) DEBUG_POS("position not reachable. ignore move", destination);
+      return;
+    }
   #endif
 
   #if ENABLED(DELTA)
