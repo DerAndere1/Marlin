@@ -1175,8 +1175,10 @@ void do_blocking_move_to(NUM_AXIS_ARGS_(const_float_t) const_feedRate_t fr_mm_s/
     if (!position_is_reachable(x, y)) return;
     destination = current_position;          // sync destination at the start
   #elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-      if (!position_is_reachable_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) return;
-    destination = current_position;          // sync destination at the start
+    if (!position_is_reachable_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) {
+      if (DEBUGGING(LEVELING)) DEBUG_POS("position not reachable. ignore move", destination);
+      return;
+    }
   #endif
 
   #if ENABLED(DELTA)
