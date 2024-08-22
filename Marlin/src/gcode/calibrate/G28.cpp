@@ -129,14 +129,14 @@
   static void quick_home_xyijkuvw() {
 
     // Pretend the current position is 0,0
-    current_position.set(0.0, 0.0);
+    current_position.set(0.0f, 0.0f);
     SECONDARY_AXIS_CODE(
-      current_position.i = 0.0,
-      current_position.j = 0.0,
-      current_position.k = 0.0,
-      current_position.u = 0.0,
-      current_position.v = 0.0,
-      current_position.w = 0.0
+      current_position.i = 0.0f,
+      current_position.j = 0.0f,
+      current_position.k = 0.0f,
+      current_position.u = 0.0f,
+      current_position.v = 0.0f,
+      current_position.w = 0.0f
     );
 
     sync_plan_position();
@@ -171,22 +171,29 @@
       };
     #endif
 
-    do_blocking_move_to(1.5 * max_length(X_AXIS) * x_axis_home_dir, 1.5 * max_length(Y_AXIS) * Y_HOME_DIR, current_position.z, 
-        SECONDARY_AXIS_LIST(1.5 * max_length(I_AXIS) * I_HOME_DIR, 1.5 * max_length(J_AXIS) * J_HOME_DIR , 1.5 * max_length(K_AXIS) * K_HOME_DIR, 1.5 * max_length(U_AXIS) * U_HOME_DIR, 1.5 * max_length(V_AXIS) * V_HOME_DIR, 1.5 * max_length(W_AXIS) * W_HOME_DIR), 
-        fr_mm_s
-    );
+    #if IS_KINEMATIC
+      do_blocking_move_to(1.5f * max_length(X_AXIS) * x_axis_home_dir, 1.5f * max_length(Y_AXIS) * Y_HOME_DIR, current_position.z, 
+          SECONDARY_AXIS_LIST(1.5f * max_length(I_AXIS) * I_HOME_DIR, 1.5f * max_length(J_AXIS) * J_HOME_DIR , 1.5f * max_length(K_AXIS) * K_HOME_DIR, 1.5f * max_length(U_AXIS) * U_HOME_DIR, 1.5f * max_length(V_AXIS) * V_HOME_DIR, 1.5f * max_length(W_AXIS) * W_HOME_DIR), 
+          fr_mm_s
+      );
+    #else
+      do_blocking_coordinated_move_to(1.5f * max_length(X_AXIS) * x_axis_home_dir, 1.5f * max_length(Y_AXIS) * Y_HOME_DIR, current_position.z, 
+          SECONDARY_AXIS_LIST(1.5f * max_length(I_AXIS) * I_HOME_DIR, 1.5f * max_length(J_AXIS) * J_HOME_DIR , 1.5f * max_length(K_AXIS) * K_HOME_DIR, 1.5f * max_length(U_AXIS) * U_HOME_DIR, 1.5f * max_length(V_AXIS) * V_HOME_DIR, 1.5f * max_length(W_AXIS) * W_HOME_DIR), 
+          fr_mm_s
+      );
+    #endif
 
     endstops.validate_homing_move();
 
-    current_position.set(0.0, 0.0);
+    current_position.set(0.0f, 0.0f);
 
     SECONDARY_AXIS_CODE(
-      current_position.i = 0.0,
-      current_position.j = 0.0,
-      current_position.k = 0.0,
-      current_position.u = 0.0,
-      current_position.v = 0.0,
-      current_position.w = 0.0
+      current_position.i = 0.0f,
+      current_position.j = 0.0f,
+      current_position.k = 0.0f,
+      current_position.u = 0.0f,
+      current_position.v = 0.0f,
+      current_position.w = 0.0f
     );
 
     LOOP_NUM_AXES(i) { 
