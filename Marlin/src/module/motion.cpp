@@ -185,7 +185,7 @@ xyz_pos_t cartes;
 
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-    bool tool_centerpoint_control = true;
+    bool tool_centerpoint_control = false;
   #endif
 
 #endif
