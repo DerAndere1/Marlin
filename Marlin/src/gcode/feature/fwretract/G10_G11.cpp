@@ -70,7 +70,7 @@ void GcodeSuite::G10() {
 
           default: break;                                              // Ignore unknown G10 Lx
 
-          case 1: // Sets the tool offset
+          case 1: // Sets the tool offset. Intended to work as in LinuxCNC.
             LOOP_NUM_AXES(i) {
               if (parser.seen(axis_codes[i])) {
                 const float axis_value = parser.value_axis_units((AxisEnum)i);
@@ -86,7 +86,7 @@ void GcodeSuite::G10() {
 
           // G10 L10 changes the tool table entry for tool P so that if the tool offset is reloaded, with the machine in its 
           // current position and with the current G5x and G52/G92 offsets active, the current coordinates for the given axes 
-          // will become the given values. (Intended to work the same as LinuxCNC).
+          // will become the given values. Intended to work as in LinuxCNC.
           // e.g. G10 L10 P1 Z1.5 followed by G43 sets the current position for Z to be 1.5.
           case 10:
             LOOP_NUM_AXES(i) {
