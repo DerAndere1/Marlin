@@ -212,10 +212,6 @@
   #ifndef HOTEND_OFFSET_Z
     #define HOTEND_OFFSET_Z { 0 } // Z offsets for each extruder
   #endif
-#else
-  #undef HOTEND_OFFSET_X
-  #undef HOTEND_OFFSET_Y
-  #undef HOTEND_OFFSET_Z
 #endif
 
 /**
@@ -233,6 +229,12 @@
     #define HAS_MULTI_TOOLS 1
     #define HAS_HOTEND_OFFSET 1
   #endif
+#endif
+
+#if !HAS_MULTI_TOOLS
+  #undef HOTEND_OFFSET_X
+  #undef HOTEND_OFFSET_Y
+  #undef HOTEND_OFFSET_Z
 #endif
 
 /**
