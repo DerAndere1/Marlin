@@ -1,4 +1,8 @@
 /**
+ * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ *
+ * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -1844,8 +1848,8 @@
 #define INVERT_Y_DIR false
 #define INVERT_Z_DIR false
 #define INVERT_I_DIR false
-#define INVERT_J_DIR true
-//define INVERT_K_DIR true
+#define INVERT_J_DIR false
+//#define INVERT_K_DIR true
 //#define INVERT_U_DIR false
 //#define INVERT_V_DIR false
 //#define INVERT_W_DIR false
