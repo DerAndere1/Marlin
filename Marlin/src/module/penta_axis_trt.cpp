@@ -94,10 +94,10 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
     // computed position
     const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
         cos_j      * pivot_length_x
-      - sin_j      * pivot_length_y
+      + sin_j      * pivot_length_y
       + DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_x, hotend_offset[active_extruder].x),
 
-        sin_j * cos_i * pivot_length_x
+      - sin_j * cos_i * pivot_length_x
       + cos_j * cos_i * pivot_length_y
       +         sin_i * pivot_length_z
       -         cos_i * rotational_offset_y
@@ -105,7 +105,7 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
       + rotational_offset_y
       + DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_y, hotend_offset[active_extruder].y),
 
-      - sin_j * sin_i * pivot_length_x
+      + sin_j * sin_i * pivot_length_x
       - cos_j * sin_i * pivot_length_y
       +         cos_i * pivot_length_z
       +         sin_i * rotational_offset_y
@@ -121,19 +121,19 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
     // computed position
     const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
         cos_j * cos_i * pivot_length_x
-      + sin_j * cos_i * pivot_length_y
+      - sin_j * cos_i * pivot_length_y
       -         sin_i * pivot_length_z
       -         cos_i * rotational_offset_x 
       +         sin_i * rotational_offset_z 
       + rotational_offset_x 
       + DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_x, hotend_offset[active_extruder].x),
 
-      - sin_j      * pivot_length_x
+      + sin_j      * pivot_length_x
       + cos_j      * pivot_length_y
       + DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_y, hotend_offset[active_extruder].y),
 
         cos_j * sin_i * pivot_length_x
-      + sin_j * sin_i * pivot_length_y
+      - sin_j * sin_i * pivot_length_y
       +         cos_i * pivot_length_z
       -         sin_i * rotational_offset_x 
       -         cos_i * rotational_offset_z
