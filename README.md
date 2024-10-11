@@ -6,9 +6,15 @@ For multi-axis CNC machines and lab robots (liquid handling robots, "pipetting r
 Marlin2ForPipetBot supports up to nine non-extruder axes plus extruders (e.g. XYZABCUVW+E or XYZABCW+E or XYZCUVW+E or XYZABC+E or XYZUVW+E). In addition, support for a laser and a spindle is provided.
 
 ## G-code
+
 The G-code syntax of Marlin2ForPipetBot closely resembles that of LinuxCNC (the successor of NIST RS274NGC interpreter - version 3). Here is a list of G-codes that deviated in official MarlinFirmware/Marlin and that are brought more in line with LinuxCNC syntax:
 - F (feedrate for G0, G1, G2, G3, G4, G5, G81, G82, G83)
 - G10 (set offsets)
+- G43 (tool length compensation)
+- G49 (cancel tool length compensation and cancel tool centerpoint control)
+
+New G-codes:
+- G43.4 (tool centerpoint control)
 
 ### G1 (Linear Move)
 
@@ -54,6 +60,29 @@ Set offsets. See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L2_
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L11
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L20
+
+### G43 (Tool Length Offset)
+
+Enable simple tool length compensation. See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
+
+#### Notes
+Currently, no `H` word is supported. The tool offsets (set by G10) for the current tool are applied.
+
+### G43.4 (Tool centerpoint control)
+
+Enable tool centerpoint control. See the following references:
+- https://www.linkedin.com/pulse/g434-tool-center-point-control-tcp-abhilash-am?trk=read_related_article-card_title
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G234.html
+
+#### Notes
+Currently, no `H` word is supported. The tool offsets (set by G10) for the current tool are applied.
+
+### G49 (Cancel tool length compensation)
+
+Disable tool length compensation (G43) and disable tool centerpoint control (G43.4). Enter direct joint control mode (default). See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G49.html
 
 
 ### M665 (PENTA_AXIS configuration)
@@ -203,13 +232,13 @@ Define `FOAMCUTTER_XYUV` kinematics for a hot wire cutter with parallel horizont
 
 ### `PENTA_AXIS_TRT`
 
-Define `PENTA_AXIS_TRT` kinematics for a 5 axis CNC machine in tilting-rotating-table configuration to enable tool center point control. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a rotary table (C axis) mounted on a tilting table (A or B axis). Two different machine geometries of this type are supported:
+Define `PENTA_AXIS_TRT` kinematics for a 5 axis CNC machine in tilting-rotating-table configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a rotary table (C axis) mounted on a tilting table (A or B axis). Two different machine geometries of this type are supported:
 - XYZAC TRT machine: The rotational joint of the tilting table is parallel to the X axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
 - XYZBC TRT machine: The rotational joint of the tilting table is parallel to the Y axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
 
 ### `PENTA_AXIS_HT`
 
-Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configuration to enable tool center point control. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a swivel head (A or B axis) and a horizontal rotary table (C axis). There are two possible machine geometries:
+Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a swivel head (A or B axis) and a horizontal rotary table (C axis). There are two possible machine geometries:
 - XYZAC head-table machine: The rotational joint of the swivel head is parallel to the X axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
 - XYZBC head-table machine: The rotational joint of the swivel head is parallel to the Y axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
 
@@ -287,6 +316,10 @@ If all axes are homed, first raise Z, then move all axes except Z simultaneously
 ### `CLASSIC_JERK`
 
 For multi-axis machines it is highly recommended to enable `CLASSIC_JERK`.
+
+### `HOTEND_OFFSET_X`
+
+`HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`: Arrays with offsets for each tool. With `PENTA_AXIS_TRT` or `PENTA_AXIS_HT` enabled, the machine is by default in joint control mode (tool length compensation and tool centerpoint control disabled). Use G10 to set hotend offsets (tool offsets). Use G43 to enable tool length compensation (apply hotend offsets / tool offsets). Use G43.4 to enable tool centerpoint control. Use G49 to cancel tool length compensation and tool centerpoint control.
 
 ## Marlin2ForPipetBot Branch
 
