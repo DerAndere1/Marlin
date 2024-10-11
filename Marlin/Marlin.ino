@@ -44,7 +44,7 @@ Getting Help
     The Marlin Discussion Forum is a great place to get help from other Marlin
     users who may have experienced similar issues to your own.
 
-  - https://github.com/MarlinFirmware/Marlin/issues
+  - https://github.com/DerAndere1/Marlin/issues
     With a free GitHub account you can provide us with feedback, bug reports,
     and feature requests via the Marlin Issue Queue.
 

@@ -69,7 +69,7 @@
  * The WEBSITE_URL is the location where users can get more information such as
  * documentation about a specific Marlin release.
  */
-//#define WEBSITE_URL "marlinfw.org"
+//#define WEBSITE_URL "github.com/DerAndere1/Marlin"
 
 /**
  * Set the vendor info the serial USB interface, if changable
