@@ -16,6 +16,6 @@
     "require_upload_port": true,
     "protocol": "teensy-gui"
   },
-  "url": "https://github.com/MarlinFirmware/Marlin",
+  "url": "https://github.com/DerAndere1/Marlin",
   "vendor": "various"
 }

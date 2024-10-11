@@ -103,6 +103,10 @@ if [ 1 = 1 ]; then
 
   cat <<EOF >src/lcd/dogm/fontdata/fontdata_ISO10646_1.h
 /**
+ * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ *
+ * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
