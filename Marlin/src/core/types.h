@@ -356,7 +356,7 @@ enum AxisEnum : uint8_t {
 enum ToolTypeEnum : uint8_t {
   TYPE_EXTRUDER, 
   TYPE_LASER,
-  TYPE_SPINLDE
+  TYPE_SPINDLE
 };
 
 //

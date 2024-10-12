@@ -39,7 +39,7 @@
 #endif
 
 SpindleLaser cutter;
-uint8_t SpindleLaser::active_tool_type;                               // Tool type: 0 for extruder, 1 for spindle, 2 for laser
+ToolTypeEnum SpindleLaser::active_tool_type;                               // Tool type: 0 for extruder, 1 for spindle, 2 for laser
 bool SpindleLaser::enable_state;                                      // Virtual enable state, controls enable pin if present and or apply power if > 0
 uint8_t SpindleLaser::power,                                          // Actual power output 0-255 ocr or "0 = off" > 0 = "on"
         SpindleLaser::last_power_applied; // = 0                      // Basic power state tracking
@@ -68,8 +68,8 @@ cutter_frequency_t SpindleLaser::frequency;                           // PWM fre
 void SpindleLaser::init() {
   #if ENABLED(LASER_FEATURE) && LASER_TOOL == 0
     active_tool_type = TYPE_LASER;
-  #elif ENABLED(SPINDLE_FEATURE) && LASER_TOOL == 0
-    active_tool_type = TYPE_LASER;
+  #elif ENABLED(SPINDLE_FEATURE) && DISABLED(LASER_FEATURE) && !EXTRUDERS
+    active_tool_type = TYPE_SPINDLE;
   #else
     active_tool_type = TYPE_EXTRUDER;
   #endif
@@ -86,13 +86,19 @@ void SpindleLaser::init() {
   #endif
   #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
     frequency = SPINDLE_LASER_FREQUENCY;
-    hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
-    hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
+    #if ENABLED(SPINDLE_FEATURE)
+      hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
+    #endif
+    #if ENABLED(LASER_FEATURE)
+      hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
+    #endif
   #endif
   #if ENABLED(SPINDLE_LASER_USE_PWM)
-    SET_PWM(SPINDLE_LASER_PWM_PIN);
-    hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
-    #if PIN_EXISTS(LASER_PWM)
+    #if ENABLED(SPINDLE_FEATURE)
+      SET_PWM(SPINDLE_LASER_PWM_PIN);
+      hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
+    #endif
+    #if ENABLED(LASER_FEATURE)      
       SET_PWM(SPINDLE_LASER_PWM_PIN);
       hal.set_pwm_duty(pin_t(LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
     #endif
@@ -114,24 +120,33 @@ void SpindleLaser::init() {
    */
   void SpindleLaser::_set_ocr(const uint8_t ocr) {
     #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
-      if (active_tool_type == TYPE_LASER)
-        hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), frequency);
-      else
-        hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency);
+      #if ENABLED(LASER_FEATURE)
+        if (active_tool_type == TYPE_LASER)
+          hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), frequency);
+      #endif
+      #if ENABLED(SPINDLE_FEATURE)
+        if (active_tool_type != TYPE_LASER)
+          hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency);
+      #endif
     #endif
-    if (active_tool_type == TYPE_LASER)
-      hal.set_pwm_duty(pin_t(LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
-    elif (active_tool_type == TYPE_SPINDLE)
-      hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+
+    #if ENABLED(LASER_FEATURE)
+      if (active_tool_type == TYPE_LASER)
+        hal.set_pwm_duty(pin_t(LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+    #endif
+    #if ENABLED(SPINDLE_FEATURE)
+      if (active_tool_type != TYPE_LASER)
+        hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+    #endif
   }
 
   void SpindleLaser::set_ocr(const uint8_t ocr) {
     #if PIN_EXISTS(LASER_ENA)
-      if (tool_type == TYPE_LASER)
+      if (active_tool_type == TYPE_LASER)
         WRITE(LASER_ENA_PIN,  SPINDLE_LASER_ACTIVE_STATE); // Cutter ON
     #endif
     #if PIN_EXISTS(SPINDLE_LASER_ENA)
-      if (tool_type == TYPE_SPINDLE)
+      if (active_tool_type != TYPE_LASER)
         WRITE(SPINDLE_LASER_ENA_PIN,  SPINDLE_LASER_ACTIVE_STATE); // Cutter ON
     #endif
     _set_ocr(ocr);
@@ -143,7 +158,7 @@ void SpindleLaser::init() {
         WRITE(LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE); // Cutter OFF
     #endif
     #if PIN_EXISTS(SPINDLE_LASER_ENA)
-      if (active_tool_type TYPE_SPINDLE)
+      if (active_tool_type == TYPE_SPINDLE)
         WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE); // Cutter OFF
     #endif
     _set_ocr(0);
@@ -177,7 +192,7 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
     #else
       if (active_tool_type == TYPE_LASER)
         WRITE(LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
-      elif (active_tool_type == TYPE_SPINDLE)
+      else if (active_tool_type == TYPE_SPINDLE)
         WRITE(SPINDLE_LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
       isReadyForUI = true;
     #endif
@@ -203,8 +218,10 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
    */
   void SpindleLaser::set_reverse(const bool reverse) {
     const bool dir_state = (reverse == SPINDLE_INVERT_DIR); // Forward (M3) HIGH when not inverted
-    if (TERN0(SPINDLE_STOP_ON_DIR_CHANGE, enabled()) && READ(SPINDLE_DIR_PIN) != dir_state) disable();
-    WRITE(SPINDLE_DIR_PIN, dir_state);
+    if (active_tool_type == TYPE_SPINDLE) {
+      if (TERN0(SPINDLE_STOP_ON_DIR_CHANGE, enabled()) && READ(SPINDLE_DIR_PIN) != dir_state) disable();
+      WRITE(SPINDLE_DIR_PIN, dir_state);
+    }
   }
 #endif
 

@@ -32,6 +32,8 @@
 
 #include "../libs/buzzer.h"
 
+#include "../core/types.h"
+
 // Inline laser power
 #include "../module/planner.h"
 
@@ -105,6 +107,7 @@ public:
   #endif
 
   static bool isReadyForUI;               // Ready to apply power setting from the UI to OCR
+  static ToolTypeEnum active_tool_type; // Tool type: 0 for extruder, 1 for spindle, 2 for laser
   static bool enable_state;
   static uint8_t power,
                  last_power_applied;      // Basic power state tracking
@@ -117,13 +120,17 @@ public:
   static void init();
 
   #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
-    static void refresh_frequency() { 
-      if (active_tool_type == TYPE_LASER) {
-        hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), frequency);
-      } 
-      elif (active_tool_type == TYPE_SPINDLE) {
-        hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency); 
-      }
+    static void refresh_frequency() {
+      #if ENABLED(LASER_FEATURE)
+        if (active_tool_type == TYPE_LASER) {
+          hal.set_pwm_frequency(pin_t(LASER_PWM_PIN), frequency);
+        } 
+      #endif
+      #if ENABLED(SPINDLE_FEATURE)
+        if (active_tool_type != TYPE_LASER) {
+          hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), frequency); 
+        }
+      #endif
     }
   #endif
 

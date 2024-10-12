@@ -1544,7 +1544,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
           if (new_tool == LASER_TOOL) {
             cutter.active_tool_type = TYPE_LASER;
           }
-          elif (new_tool < LASER_TOOL) {
+          else if (new_tool < LASER_TOOL) {
             cutter.active_tool_type = TYPE_EXTRUDER;
           }
           else {
