@@ -1768,7 +1768,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
     }
 
     // Fail if attempting move outside printable radius
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       // Abort if attempting move outside printable radius
       if (!can_reach(destination)) {
         SERIAL_ERROR_MSG("Position not reachable.");
