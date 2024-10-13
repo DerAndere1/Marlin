@@ -1938,7 +1938,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
     }
 
     // Fail if attempting move outside printable radius
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       // Abort if attempting move outside printable radius
       if (!position_is_reachable(destination)) {
         SERIAL_ERROR_MSG("Position not reachable.");
