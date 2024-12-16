@@ -4533,7 +4533,7 @@
  * NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
  * @section freeze
  */
-//#define FREEZE_FEATURE
+#define FREEZE_FEATURE
 #if ENABLED(FREEZE_FEATURE)
   //#define FREEZE_PIN   -1   // Override the default (KILL) pin here
   #define FREEZE_STATE  LOW   // State of pin indicating freeze

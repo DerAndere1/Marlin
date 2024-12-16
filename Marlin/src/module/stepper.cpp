@@ -1860,6 +1860,22 @@ void Stepper::isr() {
         #endif
       }
     }
+  }
+
+  // If there is no current block, do nothing
+  if (!current_block || step_events_completed >= step_event_count) return;
+
+  // Skipping step processing causes motion to freeze
+  #if ENABLED(FREEZE_FEATURE)
+    if(frozen_pin && frozen_solid) return;
+  #endif
+
+  // Count of pending loops and events for this iteration
+  const uint32_t pending_events = step_event_count - step_events_completed;
+  uint8_t events_to_do = _MIN(pending_events, steps_per_isr);
+
+  // Just update the value we will get at the end of the loop
+  step_events_completed += events_to_do;
 
     // If there is no current block, do nothing
     if (!current_block || step_events_completed >= step_event_count) return;
@@ -2484,9 +2500,15 @@ void Stepper::isr() {
           TERN_(SOFT_FEED_HOLD, check_frozen_time(acc_step_rate));
 
           // step_rate to timer interval and steps per stepper isr
+          #if ENABLED(FREEZE_FEATURE)
+            if(frozen_time) check_frozen_time(acc_step_rate);
+          #endif
           interval = calc_multistep_timer_interval(acc_step_rate << oversampling_factor);
           acceleration_time += interval;
           deceleration_time = 0; // Reset since we're doing acceleration first.
+          #if ENABLED(FREEZE_FEATURE)
+            if(frozen_pin && !frozen_solid) frozen_time += interval * 2;
+          #endif
 
           TERN_(SOFT_FEED_HOLD, check_frozen_state(FREEZE_ACCELERATION, interval));
 
@@ -2554,8 +2576,21 @@ void Stepper::isr() {
           TERN_(SOFT_FEED_HOLD, check_frozen_time(step_rate));
 
           // step_rate to timer interval and steps per stepper isr
+          #if ENABLED(FREEZE_FEATURE)
+            if(frozen_time) check_frozen_time(step_rate);
+          #endif
           interval = calc_multistep_timer_interval(step_rate << oversampling_factor);
           deceleration_time += interval;
+          #if ENABLED(FREEZE_FEATURE)
+            if(!frozen_pin) {
+              if(frozen_time) {
+                if(frozen_time > interval * 2) frozen_time -= interval * 2;
+                else frozen_time = 0;
+              }
+              
+              frozen_solid = false;
+            }
+          #endif
 
           TERN_(SOFT_FEED_HOLD, check_frozen_state(FREEZE_DECELERATION, interval));
 
