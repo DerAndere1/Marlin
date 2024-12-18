@@ -2902,6 +2902,10 @@ void Stepper::isr() {
         // No step events completed so far
         step_events_completed = 0;
 
+        #if ENABLED(FREEZE_FEATURE)
+          check_frozen_time(step_rate);
+        #endif
+
         // Compute the acceleration and deceleration points
         accelerate_before = current_block->accelerate_before << oversampling_factor;
         decelerate_start = current_block->decelerate_start << oversampling_factor;
