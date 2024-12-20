@@ -1867,7 +1867,7 @@ void Stepper::isr() {
 
   // Skipping step processing causes motion to freeze
   #if ENABLED(FREEZE_FEATURE)
-    if(frozen_pin && frozen_solid) return;
+    if(is_frozen_triggered() && is_frozen_solid()) return;
   #endif
 
   // Count of pending loops and events for this iteration
@@ -2756,6 +2756,9 @@ void Stepper::isr() {
         #if ENABLED(POWER_LOSS_RECOVERY)
           recovery.info.sdpos = current_block->sdpos;
           recovery.info.current_position = current_block->start_position;
+        #endif
+        #if ENABLED(FREEZE_FEATURE)
+          check_frozen_state(3, interval);
         #endif
 
         #if ENABLED(DIRECT_STEPPING)
