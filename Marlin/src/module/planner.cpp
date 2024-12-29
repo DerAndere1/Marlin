@@ -1380,10 +1380,12 @@ void Planner::check_axes_activity() {
     float high = 0.0f;
     for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
       const block_t * const block = &block_buffer[b];
-      if (XYZ_HAS_STEPS(block)) {
-        const float se = float(block->steps.e) / block->step_event_count * block->nominal_speed; // mm/sec
-        NOLESS(high, se);
-      }
+      #if HAS_EXTRUDERS
+        if (XYZ_HAS_STEPS(block)) {
+          const float se = float(block->steps.e) / block->step_event_count * block->nominal_speed; // mm/sec
+          NOLESS(high, se);
+        }
+      #endif
     }
     return high;
   }
