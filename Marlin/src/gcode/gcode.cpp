@@ -133,7 +133,7 @@ int8_t GcodeSuite::get_target_extruder_from_command() {
   #if HAS_TOOLCHANGE
     if (parser.seenval('T')) {
       const int8_t e = parser.value_byte();
-      if (e < TERN(HAS_EXTRUDERS, EXTRUDERS, HOTENDS)) return e;
+      if (e < EXTRUDERS) return e;
       SERIAL_ECHO_START();
       SERIAL_ECHOLN(C('M'), parser.codenum, F(" " STR_INVALID_EXTRUDER " "), e);
       return -1;
@@ -161,6 +161,44 @@ int8_t GcodeSuite::get_target_e_stepper_from_command(const int8_t dval/*=-1*/) {
     SERIAL_ECHOLNPGM(" " STR_INVALID_E_STEPPER " ", e);
   return -1;
 }
+
+/**
+ * Get the target hotend from the T parameter or the active_extruder
+ * Return -1 if the T parameter is out of range
+ */
+int8_t GcodeSuite::get_target_hotend_from_command() {
+  #if HAS_MULTI_HOTEND
+    if (parser.seenval('T')) {
+      const int8_t h = parser.value_byte();
+      if (h < HOTENDS) return h;
+      SERIAL_ECHO_START();
+      SERIAL_CHAR('M'); SERIAL_ECHO(parser.codenum);
+      SERIAL_ECHOLNPGM(" " STR_INVALID_EXTRUDER " ", h);
+      return -1;
+    }
+  #endif
+  return active_extruder;
+}
+
+
+/**
+ * Get the target tool from the T parameter or the active_extruder
+ * Return -1 if the T parameter is out of range
+ */
+int8_t GcodeSuite::get_target_tool_from_command() {
+  #if HAS_TOOLCHANGE
+    if (parser.seenval('T')) {
+      const int8_t t = parser.value_byte();
+      if (t < TOOLS) return t;
+      SERIAL_ECHO_START();
+      SERIAL_CHAR('M'); SERIAL_ECHO(parser.codenum);
+      SERIAL_ECHOLNPGM(" " STR_INVALID_EXTRUDER " ", t);
+      return -1;
+    }
+  #endif
+  return active_extruder;
+}
+
 
 /**
  * Set XYZ...E destination and feedrate from the current G-Code command
