@@ -36,7 +36,7 @@
 #include "../../module/endstops.h"
 #include "../../feature/bedlevel/bedlevel.h"
 
-#if HAS_MULTI_HOTEND
+#if HAS_TOOLCHANGE
   #include "../../module/tool_change.h"
 #endif
 
@@ -700,7 +700,7 @@ inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const
   TEMPORARY_BACKLASH_CORRECTION(backlash.all_on);
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
-  TERN(HAS_MULTI_HOTEND, set_nozzle(m, extruder), UNUSED(extruder));
+  TERN(HAS_TOOLCHANGE, set_nozzle(m, extruder), UNUSED(extruder));
 
   probe_sides(m, uncertainty);
 
@@ -744,7 +744,7 @@ inline void calibrate_all_toolheads(measurements_t &m, const float uncertainty) 
 
   TERN_(HAS_HOTEND_OFFSET, normalize_hotend_offsets());
 
-  TERN_(HAS_MULTI_HOTEND, set_nozzle(m, 0));
+  TERN_(HAS_TOOLCHANGE, set_nozzle(m, 0));
 }
 
 /**
@@ -772,8 +772,9 @@ inline void calibrate_all() {
   TERN_(BACKLASH_GCODE, calibrate_backlash(m, CALIBRATION_MEASUREMENT_UNCERTAIN));
 
   // Cycle the toolheads so the servos settle into their "natural" positions
-  #if HAS_MULTI_HOTEND
-    HOTEND_LOOP() set_nozzle(m, e);
+  #if HAS_TOOLCHANGE
+    for (int8_t t = 0; t < TOOLS; t++)
+      set_nozzle(m, e);
   #endif
 
   // Do a slow and precise calibration of the toolheads
