@@ -125,7 +125,7 @@ int8_t GcodeSuite::get_target_extruder_from_command() {
   #if HAS_TOOLCHANGE
     if (parser.seenval('T')) {
       const int8_t e = parser.value_byte();
-      if (e < EXTRUDERS) return e;
+      if (e < TERN(HAS_EXTRUDERS, EXTRUDERS, HOTENDS)) return e;
       SERIAL_ECHO_START();
       SERIAL_CHAR('M'); SERIAL_ECHO(parser.codenum);
       SERIAL_ECHOLNPGM(" " STR_INVALID_EXTRUDER " ", e);
