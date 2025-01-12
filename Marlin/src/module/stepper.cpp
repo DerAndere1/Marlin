@@ -1867,7 +1867,7 @@ void Stepper::isr() {
 
   // Skipping step processing causes motion to freeze
   #if ENABLED(FREEZE_FEATURE)
-    if(is_frozen_triggered() && is_frozen_solid()) return;
+    if (is_frozen_triggered() && is_frozen_solid()) return;
   #endif
 
   // Count of pending loops and events for this iteration
