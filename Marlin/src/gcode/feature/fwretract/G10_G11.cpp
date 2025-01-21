@@ -21,13 +21,15 @@
  */
 
 #include "../../../inc/MarlinConfig.h"
-#if ENABLED(FWRETRACT)
-  #include "../../feature/fwretract.h"
-#endif
 
-#if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS)
+#if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
   #include "../../gcode.h"
   #include "../../../module/motion.h"
+
+  #if ENABLED(FWRETRACT)
+    #include "../../../feature/fwretract.h"
+  #endif
+
 
 /**
  * G10
@@ -157,8 +159,6 @@ void GcodeSuite::G10() {
     #endif // ENABLED(CNC_COORDINATE_SYSTEMS)
   #endif // ANY(CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
 }
-#endif   // ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS)
-
 
 #if ENABLED(FWRETRACT)
 
@@ -168,3 +168,5 @@ void GcodeSuite::G10() {
 void GcodeSuite::G11() { fwretract.retract(false); }
 
 #endif // FWRETRACT
+
+#endif   // ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)

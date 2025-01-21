@@ -1,6 +1,6 @@
 /**
  * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
- * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2025 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
  *
  * Based on:
  * Marlin 3D Printer Firmware
@@ -63,13 +63,13 @@ void GcodeSuite::G43() {
     default: return;                                              // Ignore unknown G43.x
 
     case 0:                                                       // G43 - Simple Tool Length Compensation Mode.
-      #if HAS_TOOL_CENTERPOINT_CONTROL
+      #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
         tool_centerpoint_control = false;
-        simple_tool_length_compensation = true;
       #endif
+      simple_tool_length_compensation = true;
       break;
 
-    #if HAS_TOOL_CENTERPOINT_CONTROL
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
       case 4:                                                     // G43.4 - Rotational Tool Center Point Control Mode.
         simple_tool_length_compensation = false;
         tool_centerpoint_control = true;
@@ -92,7 +92,9 @@ void GcodeSuite::G43() {
  */
 void GcodeSuite::G49() {
   simple_tool_length_compensation = false;
-  tool_centerpoint_control = false;
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    tool_centerpoint_control = false;
+  #endif
 
   current_position -= hotend_offset[active_extruder];
   sync_plan_position();

@@ -189,15 +189,19 @@ int16_t Motion::feedrate_percentage = 100;
 #endif
 
 // Cartesian conversion result goes here:
-xyz_pos_t cartes;
+xyz_pos_t Motion::artes;
 
 #if HAS_TOOL_LENGTH_COMPENSATION
-  bool simple_tool_length_compensation = false;
+  bool Motion::simple_tool_length_compensation = DEFAULT_TOOL_LENGTH_COMPENSATION;
 #endif
 
 #if IS_KINEMATIC
 
   abce_pos_t Motion::delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+    bool Motion::tool_centerpoint_control = false;
+  #endif
 
   #if HAS_SCARA_OFFSET
     abc_pos_t Motion::scara_home_offset;
@@ -214,11 +218,6 @@ xyz_pos_t cartes;
   #else // DELTA
     constexpr float delta_max_radius = PRINTABLE_RADIUS,
                     delta_max_radius_2 = sq(float(PRINTABLE_RADIUS));
-  #endif
-
-
-  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-    bool tool_centerpoint_control = false;
   #endif
 
 #endif // IS_KINEMATIC
