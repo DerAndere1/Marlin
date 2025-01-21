@@ -1388,10 +1388,10 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       #if HAS_HOTEND_OFFSET
         #if HAS_TOOL_LENGTH_COMPENSATION
           xyz_pos_t diff{0};
-          if (simple_tool_length_compensation || tool_centerpoint_control)
+          if (simple_tool_length_compensation || TERN0(HAS_TOOL_CENTERPOINT_CONTROL, tool_centerpoint_control))
             diff = hotend_offset[new_tool] - hotend_offset[old_tool];
         #else
-          const xyz_pos_t diff = hotend_offset[new_tool] - hotend_offset[old_tool];
+          xyz_pos_t diff = hotend_offset[new_tool] - hotend_offset[old_tool];
         #endif
         TERN_(DUAL_X_CARRIAGE, diff.x = 0);
       #else

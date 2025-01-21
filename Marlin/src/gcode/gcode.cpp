@@ -402,9 +402,11 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 6: G6(); break;                                      // G6: Direct Stepper Move
       #endif
 
-      #if ENABLED(FWRETRACT)
+      #if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
         case 10: G10(); break;                                    // G10: Retract / Swap Retract
-        case 11: G11(); break;                                    // G11: Recover / Swap Recover
+        #if ENABLED(FWRETRACT)
+          case 11: G11(); break;                                    // G11: Recover / Swap Recover
+        #endif
       #endif
 
       #if ENABLED(NOZZLE_CLEAN_FEATURE)
