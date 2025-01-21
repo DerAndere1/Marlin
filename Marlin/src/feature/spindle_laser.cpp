@@ -79,7 +79,7 @@ void SpindleLaser::init() {
     OUT_WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);    // Init spindle to off
   #endif
   #if PIN_EXISTS(LASER_ENA)
-    OUT_WRITE(LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);    // Init spindle to off
+    OUT_WRITE(LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);            // Init laser to off
   #endif
   #if ENABLED(SPINDLE_CHANGE_DIR)
     OUT_WRITE(SPINDLE_DIR_PIN, SPINDLE_INVERT_DIR);                   // Init rotation to clockwise (M3)
@@ -99,7 +99,7 @@ void SpindleLaser::init() {
       hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
     #endif
     #if ENABLED(LASER_FEATURE)      
-      SET_PWM(SPINDLE_LASER_PWM_PIN);
+      SET_PWM(LASER_PWM_PIN);
       hal.set_pwm_duty(pin_t(LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
     #endif
   #endif
@@ -190,10 +190,14 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
     #elif ENABLED(SPINDLE_SERVO)
       servo[SPINDLE_SERVO_NR].move(opwr);
     #else
-      if (active_tool_type == TYPE_LASER)
-        WRITE(LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
-      else if (active_tool_type == TYPE_SPINDLE)
-        WRITE(SPINDLE_LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+      #if ENABLED(LASER_FEATURE)
+        if (active_tool_type == TYPE_LASER)
+          WRITE(LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+      #endif
+      #if ENABLED(SPINDLE_FEATURE)
+        if (active_tool_type == TYPE_SPINDLE)
+          WRITE(SPINDLE_LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+      #endif
       isReadyForUI = true;
     #endif
   }
