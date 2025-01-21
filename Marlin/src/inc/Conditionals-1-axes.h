@@ -54,6 +54,11 @@
 #else
   #undef EXTRUDERS
   #define EXTRUDERS 0
+  #undef SINGLENOZZLE
+  #undef SWITCHING_EXTRUDER
+  #undef MECHANICAL_SWITCHING_EXTRUDER
+  #undef SWITCHING_NOZZLE
+  #undef MECHANICAL_SWITCHING_NOZZLE
   #undef DISABLE_E
   #undef PREVENT_LENGTHY_EXTRUDE
   #undef FILAMENT_SWITCH_AND_MOTION
@@ -72,12 +77,8 @@
     #undef TEMP_SENSOR_5
     #undef TEMP_SENSOR_6
     #undef TEMP_SENSOR_7
-    #undef SINGLENOZZLE
-    #undef SWITCHING_EXTRUDER
-    #undef MECHANICAL_SWITCHING_EXTRUDER
-    #undef SWITCHING_NOZZLE
-    #undef MECHANICAL_SWITCHING_NOZZLE
     #undef HOTEND_IDLE_TIMEOUT
+    #undef HOTEND_OVERSHOOT
   #endif
 #endif
 
@@ -276,8 +277,16 @@
  * 
  * TOOLS         - Number of Selectable Tools
  */
-#if !defined(TOOLS)
-  #define TOOLS HOTENDS
+
+#ifndef TOOLS
+  #if (HOTENDS >= EXTRUDERS)
+    #define TOOLS HOTENDS
+  #else
+    #define TOOLS EXTRUDERS
+  #endif
+#endif
+#if TOOLS > 1
+  #define HAS_MULTI_TOOLS 1
 #else
   #if TOOLS > 0
     #define HAS_TOOL_LENGTH_COMPENSATION 1

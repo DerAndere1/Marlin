@@ -904,7 +904,7 @@ void fast_line_to_current(const AxisEnum fr_axis) { _line_to_current(fr_axis, 0.
 
 #endif // ELECTROMAGNETIC_SWITCHING_TOOLHEAD
 
-#if HAS_EXTRUDERS || HAS_TOOL_LENGTH_COMPENSATION
+#if HAS_MULTI_TOOLS
   inline void invalid_extruder_error(const uint8_t e) {
     SERIAL_ECHO_START();
     SERIAL_CHAR('T'); SERIAL_ECHO(e);
@@ -1236,7 +1236,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
          return invalid_extruder_error(new_tool);
     #endif
 
-    if (new_tool >= TERN(HAS_TOOL_LENGTH_COMPENSATION, TOOLS, EXTRUDERS))
+    if (new_tool >= TOOLS)
       return invalid_extruder_error(new_tool);
 
     if (!no_move && motion.homing_needed()) {

@@ -151,8 +151,8 @@ xyz_pos_t Motion::cartes;
 
 // Extruder offsets
 #if HAS_HOTEND_OFFSET
-  xyz_pos_t Motion::hotend_offset[TOOLS]; // Initialized by settings.load()
-  void Motion::reset_hotend_offsets() {
+  xyz_pos_t Motion::hotend_offset[TOOLS]; // Initialized by settings.load
+  void reset_hotend_offsets() {
     constexpr float tmp[3][TOOLS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
     static_assert(
       !tmp[X_AXIS][0] && !tmp[Y_AXIS][0] && !tmp[Z_AXIS][0],
