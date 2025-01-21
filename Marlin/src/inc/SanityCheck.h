@@ -925,11 +925,7 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
  */
 #if ANY(SWITCHING_TOOLHEAD, MAGNETIC_SWITCHING_TOOLHEAD, ELECTROMAGNETIC_SWITCHING_TOOLHEAD)
   constexpr float thpx[] = SWITCHING_TOOLHEAD_X_POS;
-  #if HAS_TOOL_LENGTH_COMPENSATION
-    static_assert(COUNT(thpx) == TOOLS, "SWITCHING_TOOLHEAD_X_POS must be an array TOOLS long.");
-  #else
-    static_assert(COUNT(thpx) == EXTRUDERS, "SWITCHING_TOOLHEAD_X_POS must be an array EXTRUDERS long.");
-  #endif
+  static_assert(COUNT(thpx) == TOOLS, "SWITCHING_TOOLHEAD_X_POS must be an array TOOLS long.");
 #endif
 
 /**
@@ -938,10 +934,10 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
 #if ENABLED(SWITCHING_TOOLHEAD)
   #ifndef SWITCHING_TOOLHEAD_SERVO_NR
     #error "SWITCHING_TOOLHEAD requires SWITCHING_TOOLHEAD_SERVO_NR."
-  #elif HAS_TOOL_LENGTH_COMPENSATION && (TOOLS < 2)
-    #error "SWITCHING_TOOLHEAD requires at least 2 TOOLS."
-  #elif (!HAS_TOOL_LENGTH_COMPENSATION) && (EXTRUDERS < 2)
+  #elif !defined(TOOLS) && EXTRUDERS < 2
     #error "SWITCHING_TOOLHEAD requires at least 2 EXTRUDERS."
+  #elif defined(TOOLS) && TOOLS < 2
+    #error "SWITCHING_TOOLHEAD requires at least 2 TOOLS."
   #elif NUM_SERVOS < (SWITCHING_TOOLHEAD_SERVO_NR - 1)
     #if SWITCHING_TOOLHEAD_SERVO_NR == 0
       #error "A SWITCHING_TOOLHEAD_SERVO_NR of 0 requires NUM_SERVOS >= 1."
