@@ -931,8 +931,6 @@ void Marlin::idle(const bool no_stepper_sleep/*=false*/) {
 void Marlin::kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component/*=nullptr*/, const bool steppers_off/*=false*/) {
   thermalManager.disable_all_heaters();
 
-  TERN_(HAS_CUTTER, cutter.kill()); // Full cutter shutdown including ISR control
-
   // Echo the LCD message to serial for extra context
   if (lcd_error) { SERIAL_ECHO_START(); SERIAL_ECHOLN(lcd_error); }
 
@@ -952,9 +950,15 @@ void Marlin::kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component
   #endif
 
   minkill(steppers_off);
+  TERN_(HAS_CUTTER, cutter.kill()); // Reiterate cutter shutdown
 }
 
 void Marlin::minkill(const bool steppers_off/*=false*/) {
+
+  // stop steppers
+  quickstop_stepper();
+
+  TERN_(HAS_CUTTER, cutter.kill());  // Full cutter shutdown including ISR control
 
   // Wait a short time (allows messages to get out before shutting down.
   for (int i = 1000; i--;) DELAY_US(600);
