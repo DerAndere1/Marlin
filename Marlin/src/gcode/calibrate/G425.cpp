@@ -824,7 +824,7 @@ inline void calibrate_all() {
   // Cycle the toolheads so the servos settle into their "natural" positions
   #if HAS_TOOLCHANGE
     for (int8_t t = 0; t < TOOLS; t++)
-      set_nozzle(m, e);
+      set_nozzle(m, t);
   #endif
 
   // Do a slow and precise calibration of the toolheads
