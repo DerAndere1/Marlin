@@ -219,6 +219,15 @@
 
 // @section extruder
 
+/**
+ * This defines the number of tools, including extruders, laser and spindle tools. 
+ * Tool indices, starting with 0, must be assigned in the following order: opional extruders (requires EXTRUDERS > 0), 
+ * an optional laser (requires LASER_FEATURE), and finally optional tools for a spindle (requires SPINDLE_FEATURE). 
+ * Offsets of each tool from tool 0 must be defined with HOTEND_OFFSET_X, HOTEND_OFFSET_Y and HOTEND_OFFSET_Z
+ */
+// :[0, 1, 2, ..., 127]
+//#define TOOLS 1
+
 // This defines the number of extruders
 // :[0, 1, 2, 3, 4, 5, 6, 7, 8]
 #define EXTRUDERS 1
@@ -1139,7 +1148,6 @@
  */
 //#define PENTA_AXIS_TRT
 #if ENABLED(PENTA_AXIS_TRT)
-  #define TOOLS 1 // Number of tools;
 
   // Machine rotary zero point offsets  
   // The distance along the X axis from machine zero point to the center of rotation. The center of rotation is
@@ -1185,7 +1193,6 @@
  */
 //#define PENTA_AXIS_HT
 #if ENABLED(PENTA_AXIS_HT)
-  #define TOOLS 1 // Number of tools;
 
   // Machine rotary zero point offset is the distance from the gage line at the tool head (tip of the nozzle of tool 0) to the horizontal 
   // centerline of the joint that tilts the tool head. Measured when all axes are at machine position 0.
