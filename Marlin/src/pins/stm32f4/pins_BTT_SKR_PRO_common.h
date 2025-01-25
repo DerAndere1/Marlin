@@ -78,8 +78,9 @@
     #define X_MIN_PIN                       PE15  // E0
   #endif
 #else
-  #define X_MIN_PIN                         PB10  // X-
-  #define X_MAX_PIN                         PE15  // E0
+  #define X_MIN_PIN                         PB10  // X-  
+  #define I_MIN_PIN                         PE15  // E0
+  //#define X_MAX_PIN                         PE15  // E0
 #endif
 
 #ifdef Y_STALL_SENSITIVITY
@@ -91,7 +92,8 @@
   #endif
 #else
   #define Y_MIN_PIN                         PE12  // Y-
-  #define Y_MAX_PIN                         PE10  // E1
+  #define J_MIN_PIN                         PE10  // E1
+  //#define Y_MAX_PIN                         PE10  // E1
 #endif
 
 #ifdef Z_STALL_SENSITIVITY
@@ -575,3 +577,10 @@
   #define ESP_WIFI_MODULE_GPIO0_PIN         PF14
   #define ESP_WIFI_MODULE_GPIO2_PIN         PF15
 #endif
+
+
+#define LASER_PWM_PIN PD14          // heater1
+#define LASER_ENA_PIN PB0           // heater2
+
+#define SPINDLE_LASER_PWM_PIN PB1   // heater0
+#define SPINDLE_LASER_ENA_PIN PE6   // Fan2

@@ -51,9 +51,8 @@
  *  2 = config.ini - File format for PlatformIO preprocessing.
  *  3 = schema.json - The entire configuration schema. (13 = pattern groups)
  *  4 = schema.yml - The entire configuration schema.
- *  5 = Config.h - Minimal configuration by popular demand.
  */
-//#define CONFIG_EXPORT 105 // :[1:'JSON', 2:'config.ini', 3:'schema.json', 4:'schema.yml', 5:'Config.h']
+//#define CONFIG_EXPORT 2 // :[1:'JSON', 2:'config.ini', 3:'schema.json', 4:'schema.yml']
 
 //===========================================================================
 //============================= Thermal Settings ============================
@@ -308,9 +307,9 @@
  * If you get false positives for "Thermal Runaway", increase
  * THERMAL_PROTECTION_HYSTERESIS and/or THERMAL_PROTECTION_PERIOD
  */
-#if ALL(HAS_HOTEND, THERMAL_PROTECTION_HOTENDS)
-  #define THERMAL_PROTECTION_PERIOD        40 // (seconds)
-  #define THERMAL_PROTECTION_HYSTERESIS     4 // (°C)
+#if ENABLED(THERMAL_PROTECTION_HOTENDS)
+  #define THERMAL_PROTECTION_PERIOD 40        // (seconds)
+  #define THERMAL_PROTECTION_HYSTERESIS 4     // (°C)
 
   //#define ADAPTIVE_FAN_SLOWING              // Slow down the part-cooling fan if the temperature drops
   #if ENABLED(ADAPTIVE_FAN_SLOWING)
@@ -339,7 +338,7 @@
 /**
  * Thermal Protection parameters for the bed are just as above for hotends.
  */
-#if TEMP_SENSOR_BED && ENABLED(THERMAL_PROTECTION_BED)
+#if ENABLED(THERMAL_PROTECTION_BED)
   #define THERMAL_PROTECTION_BED_PERIOD        20 // (seconds)
   #define THERMAL_PROTECTION_BED_HYSTERESIS     2 // (°C)
 
@@ -353,7 +352,7 @@
 /**
  * Thermal Protection parameters for the heated chamber.
  */
-#if TEMP_SENSOR_CHAMBER && ENABLED(THERMAL_PROTECTION_CHAMBER)
+#if ENABLED(THERMAL_PROTECTION_CHAMBER)
   #define THERMAL_PROTECTION_CHAMBER_PERIOD    20 // (seconds)
   #define THERMAL_PROTECTION_CHAMBER_HYSTERESIS 2 // (°C)
 
@@ -367,7 +366,7 @@
 /**
  * Thermal Protection parameters for the laser cooler.
  */
-#if TEMP_SENSOR_COOLER && ENABLED(THERMAL_PROTECTION_COOLER)
+#if ENABLED(THERMAL_PROTECTION_COOLER)
   #define THERMAL_PROTECTION_COOLER_PERIOD     10 // (seconds)
   #define THERMAL_PROTECTION_COOLER_HYSTERESIS  3 // (°C)
 
@@ -484,7 +483,7 @@
  * Enable Autotemp Mode with M104/M109 F<factor> S<mintemp> B<maxtemp>.
  * Disable by sending M104/M109 with no F parameter (or F0 with AUTOTEMP_PROPORTIONAL).
  */
-#define AUTOTEMP
+//#define AUTOTEMP
 #if ENABLED(AUTOTEMP)
   #define AUTOTEMP_OLDWEIGHT    0.98  // Factor used to weight previous readings (0.0 < value < 1.0)
   #define AUTOTEMP_MIN          210
@@ -609,8 +608,6 @@
  */
 //#define FAN_KICKSTART_TIME  100  // (ms)
 //#define FAN_KICKSTART_POWER 180  // 64-255
-//#define FAN_KICKSTART_LINEAR     // Set kickstart time linearly based on the speed, e.g., for 20% (51) it will be FAN_KICKSTART_TIME * 0.2.
-                                   // Useful for quick speed up to low speed. Kickstart power must be set to 255.
 
 // Some coolers may require a non-zero "off" state.
 //#define FAN_OFF_PWM  1
@@ -932,15 +929,15 @@
 
 //#define SENSORLESS_BACKOFF_MM  { 2, 2, 0 }  // (linear=mm, rotational=°) Backoff from endstops before sensorless homing
 
-#define HOMING_BUMP_MM      { 5, 5, 2 }       // (linear=mm, rotational=°) Backoff from endstops after first bump
-#define HOMING_BUMP_DIVISOR { 2, 2, 4 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define HOMING_BUMP_MM      { 5, 5, 2, 10, 10 }    // (linear=mm, rotational=°) Backoff from endstops after first bump
+#define HOMING_BUMP_DIVISOR { 2, 2, 4, 4, 4 }    // Re-Bump Speed Divisor (Divides the Homing Feedrate)       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 
 //#define HOMING_BACKOFF_POST_MM { 2, 2, 2 }  // (linear=mm, rotational=°) Backoff from endstops after homing
 //#define XY_COUNTERPART_BACKOFF_MM 0         // (mm) Backoff X after homing Y, and vice-versa
 
 //#define QUICK_HOME                          // If G28 contains XY do a diagonal move first
 #if ENABLED(QUICK_HOME)
-  //#define QUICK_HOME_SECONDARY_AXES          // If G28 contains XYABCUVW, first do a coordinated move of axes XYABCUVW towards the limit used for homing.
+  #define QUICK_HOME_SECONDARY_AXES          // If G28 contains XYABCUVW, first do a coordinated move of axes XYABCUVW towards the limit used for homing.
 #endif
 //#define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
 //#define HOME_Z_FIRST                        // Home Z first. Requires a real endstop (not a probe).
@@ -1089,11 +1086,9 @@
   #define HOME_AFTER_G34
 #endif
 
-/**
- * Assisted Tramming
- *
- * Add the G35 command to measure bed corners and help adjust screws. Requires a bed probe.
- */
+//
+// Add the G35 command to read bed corners to help adjust screws. Requires a bed probe.
+//
 //#define ASSISTED_TRAMMING
 #if ENABLED(ASSISTED_TRAMMING)
 
@@ -1114,35 +1109,29 @@
   //#define ASSISTED_TRAMMING_WAIT_POSITION { X_CENTER, Y_CENTER, 30 } // Move the nozzle out of the way for adjustment
 
   /**
-   * Screw Thread. Use one of the following defines:
-   *
-   *   M3_CW = M3 Clockwise, M3_CCW = M3 Counter-Clockwise
-   *   M4_CW = M4 Clockwise, M4_CCW = M4 Counter-Clockwise
-   *   M5_CW = M5 Clockwise, M5_CCW = M5 Counter-Clockwise
-   *
-   * :{'M3_CW':'M3 Clockwise','M3_CCW':'M3 Counter-Clockwise','M4_CW':'M4 Clockwise','M4_CCW':'M4 Counter-Clockwise','M5_CW':'M5 Clockwise','M5_CCW':'M5 Counter-Clockwise'}
+   * Screw thread:
+   *   M3: 30 = Clockwise, 31 = Counter-Clockwise
+   *   M4: 40 = Clockwise, 41 = Counter-Clockwise
+   *   M5: 50 = Clockwise, 51 = Counter-Clockwise
    */
-  #define TRAMMING_SCREW_THREAD M3_CW
+  #define TRAMMING_SCREW_THREAD 30
 
 #endif
 
 // @section motion control
 
 /**
- * Fixed-time-based Motion Control -- BETA FEATURE
+ * Fixed-time-based Motion Control -- EXPERIMENTAL
  * Enable/disable and set parameters with G-code M493.
- * See ft_types.h for named values used by FTM options.
  */
 //#define FT_MOTION
 #if ENABLED(FT_MOTION)
-  //#define FTM_IS_DEFAULT_MOTION                 // Use FT Motion as the factory default?
-  #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (DISABLED, Z_BASED, MASS_BASED)
-  #define FTM_DEFAULT_SHAPER_X      ftMotionShaper_NONE // Default shaper mode on X axis (NONE, ZV, ZVD, ZVDD, ZVDDD, EI, 2HEI, 3HEI, MZV)
-  #define FTM_DEFAULT_SHAPER_Y      ftMotionShaper_NONE // Default shaper mode on Y axis
-  #define FTM_SHAPING_DEFAULT_FREQ_X   37.0f      // (Hz) Default peak frequency used by input shapers
-  #define FTM_SHAPING_DEFAULT_FREQ_Y   37.0f      // (Hz) Default peak frequency used by input shapers
+  #define FTM_DEFAULT_MODE        ftMotionMode_DISABLED // Default mode of fixed time control. (Enums in ft_types.h)
+  #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (Enums in ft_types.h)
+  #define FTM_SHAPING_DEFAULT_X_FREQ   37.0f      // (Hz) Default peak frequency used by input shapers
+  #define FTM_SHAPING_DEFAULT_Y_FREQ   37.0f      // (Hz) Default peak frequency used by input shapers
   #define FTM_LINEAR_ADV_DEFAULT_ENA   false      // Default linear advance enable (true) or disable (false)
-  #define FTM_LINEAR_ADV_DEFAULT_K      0         // Default linear advance gain, integer value. (Acceleration-based scaling factor.)
+  #define FTM_LINEAR_ADV_DEFAULT_K      0.0f      // Default linear advance gain
   #define FTM_SHAPING_ZETA_X            0.1f      // Zeta used by input shapers for X axis
   #define FTM_SHAPING_ZETA_Y            0.1f      // Zeta used by input shapers for Y axis
 
@@ -1165,13 +1154,18 @@
   #define FTM_FS                     1000         // (Hz) Frequency for trajectory generation. (Reciprocal of FTM_TS)
   #define FTM_TS                        0.001f    // (s) Time step for trajectory generation. (Reciprocal of FTM_FS)
 
+  // These values may be configured to adjust the duration of loop().
+  #define FTM_STEPS_PER_LOOP           60         // Number of stepper commands to generate each loop()
+  #define FTM_POINTS_PER_LOOP         100         // Number of trajectory points to generate each loop()
+
   #if DISABLED(COREXY)
     #define FTM_STEPPER_FS          20000         // (Hz) Frequency for stepper I/O update
 
     // Use this to adjust the time required to consume the command buffer.
     // Try increasing this value if stepper motion is choppy.
     #define FTM_STEPPERCMD_BUFF_SIZE 3000         // Size of the stepper command buffers
-
+                                                  // (FTM_STEPS_PER_LOOP * FTM_POINTS_PER_LOOP) is a good start
+                                                  // If you run out of memory, fall back to 3000 and increase progressively
   #else
     // CoreXY motion needs a larger buffer size. These values are based on our testing.
     #define FTM_STEPPER_FS          30000
@@ -1193,7 +1187,7 @@
 #endif
 
 /**
- * Input Shaping
+ * Input Shaping -- EXPERIMENTAL
  *
  * Zero Vibration (ZV) Input Shaping for X and/or Y movements.
  *
@@ -1230,7 +1224,7 @@
 
 // @section motion
 
-#define AXIS_RELATIVE_MODES { false, false, false, false }
+#define AXIS_RELATIVE_MODES { false, false, false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
 //#define MULTI_NOZZLE_DUPLICATION
@@ -1256,8 +1250,8 @@
 #define DISABLE_IDLE_X
 #define DISABLE_IDLE_Y
 #define DISABLE_IDLE_Z    // Disable if the nozzle could fall onto your printed part!
-//#define DISABLE_IDLE_I
-//#define DISABLE_IDLE_J
+#define DISABLE_IDLE_I
+#define DISABLE_IDLE_J
 //#define DISABLE_IDLE_K
 //#define DISABLE_IDLE_U
 //#define DISABLE_IDLE_V
@@ -1344,6 +1338,8 @@
   //#define CALIBRATION_SCRIPT_PRE  "M117 Starting Auto-Calibration\nT0\nG28\nG12\nM117 Calibrating..."
   //#define CALIBRATION_SCRIPT_POST "M500\nM117 Calibration data saved"
 
+  #define CALIBRATION_MEASUREMENT_RESOLUTION     0.01 // mm
+
   #define CALIBRATION_FEEDRATE_SLOW             60    // mm/min
   #define CALIBRATION_FEEDRATE_FAST           1200    // mm/min
   #define CALIBRATION_FEEDRATE_TRAVEL         3000    // mm/min
@@ -1418,7 +1414,7 @@
 //#define MICROSTEP32 HIGH,LOW,HIGH
 
 // Microstep settings (Requires a board with pins named X_MS1, X_MS2, etc.)
-#define MICROSTEP_MODES { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
+#define MICROSTEP_MODES { 32, 32, 32, 32, 32 } // [1,2,4,8,16]
 
 /**
  *  @section  stepper motor current
@@ -1502,17 +1498,8 @@
   #define FEEDRATE_CHANGE_BEEP_FREQUENCY 440
 #endif
 
-/**
- * Probe Offset Wizard
- * Add a Probe Z Offset calibration option to the LCD menu.
- * Use this helper to get a perfect 'M851 Z' probe offset.
- * When launched this powerful wizard:
- *  - Measures the bed height at the configured position with the probe.
- *  - Moves the nozzle to the same position for a "paper" measurement.
- *  - The difference is used to set the probe Z offset.
- */
 #if HAS_BED_PROBE && ANY(HAS_MARLINUI_MENU, HAS_TFT_LVGL_UI)
-  //#define PROBE_OFFSET_WIZARD
+  //#define PROBE_OFFSET_WIZARD       // Add a Probe Z Offset calibration option to the LCD menu
   #if ENABLED(PROBE_OFFSET_WIZARD)
     /**
      * Enable to init the Probe Z-Offset when starting the Wizard.
@@ -1529,10 +1516,6 @@
 #if HAS_MARLINUI_MENU
 
   #if HAS_BED_PROBE
-
-    // Show Deploy / Stow Probe options in the Motion menu.
-    #define PROBE_DEPLOY_STOW_MENU
-
     // Add calibration in the Probe Offsets menu to compensate for X-axis twist.
     //#define X_AXIS_TWIST_COMPENSATION
     #if ENABLED(X_AXIS_TWIST_COMPENSATION)
@@ -1547,6 +1530,8 @@
       #define XATC_Z_OFFSETS { 0, 0, 0 }    // Z offsets for X axis sample points
     #endif
 
+    // Show Deploy / Stow Probe options in the Motion menu.
+    #define PROBE_DEPLOY_STOW_MENU
   #endif
 
   // Include a page of printer information in the LCD Main Menu
@@ -1576,9 +1561,6 @@
 
   // BACK menu items keep the highlight at the top
   //#define TURBO_BACK_MENU_ITEM
-
-  // BACK menu items show "Back" instead of the previous menu name
-  //#define GENERIC_BACK_MENU_ITEM
 
   // Insert a menu for preheating at the top level to allow for quick access
   //#define PREHEAT_SHORTCUT_MENU_ITEM
@@ -1641,6 +1623,9 @@
 
   // Display a negative temperature instead of "err"
   //#define SHOW_TEMPERATURE_BELOW_ZERO
+
+  // Show the position of secondary axes I[J[K]] instead of icons. Incompatible with LCD_SHOW_SECONDARY_AXES
+  //#define LCD_SHOW_SECONDARY_AXES
 
   /**
    * LED Control Menu
@@ -1853,7 +1838,7 @@
    * Endstops must be activated for this option to work.
    */
   //#define SD_ABORT_ON_ENDSTOP_HIT
-  #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
+  #if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_SOFTWARE_ENDSTOPS)
     //#define SD_ABORT_ON_ENDSTOP_HIT_GCODE "G28XY" // G-code to run on endstop hit (e.g., "G28XY" or "G27")
   #endif
 
@@ -2583,7 +2568,7 @@
 
 /**
  * Minimum stepper driver pulse width (in ns)
- * If undefined, these defaults (from Conditionals-4-adv.h) apply:
+ * If undefined, these defaults (from Conditionals_adv.h) apply:
  *     100 : Minimum for TMC2xxx stepper drivers
  *     500 : Minimum for LV8729
  *    1000 : Minimum for A4988 and A5984 stepper drivers
@@ -2597,7 +2582,7 @@
 
 /**
  * Maximum stepping rate (in Hz) the stepper driver allows
- * If undefined, these defaults (from Conditionals-4-adv.h) apply:
+ * If undefined, these defaults (from Conditionals_adv.h) apply:
  *  5000000 : Maximum for TMC2xxx stepper drivers
  *  1000000 : Maximum for LV8729 stepper driver
  *   500000 : Maximum for A4988 stepper driver
@@ -2731,7 +2716,7 @@
 
 /**
  * Set the number of proportional font spaces required to fill up a typical character space.
- * This can help to better align the output of commands like 'G29 O' Mesh Output.
+ * This can help to better align the output of commands like `G29 O` Mesh Output.
  *
  * For clients that use a fixed-width font (like OctoPrint), leave this set to 1.0.
  * Otherwise, adjust according to your client and font.
@@ -2992,23 +2977,23 @@
    * Interpolate microsteps to 256
    * Override for each driver with <driver>_INTERPOLATE settings below
    */
-  #define INTERPOLATE      true
+  #define INTERPOLATE      false
 
   #if AXIS_IS_TMC_CONFIG(X)
     #define X_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for homing. (Typically lower than *_CURRENT.)
-    #define X_MICROSTEPS     16        // 0..256
-    #define X_RSENSE          0.11
+    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for sensorless homing
+    #define X_MICROSTEPS     32        // 0..256
+    #define X_RSENSE          0.11     // Multiplied x1000 for TMC26X
     #define X_CHAIN_POS      -1        // -1..0: Not chained. 1: MCU MOSI connected. 2: Next in chain, ...
     //#define X_INTERPOLATE  true      // Enable to override 'INTERPOLATE' for the X axis
     //#define X_HOLD_MULTIPLIER 0.5    // Enable to override 'HOLD_MULTIPLIER' for the X axis
   #endif
 
   #if AXIS_IS_TMC_CONFIG(X2)
-    #define X2_CURRENT      X_CURRENT
-    #define X2_CURRENT_HOME X_CURRENT_HOME
-    #define X2_MICROSTEPS   X_MICROSTEPS
-    #define X2_RSENSE       X_RSENSE
+    #define X2_CURRENT      800
+    #define X2_CURRENT_HOME X2_CURRENT
+    #define X2_MICROSTEPS    X_MICROSTEPS
+    #define X2_RSENSE         0.11
     #define X2_CHAIN_POS     -1
     //#define X2_INTERPOLATE true
     //#define X2_HOLD_MULTIPLIER 0.5
@@ -3017,7 +3002,7 @@
   #if AXIS_IS_TMC_CONFIG(Y)
     #define Y_CURRENT       800
     #define Y_CURRENT_HOME  Y_CURRENT
-    #define Y_MICROSTEPS     16
+    #define Y_MICROSTEPS     32
     #define Y_RSENSE          0.11
     #define Y_CHAIN_POS      -1
     //#define Y_INTERPOLATE  true
@@ -3025,10 +3010,10 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Y2)
-    #define Y2_CURRENT      Y_CURRENT
-    #define Y2_CURRENT_HOME Y_CURRENT_HOME
-    #define Y2_MICROSTEPS   Y_MICROSTEPS
-    #define Y2_RSENSE       Y_RSENSE
+    #define Y2_CURRENT      800
+    #define Y2_CURRENT_HOME Y2_CURRENT
+    #define Y2_MICROSTEPS    Y_MICROSTEPS
+    #define Y2_RSENSE         0.11
     #define Y2_CHAIN_POS     -1
     //#define Y2_INTERPOLATE true
     //#define Y2_HOLD_MULTIPLIER 0.5
@@ -3037,7 +3022,7 @@
   #if AXIS_IS_TMC_CONFIG(Z)
     #define Z_CURRENT       800
     #define Z_CURRENT_HOME  Z_CURRENT
-    #define Z_MICROSTEPS     16
+    #define Z_MICROSTEPS     32
     #define Z_RSENSE          0.11
     #define Z_CHAIN_POS      -1
     //#define Z_INTERPOLATE  true
@@ -3045,30 +3030,30 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Z2)
-    #define Z2_CURRENT      Z_CURRENT
-    #define Z2_CURRENT_HOME Z_CURRENT_HOME
-    #define Z2_MICROSTEPS   Z_MICROSTEPS
-    #define Z2_RSENSE       Z_RSENSE
+    #define Z2_CURRENT      800
+    #define Z2_CURRENT_HOME Z2_CURRENT
+    #define Z2_MICROSTEPS    Z_MICROSTEPS
+    #define Z2_RSENSE         0.11
     #define Z2_CHAIN_POS     -1
     //#define Z2_INTERPOLATE true
     //#define Z2_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Z3)
-    #define Z3_CURRENT      Z_CURRENT
-    #define Z3_CURRENT_HOME Z_CURRENT_HOME
-    #define Z3_MICROSTEPS   Z_MICROSTEPS
-    #define Z3_RSENSE       Z_RSENSE
+    #define Z3_CURRENT      800
+    #define Z3_CURRENT_HOME Z3_CURRENT
+    #define Z3_MICROSTEPS    Z_MICROSTEPS
+    #define Z3_RSENSE         0.11
     #define Z3_CHAIN_POS     -1
     //#define Z3_INTERPOLATE true
     //#define Z3_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Z4)
-    #define Z4_CURRENT      Z_CURRENT
-    #define Z4_CURRENT_HOME Z_CURRENT_HOME
-    #define Z4_MICROSTEPS   Z_MICROSTEPS
-    #define Z4_RSENSE       Z_RSENSE
+    #define Z4_CURRENT      800
+    #define Z4_CURRENT_HOME Z4_CURRENT
+    #define Z4_MICROSTEPS    Z_MICROSTEPS
+    #define Z4_RSENSE         0.11
     #define Z4_CHAIN_POS     -1
     //#define Z4_INTERPOLATE true
     //#define Z4_HOLD_MULTIPLIER 0.5
@@ -3077,7 +3062,7 @@
   #if AXIS_IS_TMC_CONFIG(I)
     #define I_CURRENT      800
     #define I_CURRENT_HOME I_CURRENT
-    #define I_MICROSTEPS    16
+    #define I_MICROSTEPS    32
     #define I_RSENSE         0.11
     #define I_CHAIN_POS     -1
     //#define I_INTERPOLATE  true
@@ -3087,7 +3072,7 @@
   #if AXIS_IS_TMC_CONFIG(J)
     #define J_CURRENT      800
     #define J_CURRENT_HOME J_CURRENT
-    #define J_MICROSTEPS    16
+    #define J_MICROSTEPS    32
     #define J_RSENSE         0.11
     #define J_CHAIN_POS     -1
     //#define J_INTERPOLATE  true
@@ -3121,7 +3106,7 @@
     #define V_RSENSE         0.11
     #define V_CHAIN_POS     -1
     //#define V_INTERPOLATE  true
-    //#define V_HOLD_MULTIPLIER 0.5
+    //#define U_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(W)
@@ -3144,74 +3129,67 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E1)
-    #define E1_CURRENT      E0_CURRENT
+    #define E1_CURRENT      800
     #define E1_MICROSTEPS   E0_MICROSTEPS
-    #define E1_RSENSE       E0_RSENSE
+    #define E1_RSENSE         0.11
     #define E1_CHAIN_POS     -1
     //#define E1_INTERPOLATE true
     //#define E1_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E2)
-    #define E2_CURRENT      E0_CURRENT
+    #define E2_CURRENT      800
     #define E2_MICROSTEPS   E0_MICROSTEPS
-    #define E2_RSENSE       E0_RSENSE
+    #define E2_RSENSE         0.11
     #define E2_CHAIN_POS     -1
     //#define E2_INTERPOLATE true
     //#define E2_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E3)
-    #define E3_CURRENT      E0_CURRENT
+    #define E3_CURRENT      800
     #define E3_MICROSTEPS   E0_MICROSTEPS
-    #define E3_RSENSE       E0_RSENSE
+    #define E3_RSENSE         0.11
     #define E3_CHAIN_POS     -1
     //#define E3_INTERPOLATE true
     //#define E3_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E4)
-    #define E4_CURRENT      E0_CURRENT
+    #define E4_CURRENT      800
     #define E4_MICROSTEPS   E0_MICROSTEPS
-    #define E4_RSENSE       E0_RSENSE
+    #define E4_RSENSE         0.11
     #define E4_CHAIN_POS     -1
     //#define E4_INTERPOLATE true
     //#define E4_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E5)
-    #define E5_CURRENT      E0_CURRENT
+    #define E5_CURRENT      800
     #define E5_MICROSTEPS   E0_MICROSTEPS
-    #define E5_RSENSE       E0_RSENSE
+    #define E5_RSENSE         0.11
     #define E5_CHAIN_POS     -1
     //#define E5_INTERPOLATE true
     //#define E5_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E6)
-    #define E6_CURRENT      E0_CURRENT
+    #define E6_CURRENT      800
     #define E6_MICROSTEPS   E0_MICROSTEPS
-    #define E6_RSENSE       E0_RSENSE
+    #define E6_RSENSE         0.11
     #define E6_CHAIN_POS     -1
     //#define E6_INTERPOLATE true
     //#define E6_HOLD_MULTIPLIER 0.5
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E7)
-    #define E7_CURRENT      E0_CURRENT
+    #define E7_CURRENT      800
     #define E7_MICROSTEPS   E0_MICROSTEPS
-    #define E7_RSENSE       E0_RSENSE
+    #define E7_RSENSE         0.11
     #define E7_CHAIN_POS     -1
     //#define E7_INTERPOLATE true
     //#define E7_HOLD_MULTIPLIER 0.5
   #endif
-
-  /**
-   * Use the homing current for all probing. (e.g., Current may be reduced to the
-   * point where a collision makes the motor skip instead of damaging the bed,
-   * though this is unlikely to save delicate probes from being damaged.
-   */
-  //#define PROBING_USE_CURRENT_HOME
 
   // @section tmc/spi
 
@@ -3559,7 +3537,7 @@
   //#define PHOTOGRAPH_PIN 23
 
   // Canon Hack Development Kit
-  // https://web.archive.org/web/20200920094805/captain-slow.dk/2014/03/09/3d-printing-timelapses/
+  // https://web.archive.org/web/20200920094805/https://captain-slow.dk/2014/03/09/3d-printing-timelapses/
   //#define CHDK_PIN        4
 
   // Optional second move with delay to trigger the camera shutter
@@ -3602,6 +3580,23 @@
  */
 //#define SPINDLE_FEATURE
 //#define LASER_FEATURE
+/**
+ * Spindle & Laser control
+ *
+ * Add the M3, M4, and M5 commands to turn the spindle/laser on and off, and
+ * to set spindle speed, spindle direction, and laser power.
+ *
+ * SuperPID is a router/spindle speed controller used in the CNC milling community.
+ * Marlin can be used to turn the spindle on and off. It can also be used to set
+ * the spindle speed from 5,000 to 30,000 RPM.
+ *
+ * You'll need to select a pin for the ON/OFF function and optionally choose a 0-5V
+ * hardware PWM pin for the speed control and a pin for the rotation direction.
+ *
+ * See https://marlinfw.org/docs/configuration/2.0.9/laser_spindle.html for more config details.
+ */
+#define SPINDLE_FEATURE
+#define LASER_FEATURE
 #if ANY(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_STATE    LOW    // Set to "HIGH" if SPINDLE_LASER_ENA_PIN is active HIGH
 
@@ -3651,45 +3646,38 @@
    */
   //#define CUTTER_POWER_RELATIVE              // Set speed proportional to [SPEED_POWER_MIN...SPEED_POWER_MAX]
 
-  #if ENABLED(SPINDLE_FEATURE)
-    //#define SPINDLE_CHANGE_DIR               // Enable if your spindle controller can change spindle direction
-    #define SPINDLE_CHANGE_DIR_STOP            // Enable if the spindle should stop before changing spin direction
-    #define SPINDLE_INVERT_DIR          false  // Set to "true" if the spin direction is reversed
+  /**
+   * M3/M4 Power Equation
+   *
+   * Each tool uses different value ranges for speed / power control.
+   * These parameters are used to convert between tool power units and PWM.
+   *
+   * Speed/Power = (PWMDC / 255 * 100 - SPEED_POWER_INTERCEPT) / SPEED_POWER_SLOPE
+   * PWMDC = (spdpwr - SPEED_POWER_MIN) / (SPEED_POWER_MAX - SPEED_POWER_MIN) / SPEED_POWER_SLOPE
+   */
+   #if ENABLED(SPINDLE_LASER_USE_PWM)
+    #define SPEED_POWER_INTERCEPT       0    // (%) 0-100 i.e., Minimum power percentage
+    #define SPEED_POWER_MIN             0    // (RPM)
+    #define SPEED_POWER_MAX         30000    // (RPM) SuperPID router controller 0 - 30,000 RPM
+    #define SPEED_POWER_STARTUP        80    // (RPM) M3/M4 speed/power default (with no arguments)
+  #endif
 
+  #if ENABLED(SPINDLE_FEATURE)
     #define SPINDLE_LASER_POWERUP_DELAY   5000 // (ms) Delay to allow the spindle/laser to come up to speed/power
     #define SPINDLE_LASER_POWERDOWN_DELAY 5000 // (ms) Delay to allow the spindle to stop
 
-    /**
-     * M3/M4 Power Equation
-     *
-     * Each tool uses different value ranges for speed / power control.
-     * These parameters are used to convert between tool power units and PWM.
-     *
-     * Speed/Power = (PWMDC / 255 * 100 - SPEED_POWER_INTERCEPT) / SPEED_POWER_SLOPE
-     * PWMDC = (spdpwr - SPEED_POWER_MIN) / (SPEED_POWER_MAX - SPEED_POWER_MIN) / SPEED_POWER_SLOPE
-     */
-    #if ENABLED(SPINDLE_LASER_USE_PWM)
-      #define SPEED_POWER_INTERCEPT       0    // (%) 0-100 i.e., Minimum power percentage
-      #define SPEED_POWER_MIN          5000    // (RPM)
-      #define SPEED_POWER_MAX         30000    // (RPM) SuperPID router controller 0 - 30,000 RPM
-      #define SPEED_POWER_STARTUP     25000    // (RPM) M3/M4 speed/power default (with no arguments)
-    #endif
+    //#define SPINDLE_CHANGE_DIR               // Enable if your spindle controller can change spindle direction
+    #define SPINDLE_CHANGE_DIR_STOP            // Enable if the spindle should stop before changing spin direction
+    #define SPINDLE_INVERT_DIR          false  // Set to "true" if the spin direction is reversed
+  #endif
 
-  #else
-
-    #if ENABLED(SPINDLE_LASER_USE_PWM)
-      #define SPEED_POWER_INTERCEPT       0    // (%) 0-100 i.e., Minimum power percentage
-      #define SPEED_POWER_MIN             0    // (%) 0-100
-      #define SPEED_POWER_MAX           100    // (%) 0-100
-      #define SPEED_POWER_STARTUP        80    // (%) M3/M4 speed/power default (with no arguments)
-    #endif
+  #if ENABLED(LASER_FEATURE)
+    #define LASER_POWERUP_DELAY   50 // (ms) Delay to allow the spindle/laser to come up to speed/power
+    #define LASER_POWERDOWN_DELAY 50 // (ms) Delay to allow the spindle to stop
 
     // Define the minimum and maximum test pulse time values for a laser test fire function
     #define LASER_TEST_PULSE_MIN           1   // (ms) Used with Laser Control Menu
     #define LASER_TEST_PULSE_MAX         999   // (ms) Caution: Menu may not show more than 3 characters
-
-    #define SPINDLE_LASER_POWERUP_DELAY   50   // (ms) Delay to allow the spindle/laser to come up to speed/power
-    #define SPINDLE_LASER_POWERDOWN_DELAY 50   // (ms) Delay to allow the spindle to stop
 
    /**
     * Laser Safety Timeout
@@ -3760,6 +3748,7 @@
 
   #endif
 #endif // SPINDLE_FEATURE || LASER_FEATURE
+
 
 /**
  * Synchronous Laser Control with M106/M107
@@ -3867,7 +3856,7 @@
  * Enables G53 and G54-G59.3 commands to select coordinate systems
  * and G92.1 to reset the workspace to native machine space.
  */
-//#define CNC_COORDINATE_SYSTEMS
+#define CNC_COORDINATE_SYSTEMS
 
 // @section security
 
@@ -4000,11 +3989,11 @@
  * Note that G0 feedrates should be used with care for 3D printing (if used at all).
  * High feedrates may cause ringing and harm print quality.
  */
-//#define PAREN_COMMENTS      // Support for parentheses-delimited comments
-//#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
+#define PAREN_COMMENTS      // Support for parentheses-delimited comments
+#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
 
 // Enable and set a (default) feedrate for all G0 moves
-//#define G0_FEEDRATE 3000 // (mm/min)
+#define G0_FEEDRATE 3000 // (mm/min)
 #ifdef G0_FEEDRATE
   //#define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
 #endif
@@ -4412,89 +4401,44 @@
   //#define E_MUX0_PIN 40  // Always Required
   //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
   //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
-#elif HAS_PRUSA_MMU2 || HAS_PRUSA_MMU3
-  // Common settings for MMU2/MMU2S/MMU3
-  // Serial port used for communication with MMU2/MMU2S/MMU3.
+#elif HAS_PRUSA_MMU2
+  // Serial port used for communication with MMU2.
   #define MMU2_SERIAL_PORT 2
-  #define MMU_BAUD 115200
 
   // Use hardware reset for MMU if a pin is defined for it
   //#define MMU2_RST_PIN 23
 
-  #if HAS_PRUSA_MMU2
-    // Enable if the MMU2 has 12V stepper motors (MMU2 Firmware 1.0.2 and up)
-    //#define MMU2_MODE_12V
+  // Enable if the MMU2 has 12V stepper motors (MMU2 Firmware 1.0.2 and up)
+  //#define MMU2_MODE_12V
 
-    // G-code to execute when MMU2 F.I.N.D.A. probe detects filament runout
-    #define MMU2_FILAMENT_RUNOUT_SCRIPT "M600"
-  #endif
+  // G-code to execute when MMU2 F.I.N.D.A. probe detects filament runout
+  #define MMU2_FILAMENT_RUNOUT_SCRIPT "M600"
 
-  // Add an LCD menu for MMU2/MMU2S/MMU3
-  //#define MMU_MENUS
+  // Add an LCD menu for MMU2
+  //#define MMU2_MENUS
 
   // Settings for filament load / unload from the LCD menu.
   // This is for Průša MK3-style extruders. Customize for your hardware.
   #define MMU2_FILAMENTCHANGE_EJECT_FEED 80.0
-
-  /**
-   * ------------
-   * MMU2 / MMU2S
-   * ------------
-   * MMU2 sequences use mm/min. Not compatible with MMU3 (see below).
-   * #define MMU2_LOAD_TO_NOZZLE_SEQUENCE \
-   *   {  4.4,  871 }, \
-   *   { 10.0, 1393 }, \
-   *   {  4.4,  871 }, \
-   *   { 10.0,  198 }
-   */
-
-  /* #define MMU2_RAMMING_SEQUENCE \
-   *   {   1.0, 1000 }, \
-   *   {   1.0, 1500 }, \
-   *   {   2.0, 2000 }, \
-   *   {   1.5, 3000 }, \
-   *   {   2.5, 4000 }, \
-   *   { -15.0, 5000 }, \
-   *   { -14.0, 1200 }, \
-   *   {  -6.0,  600 }, \
-   *   {  10.0,  700 }, \
-   *   { -10.0,  400 }, \
-   *   { -50.0, 2000 }
-   */
-
-  /**
-   * ----
-   * MMU3
-   * ----
-   * These values are compatible with MMU3 as they are defined in mm/s
-   */
-
-  #define MMU2_EXTRUDER_PTFE_LENGTH       42.3 // (mm)
-  #define MMU2_EXTRUDER_HEATBREAK_LENGTH  17.7 // (mm)
-
   #define MMU2_LOAD_TO_NOZZLE_SEQUENCE \
-    { MMU2_EXTRUDER_PTFE_LENGTH,      MMM_TO_MMS(810) }, /* (13.5 mm/s) Fast load ahead of heatbreak */ \
-    { MMU2_EXTRUDER_HEATBREAK_LENGTH, MMM_TO_MMS(198) }  // ( 3.3 mm/s) Slow load after heatbreak
+    {  7.2, 1145 }, \
+    { 14.4,  871 }, \
+    { 36.0, 1393 }, \
+    { 14.4,  871 }, \
+    { 50.0,  198 }
 
   #define MMU2_RAMMING_SEQUENCE \
-    { 0.2816,  MMM_TO_MMS(1339.0) }, \
-    { 0.3051,  MMM_TO_MMS(1451.0) }, \
-    { 0.3453,  MMM_TO_MMS(1642.0) }, \
-    { 0.3990,  MMM_TO_MMS(1897.0) }, \
-    { 0.4761,  MMM_TO_MMS(2264.0) }, \
-    { 0.5767,  MMM_TO_MMS(2742.0) }, \
-    { 0.5691,  MMM_TO_MMS(3220.0) }, \
-    { 0.1081,  MMM_TO_MMS(3220.0) }, \
-    { 0.7644,  MMM_TO_MMS(3635.0) }, \
-    { 0.8248,  MMM_TO_MMS(3921.0) }, \
-    { 0.8483,  MMM_TO_MMS(4033.0) }, \
-    { -15.0,   MMM_TO_MMS(6000.0) }, \
-    { -24.5,   MMM_TO_MMS(1200.0) }, \
-    {  -7.0,   MMM_TO_MMS( 600.0) }, \
-    {  -3.5,   MMM_TO_MMS( 360.0) }, \
-    {  20.0,   MMM_TO_MMS( 454.0) }, \
-    { -20.0,   MMM_TO_MMS( 303.0) }, \
-    { -35.0,   MMM_TO_MMS(2000.0) }
+    {   1.0, 1000 }, \
+    {   1.0, 1500 }, \
+    {   2.0, 2000 }, \
+    {   1.5, 3000 }, \
+    {   2.5, 4000 }, \
+    { -15.0, 5000 }, \
+    { -14.0, 1200 }, \
+    {  -6.0,  600 }, \
+    {  10.0,  700 }, \
+    { -10.0,  400 }, \
+    { -50.0, 2000 }
 
   /**
    * Using a sensor like the MMU2S
@@ -4504,26 +4448,11 @@
   #if HAS_PRUSA_MMU2S
     #define MMU2_C0_RETRY   5             // Number of retries (total time = timeout*retries)
 
-    /**
-     * This is called after the filament runout sensor is triggered to check if
-     * the filament has been loaded properly by moving the filament back and
-     * forth to see if the filament runout sensor is going to get triggered
-     * again, which should not occur if the filament is properly loaded.
-     *
-     * Thus, the MMU2_CAN_LOAD_SEQUENCE should contain some forward and
-     * backward moves. The forward moves should be greater than the backward
-     * moves.
-     *
-     * This is useless if your filament runout sensor is way behind the gears.
-     * In that case use {0, MMU2_CAN_LOAD_FEEDRATE}
-     *
-     * Adjust MMU2_CAN_LOAD_SEQUENCE according to your setup.
-     */
     #define MMU2_CAN_LOAD_FEEDRATE 800    // (mm/min)
     #define MMU2_CAN_LOAD_SEQUENCE \
-      {   5.0, MMU2_CAN_LOAD_FEEDRATE }, \
-      {  15.0, MMU2_CAN_LOAD_FEEDRATE }, \
-      { -10.0, MMU2_CAN_LOAD_FEEDRATE }
+      {  0.1, MMU2_CAN_LOAD_FEEDRATE }, \
+      {  60.0, MMU2_CAN_LOAD_FEEDRATE }, \
+      { -52.0, MMU2_CAN_LOAD_FEEDRATE }
 
     #define MMU2_CAN_LOAD_RETRACT   6.0   // (mm) Keep under the distance between Load Sequence values
     #define MMU2_CAN_LOAD_DEVIATION 0.8   // (mm) Acceptable deviation
@@ -4534,68 +4463,6 @@
 
     // Continue unloading if sensor detects filament after the initial unload move
     //#define MMU_IR_UNLOAD_MOVE
-
-  #elif HAS_PRUSA_MMU3
-
-    // MMU3 settings
-
-    #define MMU2_MAX_RETRIES 3  // Number of retries (total time = timeout*retries)
-
-    // Nominal distance from the extruder gear to the nozzle tip is 87mm
-    // However, some slipping may occur and we need separate distances for
-    // LoadToNozzle and ToolChange.
-    // - +5mm seemed good for LoadToNozzle,
-    // - but too much (made blobs) for a ToolChange
-    #define MMU2_LOAD_TO_NOZZLE_LENGTH 87.0 + 5.0
-
-    // As discussed with our PrusaSlicer profile specialist
-    // - ToolChange shall not try to push filament into the very tip of the nozzle
-    // to have some space for additional G-code to tune the extruded filament length
-    // in the profile
-    // Beware - this value is used to initialize the MMU logic layer - it will be sent to the MMU upon line up (written into its 8bit register 0x0b)
-    // However - in the G-code we can get a request to set the extra load distance at runtime to something else (M708 A0xb Xsomething).
-    // The printer intercepts such a call and sets its extra load distance to match the new value as well.
-    #define MMU2_FILAMENT_SENSOR_POSITION    0   // (mm)
-    #define MMU2_LOAD_DISTANCE_PAST_GEARS    5   // (mm)
-    #define MMU2_TOOL_CHANGE_LOAD_LENGTH MMU2_FILAMENT_SENSOR_POSITION + MMU2_LOAD_DISTANCE_PAST_GEARS // (mm)
-
-    #define MMU2_LOAD_TO_NOZZLE_FEED_RATE        20.0 // (mm/s)
-    #define MMU2_UNLOAD_TO_FINDA_FEED_RATE      120.0 // (mm/s)
-
-    #define MMU2_VERIFY_LOAD_TO_NOZZLE_FEED_RATE 50.0 // (mm/s)
-    #define MMU2_VERIFY_LOAD_TO_NOZZLE_TWEAK     -5.0 // (mm) Amount to adjust the length for verifying load-to-nozzle
-
-    // The first thing the MMU does is initialize its axis.
-    // Meanwhile the E-motor will unload 20mm of filament in about 1 second.
-    #define MMU2_RETRY_UNLOAD_TO_FINDA_LENGTH    80.0 // (mm)
-    #define MMU2_RETRY_UNLOAD_TO_FINDA_FEED_RATE 80.0 // (mm/s)
-
-    // After loading a new filament, the printer will extrude this length of filament
-    // then retract to the original position. This is used to check if the filament sensor
-    // reading flickers or filament is jammed.
-    #define MMU2_CHECK_FILAMENT_PRESENCE_EXTRUSION_LENGTH (MMU2_EXTRUDER_PTFE_LENGTH + MMU2_EXTRUDER_HEATBREAK_LENGTH + MMU2_VERIFY_LOAD_TO_NOZZLE_TWEAK + MMU2_FILAMENT_SENSOR_POSITION) // (mm)
-
-    #define MMU_HAS_CUTTER            // Enable cutter related functionalities
-    //#define MMU_FORCE_STEALTH_MODE  // Force stealth mode and disable menu item
-
-    /**
-     * SpoolJoin Consumes All Filament -- EXPERIMENTAL
-     *
-     * SpoolJoin normally triggers when FINDA sensor untriggers while printing.
-     * This is the default behaviour and it doesn't consume all the filament
-     * before triggering a filament change. This leaves some filament in the
-     * current slot and before switching to the next slot it is unloaded.
-     *
-     * Enabling this option will trigger the filament change when both FINDA
-     * and Filament Runout Sensor triggers during the print and it allows the
-     * filament in the current slot to be completely consumed before doing the
-     * filament change. But this can cause problems as a little bit of filament
-     * will be left between the extruder gears (thinking that the filament
-     * sensor is triggered through the gears) and the end of the PTFE tube and
-     * can cause filament load issues.
-     */
-    //#define MMU_SPOOL_JOIN_CONSUMES_ALL_FILAMENT
-
   #else
 
     /**
@@ -4618,7 +4485,7 @@
 
   //#define MMU2_DEBUG  // Write debug info to serial output
 
-#endif // HAS_PRUSA_MMU2 || HAS_PRUSA_MMU3
+#endif // HAS_PRUSA_MMU2
 
 /**
  * Advanced Print Counter settings
