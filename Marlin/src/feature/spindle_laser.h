@@ -225,11 +225,15 @@ public:
         enable = false;
         apply_power(0);
     }
-    #if PIN_EXISTS(LASER_ENA)
-      WRITE(LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+    #if ENABLED(LASER_FEATURE) && PIN_EXISTS(LASER_ENA)
+      if (active_tool_type == TYPE_LASER) {
+        WRITE(LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+      }
     #endif
-    #if PIN_EXISTS(SPINDLE_LASER_ENA)
-      WRITE(SPINDLE_LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+    #if ENABLED(SPINDLE_FEATURE) && PIN_EXISTS(SPINDLE_LASER_ENA)
+      if (active_tool_type != TYPE_LASER) {
+        WRITE(SPINDLE_LASER_ENA_PIN, enable ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
+      }
     #endif
     if (enable_state != enable) {
       power_delay(enable);
