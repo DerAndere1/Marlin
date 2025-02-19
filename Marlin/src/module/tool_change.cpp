@@ -1338,7 +1338,6 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
         // Store cutter state and stop cutter
         bool old_cutter_state = cutter.enable_state;
         uint8_t old_cutter_power = cutter.power;
-        uint8_t old_tool_type = cutter.active_tool_type;
         cutter.power = 0;
         cutter.apply_power(0);
         #if ENABLED(LASER_FEATURE)
