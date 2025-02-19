@@ -107,12 +107,12 @@ public:
   #endif
 
   static bool isReadyForUI;               // Ready to apply power setting from the UI to OCR
-  static ToolTypeEnum active_tool_type; // Tool type: 0 for extruder, 1 for spindle, 2 for laser
+  static ToolTypeEnum active_tool_type;   // Tool type (extruder, laser, or spindle tool)
   static bool enable_state;
   static uint8_t power,
                  last_power_applied;      // Basic power state tracking
 
-  static cutter_frequency_t frequency;  // Set PWM frequency; range: 2K-50K
+  static cutter_frequency_t frequency;    // Set PWM frequency; range: 2K-50K
 
   static cutter_power_t menuPower,        // Power as set via LCD menu in PWM, Percentage or RPM
                         unitPower;        // Power as displayed status in PWM, Percentage or RPM
