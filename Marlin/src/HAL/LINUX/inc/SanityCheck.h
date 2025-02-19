@@ -30,7 +30,7 @@
   #error "SPINDLE_LASER_PWM_PIN must use SERVO0, SERVO1 or SERVO3 connector"
 #endif
 
-#if ENABLED(LASER_USE_PWM) && !(LASER_PWM_PIN == 4 || LASER_PWM_PIN == 6 || LASER_PWM_PIN == 11)
+#if ENABLED(SPINDLE_LASER_USE_PWM) && !(LASER_PWM_PIN == 4 || LASER_PWM_PIN == 6 || LASER_PWM_PIN == 11)
   #error "LASER_PWM_PIN must use SERVO0, SERVO1 or SERVO3 connector"
 #endif
 

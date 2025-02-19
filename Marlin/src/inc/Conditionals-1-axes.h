@@ -211,19 +211,6 @@
 // More than one hotend...
 #if HOTENDS > 1
   #define HAS_MULTI_HOTEND 1
-  #ifndef HAS_MULTI_TOOLS
-    #define HAS_MULTI_TOOLS 1
-  #endif
-  #define HAS_HOTEND_OFFSET 1
-  #ifndef HOTEND_OFFSET_X
-    #define HOTEND_OFFSET_X { 0 } // X offsets for each extruder
-  #endif
-  #ifndef HOTEND_OFFSET_Y
-    #define HOTEND_OFFSET_Y { 0 } // Y offsets for each extruder
-  #endif
-  #ifndef HOTEND_OFFSET_Z
-    #define HOTEND_OFFSET_Z { 0 } // Z offsets for each extruder
-  #endif
 #endif
 
 // Clean up unused temperature sensors and sub-options
@@ -287,25 +274,30 @@
 #endif
 #if TOOLS > 1
   #define HAS_MULTI_TOOLS 1
-#else
-  #if TOOLS > 0
-    #define HAS_TOOL_LENGTH_COMPENSATION 1
-  #endif
-  #if TOOLS > 1
-    #define HAS_MULTI_TOOLS 1
+  #if (HAS_MULTI_HOTEND || ((TOOLS > HOTENDS) && (TOOLS > EXTRUDERS)))
     #define HAS_HOTEND_OFFSET 1
+    #ifndef HOTEND_OFFSET_X
+      #define HOTEND_OFFSET_X { 0 } // X offsets for each tool
+    #endif
+    #ifndef HOTEND_OFFSET_Y
+      #define HOTEND_OFFSET_Y { 0 } // Y offsets for each tool
+    #endif
+    #ifndef HOTEND_OFFSET_Z
+      #define HOTEND_OFFSET_Z { 0 } // Z offsets for each tool
+    #endif
   #endif
-#endif
-
-#if !HAS_MULTI_TOOLS
+#else
   #undef HOTEND_OFFSET_X
   #undef HOTEND_OFFSET_Y
   #undef HOTEND_OFFSET_Z
 #endif
 
-#if defined(DEFAULT_TOOL_LENGTH_COMPENSATION)
+#if HAS_HOTEND_OFFSET && defined(DEFAULT_TOOL_LENGTH_COMPENSATION)
   #define HAS_TOOL_LENGTH_COMPENSATION 1
-  #define HAS_HOTEND_OFFSET 1
+#endif
+
+#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #define HAS_TOOL_CENTERPOINT_CONTROL
 #endif
 
 /**
