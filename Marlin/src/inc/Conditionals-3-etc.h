@@ -126,6 +126,11 @@
   #define DO_TOOLCHANGE_FOR_PROBING 1
 #endif
 
+// Simple tool length compensation
+#if HAS_HOTEND_OFFSET && defined(DEFAULT_TOOL_LENGTH_COMPENSATION)
+  #define HAS_TOOL_LENGTH_COMPENSATION 1
+#endif
+
 /**
  * Fill in undefined Filament Sensor options
  */

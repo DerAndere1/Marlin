@@ -264,7 +264,6 @@
  * 
  * TOOLS         - Number of Selectable Tools
  */
-
 #ifndef TOOLS
   #if (HOTENDS >= EXTRUDERS)
     #define TOOLS HOTENDS
@@ -292,13 +291,6 @@
   #undef HOTEND_OFFSET_Z
 #endif
 
-#if HAS_HOTEND_OFFSET && defined(DEFAULT_TOOL_LENGTH_COMPENSATION)
-  #define HAS_TOOL_LENGTH_COMPENSATION 1
-#endif
-
-#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-  #define HAS_TOOL_CENTERPOINT_CONTROL
-#endif
 
 /**
  * Number of Linear Axes (e.g., XYZIJKUVW)
