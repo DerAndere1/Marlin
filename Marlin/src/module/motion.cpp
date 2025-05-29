@@ -835,7 +835,7 @@ void Motion::sync_plan_position() {
  * suitable for motion.position, etc.
  */
 void Motion::get_cartesian_from_steppers() {
-  #if ENABLED(DELTA)
+  #if ANY(DELTA, PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     forward_kinematics(planner.get_axis_positions_mm());
   #elif IS_SCARA
     forward_kinematics(

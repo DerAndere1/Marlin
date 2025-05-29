@@ -78,17 +78,17 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 xyz_pos_t native_to_joint(const xyz_pos_t &native) {
   if (!tool_centerpoint_control) return native;
 
-  const float pivot_length_x = native.x - mrzp_offset_x;
-  const float pivot_length_y = native.y - mrzp_offset_y;
-  const float pivot_length_z = native.z - mrzp_offset_z;
+  const_float_t pivot_length_x = native.x - mrzp_offset_x;
+  const_float_t pivot_length_y = native.y - mrzp_offset_y;
+  const_float_t pivot_length_z = native.z - mrzp_offset_z;
 
-  const float i_rad = RADIANS(native.i);
-  const float cos_i = cos(i_rad);
-  const float sin_i = sin(i_rad);
+  const_float_t i_rad = RADIANS(native.i);
+  const_float_t cos_i = cos(i_rad);
+  const_float_t sin_i = sin(i_rad);
 
-  const float j_rad = TERN0(HAS_J_AXIS, RADIANS(native.j));
-  const float cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
-  const float sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
+  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(native.j));
+  const_float_t cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
+  const_float_t sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
 
   #if AXIS4_NAME == 'A'
     // computed position
@@ -148,4 +148,75 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
   return joints_pos;
 }
 
+void forward_kinematics(const xyz_pos_t &joint_pos) {
+  cartes = joint_to_native(joint_pos);
+}
+
+
+xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
+  if (!tool_centerpoint_control) return joint_pos;
+
+  // Note: 'principal' joints are used
+  const_float_t pivot_length_x = joint_pos.x - mrzp_offset_x;
+  const_float_t pivot_length_y = joint_pos.y - mrzp_offset_y;
+  const_float_t pivot_length_z = joint_pos.z - mrzp_offset_z;
+  const_float_t dx = rotational_offset_x;
+  const_float_t i_rad = RADIANS(joint_pos.i);
+  const_float_t sin_i = sin(i_rad);
+  const_float_t cos_i = cos(i_rad);
+
+  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(joints_pos.j));
+  const_float_t sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
+  const_float_t cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
+
+  const_float_t dz = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset_z, hotend_offset[active_extruder].z);
+
+  #if AXIS4_NAME == 'A'
+    const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
+        cos_j *          pivot_length_x
+      + sin_j * cos_i * (pivot_length_y - dy)
+      + sin_j * sin_i * (pivot_length_z - dz)
+      - sin_j * dy
+      + mrzp_offset_x,
+
+      + sin_j *          pivot_length_x
+      + cos_j * cos_i * (pivot_length_x - dy)
+      - cos_j * sin_i * (pivot_length_z - dz)
+      - cos_j * dy
+      + mrzp_offset_y,
+
+      + sin_i * (pivot_length_y - dy)
+      + cos_i * (pivot_length_z - dz)
+      + dz
+      + mrzp_offset_z,
+
+        joint_pos.i,
+        joint_pos.j
+    );
+  #else 
+    const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
+        cos_j * cos_i * (pivot_length_x - dx)
+      - sin_j *          pivot_length_y
+      - cos_j * sin_i * (pivot_length_z - dz)
+      + cos_j * dx
+      + mrzp_offset_x,
+
+      + sin_j * cos_i * (pivot_length_x - dx)
+      + cos_j *          pivot_length_y
+      + sin_j * sin_i * (pivot_length_z - dz)
+      + sin_j * dx
+      + mrzp_offset_y,
+
+      - sin_i * (pivot_length_x - dx)
+      + cos_i * (pivot_length_z - dz)
+      + dz
+      + mrzp_offset_z,
+
+        joint_pos.i,
+        joint_pos.j
+    );
+    #endif
+
+    return native_pos;
+  }
 #endif // PENTA_AXIS_TRT
