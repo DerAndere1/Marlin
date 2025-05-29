@@ -1033,7 +1033,7 @@ void sync_plan_position() {
  * suitable for current_position, etc.
  */
 void get_cartesian_from_steppers() {
-  #if ENABLED(DELTA)
+  #if ANY(DELTA, PENTA_AXIS_TRT, PENTA_AXIS_HT)
     forward_kinematics(planner.get_axis_positions_mm());
   #elif IS_SCARA
     forward_kinematics(

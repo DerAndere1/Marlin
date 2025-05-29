@@ -74,3 +74,12 @@ void inverse_kinematics(const xyz_pos_t &raw);
  * This is an expensive calculation.
  */
 xyz_pos_t native_to_joint(const xyz_pos_t &native);
+
+void forward_kinematics(const xyz_pos_t &joint_pos);
+
+/**
+ * Calculate the positions for a given joint position.
+ *
+ * This is an expensive calculation.
+ */
+xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos);
