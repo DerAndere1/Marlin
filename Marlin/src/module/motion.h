@@ -52,6 +52,9 @@ extern bool relative_mode;
 extern xyze_pos_t current_position,  // High-level current tool position
                   destination;       // Destination for a move
 
+#if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
+  extern xyz_pos_t raw_destination;
+#endif
 // Scratch space for a cartesian result
 extern xyz_pos_t cartes;
 
