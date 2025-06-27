@@ -43,7 +43,6 @@
 #if ENABLED(AUTO_REPORT_POSITION)
   #include "../libs/autoreport.h"
 #endif
-#endif
 
 // Error margin to work around float imprecision
 constexpr float fslop = 0.0001;
@@ -110,6 +109,9 @@ public:
 
   static xyze_pos_t position,           // High-level current tool position
                     destination;        // Destination for a move
+  #if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
+    extern xyz_pos_t raw_destination;
+  #endif
 
   static feedRate_t feedrate_mm_s;      // Feedrate for G-moves, set by the most recent G-move
 

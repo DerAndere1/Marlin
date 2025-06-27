@@ -112,6 +112,20 @@ relative_t GcodeSuite::axis_relative; // Init in constructor
 #if ENABLED(GCODE_MACROS)
   char GcodeSuite::macros[GCODE_MACROS_SLOTS][GCODE_MACROS_SLOT_SIZE + 1] = {{ 0 }};
 #endif
+#if ENABLED(SCALE_WORKSPACE)
+  float GcodeSuite::scaling_center_x = 0.0f;
+  float GcodeSuite::scaling_center_y = 0.0f;
+  float GcodeSuite::scaling_center_z = 0.0f;
+  float GcodeSuite::scaling_factor_x = 1.0f;
+  float GcodeSuite::scaling_factor_y = 1.0f;
+  float GcodeSuite::scaling_factor_z = 1.0f;
+#endif
+
+#if ENABLED(ROTATE_WORKSPACE)
+  float GcodeSuite::rotation_center_x = 0.0f;
+  float GcodeSuite::rotation_center_y = 0.0f;
+  float GcodeSuite::rotation_angle = 0.0f;
+#endif
 
 void GcodeSuite::report_echo_start(const bool forReplay) { if (!forReplay) SERIAL_ECHO_START(); }
 void GcodeSuite::report_heading(const bool forReplay, FSTR_P const fstr, const bool eol/*=true*/) {
@@ -201,7 +215,7 @@ int8_t GcodeSuite::get_target_tool_from_command() {
       return -1;
     }
   #endif
-  return active_extruder;
+  return motion.extruder;
 }
 
 
@@ -221,18 +235,66 @@ void GcodeSuite::get_destination_from_command() {
     constexpr bool skip_move = false;
   #endif
 
+  const bool scaling_is_active = !(NEAR(scaling_factor_x, 1.0f) && NEAR(scaling_factor_y, 1.0f) && NEAR(scaling_factor_z, 1.0f))
+
   // Get new XYZ position, whether absolute or relative
   LOOP_NUM_AXES(i) {
-    if ( (seen[i] = parser.seenval(AXIS_CHAR(i))) ) {
+    if (seen[i] = parser.seenval(AXIS_CHAR(i))) {
       const float v = parser.value_axis_units((AxisEnum)i);
-      if (skip_move)
+      if (skip_move) {
+        #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
+          raw_destination[i] = motion.position[i];
+        #else
+          motion.destination[i] = motion.position[i];
+        #endif
+      }
+      else {
+        #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
+          if (!(scaling_is_active) || NEAR_ZERO(rotation_angle)) {
+            raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : LOGICAL_TO_NATIVE(v, i);
+          }
+          else {
+            raw_destination[i] = axis_is_relative(AxisEnum(i)) ? raw_destination[i] + v : LOGICAL_TO_NATIVE(v, i);
+          }
+        #else
+          motion.destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : LOGICAL_TO_NATIVE(v, i);
+        #endif
+      }
+    }
+    else {
+      if (TERN1(SCALE_WORKSPACE, !(scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
         motion.destination[i] = motion.position[i];
       else
         motion.destination[i] = axis_is_relative((AxisEnum)i) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
     }
-    else
-      motion.destination[i] = motion.position[i];
   }
+
+  #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
+  if (TERN1(SCALE_WORKSPACE, (scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
+    motion.destination = raw_destination;
+  #endif
+
+  #if ENABLED(SCALE_WORKSPACE)
+    if (scaling_is_active) {
+      motion.destination.x = (raw_destination.x - scaling_center_x) * scaling_factor_x + scaling_center_x;
+      TERN_(HAS_Y_AXIS, motion.destination.y = (raw_destination.y - scaling_center_y) * scaling_factor_y + scaling_center_y);
+      TERN_(HAS_Z_AXIS, motion.destination.z = (raw_destination.z - scaling_center_z) * scaling_factor_z + scaling_center_z);
+    }
+  #endif
+
+  #if ENABLED(ROTATE_WORKSPACE)
+    const float angle_rad = RADIANS(rotation_angle);
+
+    if (!NEAR_ZERO(rotation_angle)) {
+      const float cos_angle = cos(angle_rad);
+      const float sin_angle = sin(angle_rad);
+      // Apply rotation
+      const float temp_x = motion.destination.x - rotation_center_x;
+      const float temp_y = motion.destination.y - rotation_center_y;
+      motion.destination.x = temp_x * cos_angle - temp_y * sin_angle + rotation_center_x;
+      motion.destination.y = temp_x * sin_angle + temp_y * cos_angle + rotation_center_y;
+    }
+  #endif
 
   #if HAS_EXTRUDERS
     // Get new E position, whether absolute or relative
@@ -490,6 +552,9 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
       #if HAS_TOOL_LENGTH_COMPENSATION
         case 43: G43(); break;                                    // G43.4: Rotational Tool Center Point Control Mode
         case 49: G49(); break;
+      #if ENABLED(SCALE_WORKSPACE)
+        case 50: G50(); break;                                    // G50: Cancel Workspace Scaling
+        case 51: G51(); break;                                    // G51: Set Workspace Scaling
       #endif
 
       #if ENABLED(CNC_COORDINATE_SYSTEMS)
@@ -505,6 +570,11 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
       #if SAVED_POSITIONS
         case 60: G60(); break;                                    // G60:  save current position
         case 61: G61(); break;                                    // G61:  Apply/restore saved coordinates.
+      #endif
+
+      #if ENABLED(ROTATE_WORKSPACE)
+        case 68: G68(); break;                                    // G68: Set Workspace Rotation
+        case 69: G69(); break;                                    // G69: Cancel Workspace Rotation
       #endif
 
       #if ALL(PTC_PROBE, PTC_BED)

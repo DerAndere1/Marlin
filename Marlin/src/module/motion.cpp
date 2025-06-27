@@ -140,6 +140,9 @@ xyze_pos_t Motion::destination; // {0}
 
 // Scratch space for a cartesian result
 xyz_pos_t Motion::cartes;
+#if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
+  xyz_pos_t Motion::raw_destination = NUM_AXIS_ARRAY(X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+#endif
 
 #if ENABLED(LCD_SHOW_E_TOTAL)
   float Motion::e_move_accumulator; // = 0
