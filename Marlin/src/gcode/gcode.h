@@ -66,8 +66,12 @@
  * G42  - Coordinated move to a mesh point (Requires MESH_BED_LEVELING, AUTO_BED_LEVELING_BLINEAR, or AUTO_BED_LEVELING_UBL)
  * G43  - Tool length compensation, tool centerpoint control (Requires DEFAULT_TOOL_CENTERPOINT_CONTROL)
  * G49  - Cancel tool length compensation (Cancel tool length compensation (Requires DEFAULT_TOOL_CENTERPOINT_CONTROL) 
+ * G50  - Cancel workspace scaling (Requires SCALE_WORKSPACE)
+ * G51  - Set workspace scaling (Requires SCALE_WORKSPACE)
  * G60  - Save current position. (Requires SAVED_POSITIONS)
- * G61  - Apply/restore saved coordinates. (Requires SAVED_POSITIONS)
+ * G61  - Apply/Restore saved coordinates. (Requires SAVED_POSITIONS)
+ * G68  - Set Workspace Rotation
+ * G69  - Cancel Workspace Rotation
  * G76  - Calibrate first layer temperature offsets. (Requires PTC_PROBE and PTC_BED)
  * G80  - Cancel current motion mode (Requires GCODE_MOTION_MODES)
  * G90  - Use Absolute Coordinates
@@ -427,6 +431,22 @@ public:
     static bool select_coordinate_system(const int8_t _new);
   #endif
 
+
+  #if ENABLED(SCALE_WORKSPACE)
+    static float scaling_center_x;
+    static float scaling_center_y;
+    static float scaling_center_z;
+    static float scaling_factor_x;
+    static float scaling_factor_y;
+    static float scaling_factor_z;
+  #endif
+
+  #if ENABLED(ROTATE_WORKSPACE)
+    static float rotation_angle;
+    static float rotation_center_x;
+    static float rotation_center_y;
+  #endif
+
   static millis_t previous_move_ms, max_inactive_time;
   FORCE_INLINE static bool stepper_max_timed_out(const millis_t ms=millis()) {
     return max_inactive_time && ELAPSED(ms, previous_move_ms + max_inactive_time);
@@ -532,7 +552,7 @@ private:
     static void G6();
   #endif
 
-#if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
+  #if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
     static void G10();
   #endif
 
@@ -615,6 +635,11 @@ private:
     static void G49();  
   #endif
 
+  #if ENABLED(SCALE_WORKSPACE)
+    static void G50();
+    static void G51();  
+  #endif
+
   #if ENABLED(CNC_COORDINATE_SYSTEMS)
     static void G53();
     static void G54();
@@ -632,6 +657,11 @@ private:
   #if SAVED_POSITIONS
     static void G60();
     static void G61(int8_t slot=-1);
+  #endif
+
+  #if ENABLED(ROTATE_WORKSPACE)
+    static void G68();
+    static void G69();
   #endif
 
   #if ENABLED(GCODE_MOTION_MODES)
