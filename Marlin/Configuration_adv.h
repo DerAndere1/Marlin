@@ -2544,6 +2544,11 @@
 //#define DIRECT_STEPPING
 
 /**
+ * Rotate Workspace
+ */
+//#define ROTATE_WORKSPACE
+
+/**
  * G38 Probe Target
  *
  * This option adds G38.2 and G38.3 (probe towards target)

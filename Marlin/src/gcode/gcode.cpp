@@ -365,6 +365,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 6: G6(); break;                                      // G6: Direct Stepper Move
       #endif
 
+      #if ENABLED(ROTATE_WORKSPACE)
+        case 7: G7(); break;                                      // G7: Set Workspace Rotation
+      #endif
+
       #if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
         case 10: G10(); break;                                    // G10: Retract / Swap Retract
         #if ENABLED(FWRETRACT)
