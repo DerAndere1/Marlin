@@ -130,6 +130,9 @@ xyze_pos_t current_position = LOGICAL_AXIS_ARRAY(0,
  */
 xyze_pos_t destination; // {0}
 
+#if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
+  xyz_pos_t raw_destination = NUM_AXIS_ARRAY(X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+#endif
 // The active extruder (tool). Set with T<extruder> command.
 #if HAS_MULTI_TOOLS
   uint8_t active_extruder = 0; // = 0
@@ -2064,6 +2067,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
  * Before exit, current_position is set to destination.
  */
 void prepare_line_to_destination() {
+
   apply_motion_limits(destination);
 
   //SERIAL_ECHOLNPGM(">TPARA Prepare line to destination: ", destination.x , " , ", destination.y,  " , ", destination.z, " , " , destination.e);
