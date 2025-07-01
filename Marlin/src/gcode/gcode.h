@@ -44,7 +44,6 @@
  * G3   - CCW ARC
  * G4   - Dwell S<seconds> or P<milliseconds>
  * G5   - Cubic B-spline with XYZE destination and IJPQ offsets
- * G7   - Set Workspace Rotation
  * G10  - Set coordinate system (Requires CNC_COORDINATE_SYSTEMS) and tool table (Requires DEFAULT_TOOL_LENGTH_COMPENSATION). Retract filament according to settings of M207 (Requires FWRETRACT)
  * G11  - Retract recover filament according to settings of M208 (Requires FWRETRACT)
  * G12  - Clean tool (Requires NOZZLE_CLEAN_FEATURE)
@@ -68,7 +67,8 @@
  * G43  - Tool length compensation, tool centerpoint control (Requires DEFAULT_TOOL_LENGTH_COMPENSATION)
  * G49  - Cancel tool length compensation (Cancel tool length compensation (Requires DEFAULT_TOOL_LENGTH_COMPENSATION) 
  * G60  - Save current position. (Requires SAVED_POSITIONS)
- * G61  - Apply/restore saved coordinates. (Requires SAVED_POSITIONS)
+ * G61  - Apply/Restore saved coordinates. (Requires SAVED_POSITIONS)
+ * G68  - Set Workspace Rotation
  * G76  - Calibrate first layer temperature offsets. (Requires PTC_PROBE and PTC_BED)
  * G80  - Cancel current motion mode (Requires GCODE_MOTION_MODES)
  * G90  - Use Absolute Coordinates
@@ -534,10 +534,6 @@ private:
     static void G6();
   #endif
 
-  #if ENABLED(ROTATE_WORKSPACE)
-    static void G7();
-  #endif
-
   #if ANY(FWRETRACT, CNC_COORDINATE_SYSTEMS, HAS_TOOL_LENGTH_COMPENSATION)
     static void G10();
   #endif
@@ -638,6 +634,10 @@ private:
   #if SAVED_POSITIONS
     static void G60();
     static void G61(int8_t slot=-1);
+  #endif
+
+  #if ENABLED(ROTATE_WORKSPACE)
+    static void G68();
   #endif
 
   #if ENABLED(GCODE_MOTION_MODES)
