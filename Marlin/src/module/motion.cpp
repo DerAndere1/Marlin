@@ -138,16 +138,13 @@ xyze_pos_t destination; // {0}
 #endif
 
 #if ENABLED(ROTATE_WORKSPACE)
-  uint8_t active_workspace = 0;
-  float rotation_angle[MAX_ROTATABLE] = { 0.0f };
-  float rotation_origin_x = 0.0;
-  float rotation_origin_y = 0.0;
+  float rotation_angle[MAX_COORDINATE_SYSTEMS] = { 0.0f };
+  float rotation_origin_x = 0.0f;
+  float rotation_origin_y = 0.0f;
 
   // Helper to apply rotation around center
   void rotate_xy(float &x, float &y, const float theta_deg) {
-    rotation_origin_x = (X_MIN_POS + X_MAX_POS) * 0.5f;
-    rotation_origin_y = (Y_MIN_POS + Y_MAX_POS) * 0.5f;
-    const float angle_rad = theta_deg * M_PI / 180.0;
+    const float angle_rad = RADIANS(theta_deg);
     const float dx = x - rotation_origin_x;
     const float dy = y - rotation_origin_y;
 
@@ -160,6 +157,7 @@ xyze_pos_t destination; // {0}
 
   // Apply inverse transform to interpret G-code in rotated space
   void inverse_rotate_gcode_coordinates() {
+    if (NEAR_ZERO(rotation_angle[gcode.active_coordinate_system])) return;
     rotate_xy(destination[X_AXIS], destination[Y_AXIS], -rotation_angle[active_workspace]);
 
     // Clamp and warn if out of bounds

@@ -70,9 +70,7 @@ extern xyz_pos_t cartes;
 #endif
 
 #if ENABLED(ROTATE_WORKSPACE)
-  #define MAX_ROTATABLE 9
-  extern uint8_t active_workspace;
-  extern float rotation_angle[MAX_ROTATABLE]; // Store rotation for each workspace
+  extern float rotation_angle[MAX_COORDINATE_SYSTEMS]; // Store rotation for each workspace
 #endif
 
 #if HAS_ABL_NOT_UBL

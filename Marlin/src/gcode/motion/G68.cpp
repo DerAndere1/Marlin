@@ -37,43 +37,43 @@
    *   R<deg>    Rotation angle in degrees (Required)
    *
    * Example:
-   *   G68 R45     ; Rotate current workspace by 45°
-   *   G68 P2 R-30 ; Rotate workspace 2 by -30°
-   *   G68 P1      ; Set active workspace to 1 (no rotation)
+   *   G68 R45          ; Rotate current workspace by 45° counter-clockwise (when viewed from positive Z) 
+   *                    ; around current position
+   *   G68 P2 R-30      ; Rotate workspace 2 by -30° around current position
+   *   G68 P2 X0 Y0 R45 ; Rotate workspace 2 by 45°C around X0 Y0 (X and Y are specified in the current workspace)
    *
    * NOTES:
    *   - Only rotation is set. No translation/offset is changed.
    *   - All subsequent moves are rotated by the specified angle.
    */
   void GcodeSuite::G68() {
-    const int P = parser.seenval('P') ? parser.value_int() : active_workspace;
-
-    if (parser.seenval('P')) {
-      active_workspace = P;
-    }
-
-    if (parser.seenval('P') && !parser.seenval('R')) {
-      // Only P given: set active workspace
-      if (P < 0 || P >= MAX_ROTATABLE) {
-        SERIAL_ECHOLNPGM("Invalid workspace index.");
-        return;
-      }
-      SERIAL_ECHOLN("Active workspace set to ", P, ".");
-      return;
-    }
+    const uint8_t P = parser.seenval('P') ? parser.value_byte() : gcode.active_coordinate_system;
+    
+    const int8_t target_system = (P == 0) ? gcode.active_coordinate_system : (P - 1);  // P0 selects current coordinate system. P1 is G54, which is Marlin coordinate_system 0 
+    const int8_t current_system = gcode.active_coordinate_system; // Store current coord system
 
     if (!parser.seenval('R')) {
       SERIAL_ECHOLNPGM("Missing R parameter (rotation angle).");
       return;
     }
+    else  {
+      const float r = parser.value_float();
+      if (!WITHIN(target_system, 0, MAX_COORDINATE_SYSTEMS - 1)) {
+        SERIAL_ECHOLNPGM("Invalid workspace index.");
+        return;
+      }
+      else {
+        rotation_angle[target_system] = r;
+        SERIAL_ECHOLNPGM("Rotation for workspace ", P, " set to ", r, " degrees.");
+      }
 
-    const float r = parser.value_float();
-    if (P < 0 || P >= MAX_ROTATABLE) {
-      SERIAL_ECHOLNPGM("Invalid workspace index.");
-      return;
+      #if HAS_X_AXIS
+        rotation_origin_x = parser.seenval('X') ? LOGICAL_TO_NATIVE(parser.value_axis_units(X_AXIS), X_AXIS) : current_position.x;
+      #endif
+
+      #if HAS_Y_AXIS
+        rotation_origin_y = parser.seenval('Y') ? LOGIAL_TO_NATIVE(parser.value_axis_units(Y_AXIS), Y_AXIS) : current_position.y;
+      #endif
     }
-
-    rotation_angle[P] = r;
-    SERIAL_ECHOLN("Rotation for workspace ", P, " set to ", r, " degrees.");
   }
 #endif // ROTATE_WORKSPACE
