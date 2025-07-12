@@ -137,38 +137,6 @@ xyze_pos_t destination; // {0}
   }
 #endif
 
-#if ENABLED(ROTATE_WORKSPACE)
-  float rotation_angle[MAX_COORDINATE_SYSTEMS] = { 0.0f };
-  float rotation_origin_x = 0.0f;
-  float rotation_origin_y = 0.0f;
-
-  // Helper to apply rotation around center
-  void rotate_xy(float &x, float &y, const float theta_deg) {
-    const float angle_rad = RADIANS(theta_deg);
-    const float dx = x - rotation_origin_x;
-    const float dy = y - rotation_origin_y;
-
-    const float new_x = rotation_origin_x + dx * cos(angle_rad) - dy * sin(angle_rad);
-    const float new_y = rotation_origin_y + dx * sin(angle_rad) + dy * cos(angle_rad);
-
-    x = new_x;
-    y = new_y;
- }
-
-  // Apply inverse transform to interpret G-code in rotated space
-  void inverse_rotate_gcode_coordinates() {
-    if (NEAR_ZERO(rotation_angle[gcode.active_coordinate_system])) return;
-    rotate_xy(destination[X_AXIS], destination[Y_AXIS], -rotation_angle[active_workspace]);
-
-    // Clamp and warn if out of bounds
-    if (destination[X_AXIS] < X_MIN_POS || destination[X_AXIS] > X_MAX_POS ||
-        destination[Y_AXIS] < Y_MIN_POS || destination[Y_AXIS] > Y_MAX_POS) {
-      SERIAL_ECHOLN("Warning: Transformed position is out of bounds. Clamping to bed size.");
-      destination[X_AXIS] = constrain(destination[X_AXIS], X_MIN_POS, X_MAX_POS);
-      destination[Y_AXIS] = constrain(destination[Y_AXIS], Y_MIN_POS, Y_MAX_POS);
-    }
-  }
-#endif
 
 // The feedrate for the current move, often used as the default if
 // no other feedrate is specified. Overridden for special moves.
@@ -2159,6 +2127,9 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
  * Before exit, current_position is set to destination.
  */
 void prepare_line_to_destination() {
+
+  TERN_(ROTATE_WORKSPACE, gcode.apply_workspace_rotation());
+
   apply_motion_limits(destination);
 
   #if ENABLED(ROTATE_WORKSPACE)
