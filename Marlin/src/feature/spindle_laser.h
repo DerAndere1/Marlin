@@ -117,6 +117,10 @@ public:
   static cutter_power_t menuPower,        // Power as set via LCD menu in PWM, Percentage, or RPM
                         unitPower;        // Power as displayed status in PWM, Percentage, or RPM
 
+  #if ENABLED(SPINDLE_FEATURE)
+    static uint16_t spindle_override;     // Spindle speed override by percentage
+  #endif
+
   #if HAS_SPINDLE_ACCELERATION
     static uint32_t acceleration_spindle_deg_per_s2;  // (°/s/s) Spindle acceleration
   #endif
@@ -149,7 +153,7 @@ public:
 
     private:
 
-    static void _set_ocr(const uint8_t ocr);
+    static void _set_ocr(const uint8_t unscaledOcr);
 
     public:
 

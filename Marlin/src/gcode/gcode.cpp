@@ -922,6 +922,10 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
         case 221: M221(); break;                                  // M221: Set Flow Percentage
       #endif
 
+      #if ENABLED(SPINDLE_FEATURE)
+        case 222: M222(); break;                                  // M222: Spindle override
+      #endif
+
       #if ENABLED(DIRECT_PIN_CONTROL)
         case 226: M226(); break;                                  // M226: Wait until a pin reaches a state
       #endif

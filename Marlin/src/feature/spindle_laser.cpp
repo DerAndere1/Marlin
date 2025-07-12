@@ -64,6 +64,10 @@ cutter_power_t SpindleLaser::menuPower = 0,                           // Power v
 
 cutter_frequency_t SpindleLaser::frequency;                           // PWM frequency setting; range: 2K - 50K
 
+#if ENABLED(SPINDLE_FEATURE)
+  uint16_t SpindleLaser::spindle_override;                            // M222 Power Override for the Spindle
+#endif
+
 #define SPINDLE_LASER_PWM_OFF TERN(SPINDLE_LASER_PWM_INVERT, 255, 0)
 
 /**
@@ -77,6 +81,8 @@ void SpindleLaser::init() {
   #else
     active_tool_type = TYPE_EXTRUDER;
   #endif
+  TERN_(SPINDLE_FEATURE, spindle_override = 100);
+  
   #if ENABLED(SPINDLE_SERVO)
     servo[SPINDLE_SERVO_NR].move(SPINDLE_SERVO_MIN);
   #elif PIN_EXISTS(SPINDLE_LASER_ENA)
@@ -122,7 +128,12 @@ void SpindleLaser::init() {
    *
    * @param ocr Power value
    */
-  void SpindleLaser::_set_ocr(const uint8_t ocr) {
+  void SpindleLaser::_set_ocr(const uint8_t unscaledOcr) {
+
+    // Apply spindle override
+    const uint16_t scaled = MUL_TERN(static_cast<uint16_t>(unscaledOcr), spindle_override);
+    const uint8_t ocr = TERN(SPINDLE_FEATURE, scaled > 25500 ? 255 : scaled / 100, scaled > 255 ? 255 : scaled);
+
     #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
       #if ENABLED(LASER_FEATURE)
         if (active_tool_type == TYPE_LASER)

@@ -221,6 +221,7 @@
  * M220 - Set Feedrate Percentage: 'M220 S<percent>' (i.e., "FR" on the LCD)
  *        Use 'M220 B' to back up the Feedrate Percentage and 'M220 R' to restore it. (Requires an MMU_MODEL version 2 or 2S)
  * M221 - Set Flow Percentage: 'M221 S<percent>' (Requires an extruder)
+ * M222 - Set Spindle Override: 'M222 S<percent>' (Requires SPINDLE_FEATURE)
  * M226 - Wait until a pin is in a given state: 'M226 P<pin> S<state>' (Requires DIRECT_PIN_CONTROL)
  * M240 - Trigger a camera to take a photograph. (Requires PHOTO_GCODE)
  * M250 - Set LCD contrast: 'M250 C<contrast>' (0-63). (Requires LCD support)
@@ -1011,6 +1012,10 @@ private:
 
   #if HAS_EXTRUDERS
     static void M221();
+  #endif
+
+  #if ENABLED(SPINDLE_FEATURE)
+    static void M222();
   #endif
 
   #if ENABLED(DIRECT_PIN_CONTROL)
