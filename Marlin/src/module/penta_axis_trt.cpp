@@ -160,12 +160,11 @@ xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
   const_float_t pivot_length_x = joint_pos.x - mrzp_offset_x;
   const_float_t pivot_length_y = joint_pos.y - mrzp_offset_y;
   const_float_t pivot_length_z = joint_pos.z - mrzp_offset_z;
-  const_float_t dx = rotational_offset_x;
   const_float_t i_rad = RADIANS(joint_pos.i);
   const_float_t sin_i = sin(i_rad);
   const_float_t cos_i = cos(i_rad);
 
-  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(joints_pos.j));
+  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(joint_pos.j));
   const_float_t sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
   const_float_t cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
 
@@ -174,18 +173,18 @@ xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
   #if AXIS4_NAME == 'A'
     const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
         cos_j *          pivot_length_x
-      + sin_j * cos_i * (pivot_length_y - dy)
+      + sin_j * cos_i * (pivot_length_y - rotational_offset_y)
       + sin_j * sin_i * (pivot_length_z - dz)
-      - sin_j * dy
+      - sin_j * rotational_offset_y
       + mrzp_offset_x,
 
       + sin_j *          pivot_length_x
-      + cos_j * cos_i * (pivot_length_x - dy)
+      + cos_j * cos_i * (pivot_length_x - rotational_offset_y)
       - cos_j * sin_i * (pivot_length_z - dz)
-      - cos_j * dy
+      - cos_j * rotational_offset_y
       + mrzp_offset_y,
 
-      + sin_i * (pivot_length_y - dy)
+      + sin_i * (pivot_length_y - rotational_offset_y)
       + cos_i * (pivot_length_z - dz)
       + dz
       + mrzp_offset_z,
@@ -195,19 +194,19 @@ xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
     );
   #else 
     const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
-        cos_j * cos_i * (pivot_length_x - dx)
+        cos_j * cos_i * (pivot_length_x - rotational_offset_x)
       - sin_j *          pivot_length_y
       - cos_j * sin_i * (pivot_length_z - dz)
-      + cos_j * dx
+      + cos_j * rotational_offset_x
       + mrzp_offset_x,
 
-      + sin_j * cos_i * (pivot_length_x - dx)
+      + sin_j * cos_i * (pivot_length_x - rotational_offset_x)
       + cos_j *          pivot_length_y
       + sin_j * sin_i * (pivot_length_z - dz)
-      + sin_j * dx
+      + sin_j * rotational_offset_x
       + mrzp_offset_y,
 
-      - sin_i * (pivot_length_x - dx)
+      - sin_i * (pivot_length_x - rotational_offset_x)
       + cos_i * (pivot_length_z - dz)
       + dz
       + mrzp_offset_z,
