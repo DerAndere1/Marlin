@@ -756,8 +756,8 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
 #if ALL(SWITCHING_EXTRUDER, MECHANICAL_SWITCHING_EXTRUDER)
   #error "Enable only one of SWITCHING_EXTRUDER or MECHANICAL_SWITCHING_EXTRUDER."
 #elif ENABLED(MECHANICAL_SWITCHING_EXTRUDER)
-  #if EXTRUDERS < 2
-    #error "MECHANICAL_SWITCHING_EXTRUDER requires EXTRUDERS >= 2."
+  #if TOOLS < 2
+    #error "MECHANICAL_SWITCHING_EXTRUDER requires TOOLS >= 2."
   #elif !defined(EVENT_GCODE_TOOLCHANGE_T0)
     #error "MECHANICAL_SWITCHING_EXTRUDER requires EVENT_GCODE_TOOLCHANGE_T0."
   #elif !defined(EVENT_GCODE_TOOLCHANGE_T1)
@@ -2613,8 +2613,8 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
 #if ENABLED(G38_PROBE_TARGET)
   #if !HAS_BED_PROBE
     #error "G38_PROBE_TARGET requires a bed probe."
-  #elif !IS_CARTESIAN
-    #error "G38_PROBE_TARGET requires a Cartesian machine."
+  //#elif !IS_CARTESIAN
+  //  #error "G38_PROBE_TARGET requires a Cartesian machine."
   #endif
 #endif
 

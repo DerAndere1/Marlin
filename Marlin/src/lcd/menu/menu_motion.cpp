@@ -245,18 +245,18 @@ void menu_move() {
 
   #if ANY(HAS_SWITCHING_EXTRUDER, HAS_SWITCHING_NOZZLE, MAGNETIC_SWITCHING_TOOLHEAD)
 
-    #if EXTRUDERS >= 4
+    #if TOOLS >= 4
       switch (active_extruder) {
         case 0: GCODES_ITEM_N(1, MSG_SELECT_E, F("T1")); break;
         case 1: GCODES_ITEM_N(0, MSG_SELECT_E, F("T0")); break;
         case 2: GCODES_ITEM_N(3, MSG_SELECT_E, F("T3")); break;
         case 3: GCODES_ITEM_N(2, MSG_SELECT_E, F("T2")); break;
-        #if EXTRUDERS == 6
+        #if TOOLS == 6
           case 4: GCODES_ITEM_N(5, MSG_SELECT_E, F("T5")); break;
           case 5: GCODES_ITEM_N(4, MSG_SELECT_E, F("T4")); break;
         #endif
       }
-    #elif EXTRUDERS == 3
+    #elif TOOLS == 3
       if (active_extruder < 2)
         GCODES_ITEM_N(1 - active_extruder, MSG_SELECT_E, active_extruder ? F("T0") : F("T1"));
     #else
