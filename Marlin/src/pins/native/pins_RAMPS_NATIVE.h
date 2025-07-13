@@ -58,7 +58,14 @@
 #define Y_MAX_PIN                            158
 #define Z_MIN_PIN                            159
 #define Z_MAX_PIN                            160
-
+#if HAS_I_AXIS
+  #define I_MIN_PIN                            165
+  #define I_MAX_PIN                            167
+#endif
+#if HAS_J_AXIS
+  #define J_MIN_PIN                            166
+  #define J_MAX_PIN                            168
+#endif
 //
 // Z Probe (when not Z_MIN_PIN)
 //
