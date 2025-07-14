@@ -107,6 +107,10 @@ xyze_pos_t current_position = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_IN
  */
 xyze_pos_t destination; // {0}
 
+#if defined(ROTATE_WORKSPACE)
+  xyz_pos_t raw_destination = NUM_AXIS_ARRAY(X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+#endif
+
 // G60/G61 Position Save and Return
 #if SAVED_POSITIONS
   Flags<SAVED_POSITIONS> did_save_position;
@@ -2128,13 +2132,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
  */
 void prepare_line_to_destination() {
 
-  TERN_(ROTATE_WORKSPACE, gcode.apply_workspace_rotation());
-
   apply_motion_limits(destination);
-
-  #if ENABLED(ROTATE_WORKSPACE)
-    inverse_rotate_gcode_coordinates();
-  #endif
 
   #if ANY(PREVENT_COLD_EXTRUSION, PREVENT_LENGTHY_EXTRUDE)
 

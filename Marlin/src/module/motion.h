@@ -48,6 +48,10 @@ extern bool relative_mode;
 extern xyze_pos_t current_position,  // High-level current tool position
                   destination;       // Destination for a move
 
+#if ENABLED(ROTATE_WORKSPACE)
+  extern xyz_pos_t raw_destination;
+#endif
+
 // G60/G61 Position Save and Return
 #if SAVED_POSITIONS
   extern Flags<SAVED_POSITIONS> did_save_position;
@@ -67,10 +71,6 @@ extern xyz_pos_t cartes;
   #if HAS_TOOL_CENTERPOINT_CONTROL
     extern bool tool_centerpoint_control;
   #endif
-#endif
-
-#if ENABLED(ROTATE_WORKSPACE)
-  extern float rotation_angle[MAX_COORDINATE_SYSTEMS]; // Store rotation for each workspace
 #endif
 
 #if HAS_ABL_NOT_UBL

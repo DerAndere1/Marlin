@@ -100,6 +100,12 @@ relative_t GcodeSuite::axis_relative; // Init in constructor
   xyz_pos_t GcodeSuite::coordinate_system[MAX_COORDINATE_SYSTEMS];
 #endif
 
+#if ENABLED(ROTATE_WORKSPACE)
+  float GcodeSuite::rotation_center_x = 0.0f;
+  float GcodeSuite::rotation_center_y = 0.0f;
+  float GcodeSuite::rotation_angle[MAX_COORDINATE_SYSTEMS] = { 0.0f };
+#endif
+
 void GcodeSuite::report_echo_start(const bool forReplay) { if (!forReplay) SERIAL_ECHO_START(); }
 void GcodeSuite::report_heading(const bool forReplay, FSTR_P const fstr, const bool eol/*=true*/) {
   if (forReplay) return;
@@ -170,18 +176,56 @@ void GcodeSuite::get_destination_from_command() {
     constexpr bool skip_move = false;
   #endif
 
+  const float angle_rad = RADIANS(rotation_angle[active_coordinate_system]);
+
   // Get new XYZ position, whether absolute or relative
   LOOP_NUM_AXES(i) {
     if ( (seen[i] = parser.seenval(AXIS_CHAR(i))) ) {
       const float v = parser.value_axis_units((AxisEnum)i);
-      if (skip_move)
-        destination[i] = current_position[i];
-      else
-        destination[i] = axis_is_relative(AxisEnum(i)) ? current_position[i] + v : LOGICAL_TO_NATIVE(v, i);
+      if (skip_move) {
+        #if defined(ROTATE_WORKSPACE)
+          raw_destination[i] = current_position[i];
+        #else
+          destination[i] = current_position[i];
+        #endif
+      }
+      else {
+        #if defined(ROTATE_WORKSPACE)
+          raw_destination[i] = axis_is_relative(AxisEnum(i)) ? raw_destination[i] + v : LOGICAL_TO_NATIVE(v, i);
+        #else
+          destination[i] = axis_is_relative(AxisEnum(i)) ? current_position[i] + v : LOGICAL_TO_NATIVE(v, i);
+        #endif
+      }
     }
-    else
-      destination[i] = current_position[i];
+    else {
+      #if !defined(ROTATE_WORKSPACE)
+        destination[i] = current_position[i];
+      #endif
+    }
   }
+
+  #if defined(ROTATE_WORKSPACE)
+    if NEAR_ZERO(rotation_angle[active_coordinate_system]) {
+      destination.x = raw_destination.x;
+      destination.y = raw_destination.y;
+      destination.z = raw_destination.z;
+    }
+    else {
+      const float cos_angle = cos(angle_rad);
+      const float sin_angle = sin(angle_rad);
+      // Apply rotation
+      const float temp_x = raw_destination.x - rotation_center_x;
+      const float temp_y = raw_destination.y - rotation_center_y;
+
+      const float rotated_x = temp_x * cos_angle - temp_y * sin_angle;
+      const float rotated_y = temp_x * sin_angle + temp_y * cos_angle;
+
+      destination.x = rotated_x + rotation_center_x;
+      destination.y = rotated_y + rotation_center_y;
+      destination.z = raw_destination.z;
+    }
+  #endif
+  
 
   #if HAS_EXTRUDERS
     // Get new E position, whether absolute or relative
