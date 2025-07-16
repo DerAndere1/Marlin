@@ -223,6 +223,15 @@ void GcodeSuite::get_destination_from_command() {
       destination.x = rotated_x + rotation_center_x;
       destination.y = rotated_y + rotation_center_y;
       destination.z = raw_destination.z;
+
+      SECONDARY_AXIS_CODE(
+        destination.i = raw_destination.i,
+        destination.j = raw_destination.j,
+        destination.k = raw_destination.k,
+        destination.u = raw_destination.u,
+        destination.v = raw_destination.v,
+        destination.w = raw_destination.w
+      );
     }
   #endif
   
