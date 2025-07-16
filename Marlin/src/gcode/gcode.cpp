@@ -101,9 +101,10 @@ relative_t GcodeSuite::axis_relative; // Init in constructor
 #endif
 
 #if ENABLED(ROTATE_WORKSPACE)
-  float GcodeSuite::rotation_center_x = 0.0f;
-  float GcodeSuite::rotation_center_y = 0.0f;
+  float GcodeSuite::rotation_center_x[MAX_COORDINATE_SYSTEMS] = { 0.0f };
+  float GcodeSuite::rotation_center_y[MAX_COORDINATE_SYSTEMS] = { 0.0f };
   float GcodeSuite::rotation_angle[MAX_COORDINATE_SYSTEMS] = { 0.0f };
+  bool GcodeSuite::workspace_rotation = false;
 #endif
 
 void GcodeSuite::report_echo_start(const bool forReplay) { if (!forReplay) SERIAL_ECHO_START(); }
@@ -205,7 +206,7 @@ void GcodeSuite::get_destination_from_command() {
   }
 
   #if defined(ROTATE_WORKSPACE)
-    if NEAR_ZERO(rotation_angle[active_coordinate_system]) {
+    if ((!workspace_rotation) || NEAR_ZERO(rotation_angle[active_coordinate_system])) {
       destination.x = raw_destination.x;
       destination.y = raw_destination.y;
       destination.z = raw_destination.z;
@@ -214,14 +215,14 @@ void GcodeSuite::get_destination_from_command() {
       const float cos_angle = cos(angle_rad);
       const float sin_angle = sin(angle_rad);
       // Apply rotation
-      const float temp_x = raw_destination.x - rotation_center_x;
-      const float temp_y = raw_destination.y - rotation_center_y;
+      const float temp_x = raw_destination.x - rotation_center_x[active_coordinate_system];
+      const float temp_y = raw_destination.y - rotation_center_y[active_coordinate_system];
 
       const float rotated_x = temp_x * cos_angle - temp_y * sin_angle;
       const float rotated_y = temp_x * sin_angle + temp_y * cos_angle;
 
-      destination.x = rotated_x + rotation_center_x;
-      destination.y = rotated_y + rotation_center_y;
+      destination.x = rotated_x + rotation_center_x[active_coordinate_system];
+      destination.y = rotated_y + rotation_center_y[active_coordinate_system];
       destination.z = raw_destination.z;
 
       SECONDARY_AXIS_CODE(
@@ -511,6 +512,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
 
       #if ENABLED(ROTATE_WORKSPACE)
         case 68: G68(); break;                                    // G68: Set Workspace Rotation
+        case 69: G69(); break;                                    // G69: Cancel Workspace Rotation
       #endif
 
       #if ALL(PTC_PROBE, PTC_BED)

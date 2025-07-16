@@ -433,8 +433,9 @@ public:
 
   #if ENABLED(ROTATE_WORKSPACE)
     static float rotation_angle[MAX_COORDINATE_SYSTEMS]; // Store rotation for each workspace
-    static float rotation_center_x;
-    static float rotation_center_y;
+    static float rotation_center_x[MAX_COORDINATE_SYSTEMS];
+    static float rotation_center_y[MAX_COORDINATE_SYSTEMS];
+    static bool workspace_rotation;
   #endif
 
   static millis_t previous_move_ms, max_inactive_time;
@@ -644,6 +645,7 @@ private:
 
   #if ENABLED(ROTATE_WORKSPACE)
     static void G68();
+    static void G69();
   #endif
 
   #if ENABLED(GCODE_MOTION_MODES)

@@ -128,11 +128,15 @@ void GcodeSuite::G10() {
               }
             }
           }
-          if (parser.seenval('R')) {
-            const float r = parser.value_float();
-            rotation_angle[index] = r;
-            SERIAL_ECHOLNPGM("Rotation for workspace ", index, " set to ", r, " degrees.");
-          }
+          #if ENABLED(ROTATE_WORKSPACE)
+            if (parser.seenval('R')) {
+              rotation_angle[target_system] = parser.value_float();
+              workspace_rotation = true;
+              #if ENABLED(DEBUG_G10)
+                SERIAL_ECHOLNPGM("Workspace rotation set");
+               #endif
+            }
+          #endif
           break;
 
         // Sets the work coordinates of the specified (P[1-9]) coordinate system, by matching the specified X, Y, Z... values
