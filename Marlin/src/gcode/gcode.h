@@ -65,7 +65,9 @@
  * G38  - Probe in any direction using the Z_MIN_PROBE (Requires G38_PROBE_TARGET)
  * G42  - Coordinated move to a mesh point (Requires MESH_BED_LEVELING, AUTO_BED_LEVELING_BLINEAR, or AUTO_BED_LEVELING_UBL)
  * G43  - Tool length compensation, tool centerpoint control (Requires DEFAULT_TOOL_LENGTH_COMPENSATION)
- * G49  - Cancel tool length compensation (Cancel tool length compensation (Requires DEFAULT_TOOL_LENGTH_COMPENSATION) 
+ * G49  - Cancel tool length compensation (Cancel tool length compensation (Requires DEFAULT_TOOL_LENGTH_COMPENSATION)
+ * G50  - Cancel workspace scaling (Requires SCALE_WORKSPACE)
+ * G51  - Set workspace scaling (Requires SCALE_WORKSPACE)
  * G60  - Save current position. (Requires SAVED_POSITIONS)
  * G61  - Apply/Restore saved coordinates. (Requires SAVED_POSITIONS)
  * G68  - Set Workspace Rotation
@@ -431,11 +433,20 @@ public:
     static bool select_coordinate_system(const int8_t _new);
   #endif
 
+
+  #if ENABLED(SCALE_WORKSPACE)
+    static float scaling_center_x;
+    static float scaling_center_y;
+    static float scaling_center_z;
+    static float scaling_factor_x;
+    static float scaling_factor_y;
+    static float scaling_factor_z;
+  #endif
+
   #if ENABLED(ROTATE_WORKSPACE)
-    static float rotation_angle[MAX_COORDINATE_SYSTEMS]; // Store rotation for each workspace
-    static float rotation_center_x[MAX_COORDINATE_SYSTEMS];
-    static float rotation_center_y[MAX_COORDINATE_SYSTEMS];
-    static bool workspace_rotation;
+    static float rotation_angle;
+    static float rotation_center_x;
+    static float rotation_center_y;
   #endif
 
   static millis_t previous_move_ms, max_inactive_time;
@@ -622,6 +633,11 @@ private:
   #if HAS_TOOL_LENGTH_COMPENSATION
     static void G43();
     static void G49();  
+  #endif
+
+  #if ENABLED(SCALE_WORKSPACE)
+    static void G50();
+    static void G51();  
   #endif
 
   #if ENABLED(CNC_COORDINATE_SYSTEMS)

@@ -100,11 +100,19 @@ relative_t GcodeSuite::axis_relative; // Init in constructor
   xyz_pos_t GcodeSuite::coordinate_system[MAX_COORDINATE_SYSTEMS];
 #endif
 
+#if ENABLED(SCALE_WORKSPACE)
+  float GcodeSuite::scaling_center_x = 0.0f;
+  float GcodeSuite::scaling_center_y = 0.0f;
+  float GcodeSuite::scaling_center_z = 0.0f;
+  float GcodeSuite::scaling_factor_x = 1.0f;
+  float GcodeSuite::scaling_factor_y = 1.0f;
+  float GcodeSuite::scaling_factor_z = 1.0f;
+#endif
+
 #if ENABLED(ROTATE_WORKSPACE)
-  float GcodeSuite::rotation_center_x[MAX_COORDINATE_SYSTEMS] = { 0.0f };
-  float GcodeSuite::rotation_center_y[MAX_COORDINATE_SYSTEMS] = { 0.0f };
-  float GcodeSuite::rotation_angle[MAX_COORDINATE_SYSTEMS] = { 0.0f };
-  bool GcodeSuite::workspace_rotation = false;
+  float GcodeSuite::rotation_center_x = 0.0f;
+  float GcodeSuite::rotation_center_y = 0.0f;
+  float GcodeSuite::rotation_angle = 0.0f;
 #endif
 
 void GcodeSuite::report_echo_start(const bool forReplay) { if (!forReplay) SERIAL_ECHO_START(); }
@@ -177,21 +185,21 @@ void GcodeSuite::get_destination_from_command() {
     constexpr bool skip_move = false;
   #endif
 
-  const float angle_rad = RADIANS(rotation_angle[active_coordinate_system]);
+  const float angle_rad = RADIANS(rotation_angle);
 
   // Get new XYZ position, whether absolute or relative
   LOOP_NUM_AXES(i) {
     if ( (seen[i] = parser.seenval(AXIS_CHAR(i))) ) {
       const float v = parser.value_axis_units((AxisEnum)i);
       if (skip_move) {
-        #if defined(ROTATE_WORKSPACE)
+        #if ENABLED(ROTATE_WORKSPACE)
           raw_destination[i] = current_position[i];
         #else
           destination[i] = current_position[i];
         #endif
       }
       else {
-        #if defined(ROTATE_WORKSPACE)
+        #if ENABLED(ROTATE_WORKSPACE)
           raw_destination[i] = axis_is_relative(AxisEnum(i)) ? raw_destination[i] + v : LOGICAL_TO_NATIVE(v, i);
         #else
           destination[i] = axis_is_relative(AxisEnum(i)) ? current_position[i] + v : LOGICAL_TO_NATIVE(v, i);
@@ -199,43 +207,35 @@ void GcodeSuite::get_destination_from_command() {
       }
     }
     else {
-      #if !defined(ROTATE_WORKSPACE)
+      #if DISABLED(ROTATE_WORKSPACE)
         destination[i] = current_position[i];
       #endif
     }
   }
 
-  #if defined(ROTATE_WORKSPACE)
-    if ((!workspace_rotation) || NEAR_ZERO(rotation_angle[active_coordinate_system])) {
-      destination.x = raw_destination.x;
-      destination.y = raw_destination.y;
-      destination.z = raw_destination.z;
+  #if ANY(SCALE_WORKSPACE, ROTATE_WORKPLACE)
+    destination = raw_destination;
+  #endif
+
+  #if ENABLED(SCALE_WORKSPACE)
+    if (!(NEAR(scaling_factor_x, 1.0f) || NEAR(scaling_factor_y, 1.0f) || NEAR(scaling_factor_z, 1.0f))) {
+      destination.x = (raw_destination.x - scaling_center_x) * scaling_factor_x + scaling_center_x;
+      TERN_(HAS_Y_AXIS, destination.y = (raw_destination.y - scaling_center_y) * scaling_factor_y + scaling_center_y);
+      TERN_(HAS_Z_AXIS, destination.z = (raw_destination.z - scaling_center_z) * scaling_factor_z + scaling_center_z);
     }
-    else {
+  #endif
+
+  #if ENABLED(ROTATE_WORKSPACE)
+    if (!NEAR_ZERO(rotation_angle)) {
       const float cos_angle = cos(angle_rad);
       const float sin_angle = sin(angle_rad);
       // Apply rotation
-      const float temp_x = raw_destination.x - rotation_center_x[active_coordinate_system];
-      const float temp_y = raw_destination.y - rotation_center_y[active_coordinate_system];
-
-      const float rotated_x = temp_x * cos_angle - temp_y * sin_angle;
-      const float rotated_y = temp_x * sin_angle + temp_y * cos_angle;
-
-      destination.x = rotated_x + rotation_center_x[active_coordinate_system];
-      destination.y = rotated_y + rotation_center_y[active_coordinate_system];
-      destination.z = raw_destination.z;
-
-      SECONDARY_AXIS_CODE(
-        destination.i = raw_destination.i,
-        destination.j = raw_destination.j,
-        destination.k = raw_destination.k,
-        destination.u = raw_destination.u,
-        destination.v = raw_destination.v,
-        destination.w = raw_destination.w
-      );
+      const float temp_x = destination.x - rotation_center_x;
+      const float temp_y = destination.y - rotation_center_y;
+      destination.x = temp_x * cos_angle - temp_y * sin_angle + rotation_center_x;
+      destination.y = temp_x * sin_angle + temp_y * cos_angle + rotation_center_y;
     }
   #endif
-  
 
   #if HAS_EXTRUDERS
     // Get new E position, whether absolute or relative
@@ -493,6 +493,11 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #if HAS_TOOL_LENGTH_COMPENSATION
         case 43: G43(); break;                                    // G43.4: Rotational Tool Center Point Control Mode
         case 49: G49(); break;
+      #endif
+
+      #if ENABLED(SCALE_WORKSPACE)
+        case 50: G50(); break;                                    // G50: Cancel Workspace Scaling
+        case 51: G51(); break;                                    // G51: Set Workspace Scaling
       #endif
 
       #if ENABLED(CNC_COORDINATE_SYSTEMS)

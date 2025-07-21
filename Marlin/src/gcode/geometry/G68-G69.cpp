@@ -46,6 +46,9 @@
    * NOTES:
    *   - Only rotation is set. No translation/offset is changed.
    *   - All subsequent moves are rotated by the specified angle.
+   *   - It is an error to change workspace or working plane while workspace rotation is active
+   *     (https://forums.autodesk.com/t5/fusion-manufacture-forum/probing-and-updating-wcs-for-angle/td-p/9487027 , 
+   *      https://www.machsupport.com/forum/index.php?topic=43012)
    */
 
   void GcodeSuite::G68() {
@@ -55,17 +58,15 @@
       return;
     }
     else {
-      rotation_angle[active_coordinate_system] = parser.value_float();
+      rotation_angle = parser.value_float();
     }
-    TERN_(HAS_X_AXIS, rotation_center_x[active_coordinate_system] = parser.seenval('X') ? LOGICAL_TO_NATIVE(parser.value_axis_units(X_AXIS), X_AXIS) : current_position.x);
-    TERN_(HAS_Y_AXIS, rotation_center_y[active_coordinate_system] = parser.seenval('Y') ? LOGICAL_TO_NATIVE(parser.value_axis_units(Y_AXIS), Y_AXIS) : current_position.y);
-
-    workspace_rotation = true;
+    TERN_(HAS_X_AXIS, rotation_center_x = parser.seenval('X') ? LOGICAL_TO_NATIVE(parser.value_axis_units(X_AXIS), X_AXIS) : current_position.x);
+    TERN_(HAS_Y_AXIS, rotation_center_y = parser.seenval('Y') ? LOGICAL_TO_NATIVE(parser.value_axis_units(Y_AXIS), Y_AXIS) : current_position.y);
     SERIAL_ECHOLNPGM("Workspace rotation set");
   }
 
   void GcodeSuite::G69() {
-    workspace_rotation = false;
+    rotation_angle = 0.0f;
     SERIAL_ECHOLNPGM("Workspace rotation canceled");
   }
 

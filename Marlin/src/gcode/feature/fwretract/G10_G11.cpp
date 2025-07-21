@@ -130,8 +130,7 @@ void GcodeSuite::G10() {
           }
           #if ENABLED(ROTATE_WORKSPACE)
             if (parser.seenval('R')) {
-              rotation_angle[target_system] = parser.value_float();
-              workspace_rotation = true;
+              rotation_angle = parser.value_float();
               #if ENABLED(DEBUG_G10)
                 SERIAL_ECHOLNPGM("Workspace rotation set");
                #endif
