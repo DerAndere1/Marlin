@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -19,21 +19,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
-#include "../../inc/MarlinConfig.h"
-
-#if ENABLED(FEEDRATE_MODE_SUPPORT)
-
-#include "../gcode.h"
 
 /**
- * G93: Set feedrate mode to inverse time
+ * @file core_rb_theta.cpp
+ * @author DerAndere
+ * @brief Kinematics for a CORE_RB_THETA 4 axis machine.
+ * 
+ * Copyright 2025 DerAndere
+ *
+ * See https://github.com/jyjblrd/Core-R-Theta-4-Axis-Printer
  */
-void GcodeSuite::G93() { inverse_time_enabled = true; }
 
-/**
- * G94: Set feedrate mode to length units per minute
- */
-void GcodeSuite::G94() { inverse_time_enabled = false; }
+#include "../core/types.h"
 
-#endif // FEEDRATE_MODE_SUPPORT
+extern float segments_per_second;
+
+
+void inverse_kinematics(const xyz_pos_t &raw);
+
+xyz_pos_t native_to_joint(const xyz_pos_t &native);
+

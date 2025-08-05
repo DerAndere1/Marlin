@@ -1169,6 +1169,10 @@
   #define FEEDRATE_SCALING                  // Convert XY feedrate from mm/s to degrees/s on the fly
 #endif
 
+
+// Enable for CORE_RB_THETA kinematics and configure below
+//define CORE_RB_THETA
+
 //===========================================================================
 //============================== Endstop Settings ===========================
 //===========================================================================
