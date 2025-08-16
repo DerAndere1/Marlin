@@ -45,8 +45,6 @@
 // Initialized by settings.load()
 float segments_per_second;
 
-float steps_ratio = axis_steps_per_mm.i / axis_steps_per_mm.x
-
 
 /**
  * CORE_RB_THETA inverse kinematics
@@ -67,8 +65,8 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 
 xyz_pos_t native_to_joint(const xyz_pos_t &native) {
   const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
-    - native.x + steps_ratio * native.i, //X1,B
-      native.x + steps_ratio * nativa.i, //X2,B
+    - native.x + native.i, //X1,B
+      native.x + native.i, //X2,B
       native.z, //Z
       native.i, //B
       native.j // C

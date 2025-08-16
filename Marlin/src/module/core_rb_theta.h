@@ -23,7 +23,7 @@
 
 
 /**
- * @file core_rb_theta.cpp
+ * @file core_rb_theta.h
  * @author DerAndere
  * @brief Kinematics for a CORE_RB_THETA 4 axis machine.
  * 
