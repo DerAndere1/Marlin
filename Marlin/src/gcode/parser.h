@@ -419,7 +419,14 @@ public:
 
   #endif // !TEMPERATURE_UNITS_SUPPORT
 
-  static feedRate_t value_feedrate() { return MMM_TO_MMS(value_linear_units()); }
+  static feedRate_t value_feedrate() { 
+    #if ENABLED(FEEDRATE_MODE_SUPPORT)
+      const float fr_mm_min = inverse_time_enabled ? value_float() : value_linear_units();
+    #else
+      const float fr_mm_min = value_linear_units();
+    #endif
+    return MMM_TO_MMS(fr_mm_min); 
+  }
 
   void unknown_command_warning();
 
