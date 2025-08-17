@@ -82,6 +82,11 @@ millis_t GcodeSuite::previous_move_ms = 0,
 // Relative motion mode for each logical axis
 relative_t GcodeSuite::axis_relative; // Init in constructor
 
+#if ENABLED(FEEDRATE_MODE_SUPPORT)
+  bool GcodeSuite::inverse_time_enabled = false;
+#endif
+
+
 #if ANY(HAS_AUTO_REPORTING, HOST_KEEPALIVE_FEATURE)
   bool GcodeSuite::autoreport_paused; // = false
 #endif
@@ -505,6 +510,11 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       case 91: set_relative_mode(true);  break;                   // G91: Relative Mode
 
       case 92: G92(); break;                                      // G92: Set current axis position(s)
+
+      #if ENABLED(FEEDRATE_MODE_SUPPORT)
+        case 93: G93(); break;                                  // G93: Set feedrate mode to inverse time
+        case 94: G94(); break;                                  // G94: Set feedrate mode to length units per minute
+      #endif
 
       #if ENABLED(CALIBRATION_GCODE)
         case 425: G425(); break;                                  // G425: Perform calibration with calibration cube

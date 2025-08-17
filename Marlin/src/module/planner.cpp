@@ -2205,20 +2205,29 @@ bool Planner::_populate_block(
 
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 
-  // Calculate inverse time for this move. No divide by zero due to previous checks.
-  // Example: At 120mm/s a 60mm move involving XYZ axes takes 0.5s. So this will give 2.0.
-  // Example 2: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
-  float inverse_secs = inverse_millimeters * (
-    #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-      /**
-       * Workaround for premature feedrate conversion
-       * from in/s to mm/s by get_distance_from_command.
-       */
-      cartesian_move ? fr_mm_s : LINEAR_UNIT(fr_mm_s)
-    #else
-      fr_mm_s
-    #endif
-  );
+  /**
+   * Calculate inverse time for this move. No divide by zero due to previous checks.
+   * EXAMPLE: At 120mm/s a 60mm move involving XYZ axes takes 0.5s. So this will give 2.0.
+   * EXAMPLE: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
+   */
+
+  float inverse_secs;
+  if (TERN0(FEEDRATE_MODE_SUPPORT, inverse_time_enabled)) {
+    inverse_secs = fr_mm_s;
+  }
+  else {
+    inverse_secs  = inverse_millimeters * (
+      #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
+        /**
+         * Workaround for premature feedrate conversion
+         * from in/s to mm/s by get_distance_from_command.
+         */
+        cartesian_move ? fr_mm_s : LINEAR_UNIT(fr_mm_s)
+      #else
+        fr_mm_s
+      #endif
+    );
+  }
 
   // Get the number of non busy movements in queue (non busy means that they can be altered)
   const uint8_t moves_queued = nonbusy_movesplanned();

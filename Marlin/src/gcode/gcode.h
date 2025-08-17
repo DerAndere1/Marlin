@@ -406,6 +406,11 @@ public:
     }
   #endif
 
+
+  #if ENABLED(FEEDRATE_MODE_SUPPORT)
+    static bool inverse_time_enabled;
+  #endif
+
   #if ENABLED(CNC_WORKSPACE_PLANES)
     /**
      * Workspace planes only apply to G2/G3 moves
@@ -634,6 +639,12 @@ private:
   #endif
 
   static void G92();
+
+
+  #if ENABLED(FEEDRATE_MODE_SUPPORT)
+    static void G93();
+    static void G94();
+  #endif
 
   #if ENABLED(CALIBRATION_GCODE)
     static void G425();
