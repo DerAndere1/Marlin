@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 📖 Marlin2ForPipetBot Documentation
+    url: https://github.com/DerAndere1/Marlin/wiki
+    about: Documentation on installing and using Marlin2ForPipetBot.
+  - name: 📖 Marlin2ForPipetBot README
+    url: https://github.com/DerAndere1/Marlin/blob/Marlin2ForPipetBot/README.md
+    about: Frequently updated brief documentation on installing and using Marlin2ForPipetBot.
   - name: 📖 Marlin Documentation
     url: https://marlinfw.org/
     about: Lots of documentation on installing and using Marlin.
@@ -16,5 +22,5 @@ contact_links:
     url: https://www.youtube.com/results?search_query=marlin+firmware
     about: Tutorials and more from Marlin users all around the world. Great for new users!
   - name: 💸 Want to donate?
-    url: https://www.thinkyhead.com/donate-to-marlin
-    about: Please take a look at the various options to support Marlin Firmware's development financially!
+    url: https://www.paypal.com/donate/?hosted_button_id=TNGG65GVA9UHE
+    about: Support Marlin2ForPipetBot development financially!
