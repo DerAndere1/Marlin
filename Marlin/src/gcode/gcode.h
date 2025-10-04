@@ -428,11 +428,6 @@ public:
     }
   #endif
 
-
-  #if ENABLED(FEEDRATE_MODE_SUPPORT)
-    static bool inverse_time_enabled;
-  #endif
-
   #if ENABLED(CNC_WORKSPACE_PLANES)
     /**
      * Workspace planes only apply to G2/G3 moves

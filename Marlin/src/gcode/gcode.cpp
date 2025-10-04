@@ -86,11 +86,6 @@ millis_t GcodeSuite::previous_move_ms = 0,
 // Relative motion mode for each logical axis
 relative_t GcodeSuite::axis_relative; // Init in constructor
 
-#if ENABLED(FEEDRATE_MODE_SUPPORT)
-  bool GcodeSuite::inverse_time_enabled = false;
-#endif
-
-
 #if ANY(HAS_AUTO_REPORTING, HOST_KEEPALIVE_FEATURE)
   bool GcodeSuite::autoreport_paused; // = false
 #endif
@@ -234,12 +229,13 @@ void GcodeSuite::get_destination_from_command() {
   #else
     constexpr bool skip_move = false;
   #endif
-
-  const bool scaling_is_active = !(NEAR(scaling_factor_x, 1.0f) && NEAR(scaling_factor_y, 1.0f) && NEAR(scaling_factor_z, 1.0f))
-
+  
+   #if ENABLED(SCALE_WORKSPACE)
+    const bool scaling_is_active = !(NEAR(scaling_factor_x, 1.0f) && NEAR(scaling_factor_y, 1.0f) && NEAR(scaling_factor_z, 1.0f));
+  #endif
   // Get new XYZ position, whether absolute or relative
   LOOP_NUM_AXES(i) {
-    if (seen[i] = parser.seenval(AXIS_CHAR(i))) {
+    if ((seen[i] = parser.seenval(AXIS_CHAR(i)))) {
       const float v = parser.value_axis_units((AxisEnum)i);
       if (skip_move) {
         #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
@@ -250,19 +246,23 @@ void GcodeSuite::get_destination_from_command() {
       }
       else {
         #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
-          if (!(scaling_is_active) || NEAR_ZERO(rotation_angle)) {
-            raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : LOGICAL_TO_NATIVE(v, i);
+          if ((TERN1(SCALE_WORKSPACE, !scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
+            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, i);
           }
           else {
-            raw_destination[i] = axis_is_relative(AxisEnum(i)) ? raw_destination[i] + v : LOGICAL_TO_NATIVE(v, i);
+            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.raw_destination[i] + v : motion.logical_to_native(v, i);
           }
         #else
-          motion.destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : LOGICAL_TO_NATIVE(v, i);
+          motion.destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, i);
         #endif
       }
     }
     else {
-      if (TERN1(SCALE_WORKSPACE, !(scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
+      #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
+        if ((TERN1(SCALE_WORKSPACE, !scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
+          motion.raw_destination[i] = motion.position[i];
+        }
+      #else
         motion.destination[i] = motion.position[i];
       else
         motion.destination[i] = axis_is_relative((AxisEnum)i) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
@@ -270,15 +270,14 @@ void GcodeSuite::get_destination_from_command() {
   }
 
   #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
-  if (TERN1(SCALE_WORKSPACE, (scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
-    motion.destination = raw_destination;
+    motion.destination = motion.raw_destination;
   #endif
 
   #if ENABLED(SCALE_WORKSPACE)
     if (scaling_is_active) {
-      motion.destination.x = (raw_destination.x - scaling_center_x) * scaling_factor_x + scaling_center_x;
-      TERN_(HAS_Y_AXIS, motion.destination.y = (raw_destination.y - scaling_center_y) * scaling_factor_y + scaling_center_y);
-      TERN_(HAS_Z_AXIS, motion.destination.z = (raw_destination.z - scaling_center_z) * scaling_factor_z + scaling_center_z);
+      motion.destination.x = (motion.raw_destination.x - scaling_center_x) * scaling_factor_x + scaling_center_x;
+      TERN_(HAS_Y_AXIS, motion.destination.y = (motion.raw_destination.y - scaling_center_y) * scaling_factor_y + scaling_center_y);
+      TERN_(HAS_Z_AXIS, motion.destination.z = (motion.raw_destination.z - scaling_center_z) * scaling_factor_z + scaling_center_z);
     }
   #endif
 
@@ -552,6 +551,8 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
       #if HAS_TOOL_LENGTH_COMPENSATION
         case 43: G43(); break;                                    // G43.4: Rotational Tool Center Point Control Mode
         case 49: G49(); break;
+      #endif
+  
       #if ENABLED(SCALE_WORKSPACE)
         case 50: G50(); break;                                    // G50: Cancel Workspace Scaling
         case 51: G51(); break;                                    // G51: Set Workspace Scaling

@@ -29,11 +29,11 @@
 /**
  * G93: Set feedrate mode to inverse time
  */
-void GcodeSuite::G93() { inverse_time_mode_enabled = true; }
+void GcodeSuite::G93() { parser.inverse_time_enabled = true; }
 
 /**
  * G94: Set feedrate mode to length units per minute
  */
-void GcodeSuite::G94() { inverse_time_mode_enabled = false; }
+void GcodeSuite::G94() { parser.inverse_time_enabled = false; }
 
 #endif // FEEDRATE_MODE_SUPPORT

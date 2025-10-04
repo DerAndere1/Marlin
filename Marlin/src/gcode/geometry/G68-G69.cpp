@@ -60,8 +60,8 @@
     else {
       rotation_angle = parser.value_float();
     }
-    TERN_(HAS_X_AXIS, rotation_center_x = parser.seenval('X') ? LOGICAL_TO_NATIVE(parser.value_axis_units(X_AXIS), X_AXIS) : current_position.x);
-    TERN_(HAS_Y_AXIS, rotation_center_y = parser.seenval('Y') ? LOGICAL_TO_NATIVE(parser.value_axis_units(Y_AXIS), Y_AXIS) : current_position.y);
+    TERN_(HAS_X_AXIS, rotation_center_x = parser.seenval('X') ? motion.logical_to_native(parser.value_axis_units(X_AXIS), X_AXIS) : motion.position.x);
+    TERN_(HAS_Y_AXIS, rotation_center_y = parser.seenval('Y') ? motion.logical_to_native(parser.value_axis_units(Y_AXIS), Y_AXIS) : motion.position.y);
     SERIAL_ECHOLNPGM("Workspace rotation set");
   }
 

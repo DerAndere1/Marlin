@@ -33,10 +33,19 @@
  */
 bool GcodeSuite::select_coordinate_system(const int8_t _new) {
   if (active_coordinate_system == _new) return false;
-  if (!NEAR_ZERO(gcode.rotation_angle)) {
-    SERIAL_ECHOLNPGM("Cannot change workspace while workspace rotation is active");
-    return false;
-  }
+  #if ENABLED(ROTATE_WORKSPACE)
+    if (!NEAR_ZERO(gcode.rotation_angle)) {
+      SERIAL_ECHOLNPGM("Cannot change workspace while workspace rotation is active");
+      return false;
+    }
+  #endif
+  #if ENABLED(SCALE_WORKSPACE)
+    if (!(NEAR(gcode.scaling_factor_x, 1.0f) && NEAR(gcode.scaling_factor_y, 1.0f) && NEAR(gcode.scaling_factor_z, 1.0f))) {
+      SERIAL_ECHOLNPGM("Cannot change workspace while workspace scaling is active");
+      return false;
+    }
+  #endif
+
   active_coordinate_system = _new;
   xyz_float_t new_offset{0};
   if (WITHIN(_new, 0, MAX_COORDINATE_SYSTEMS - 1))

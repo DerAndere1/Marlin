@@ -2196,7 +2196,7 @@ bool Planner::_populate_block(
    */
 
   float inverse_secs;
-  if (TERN0(FEEDRATE_MODE_SUPPORT, inverse_time_enabled)) {
+  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled)) {
     inverse_secs = fr_mm_s;
   }
   else {
