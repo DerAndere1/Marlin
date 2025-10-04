@@ -80,6 +80,10 @@ public:
     static float linear_unit_factor, volumetric_unit_factor;
   #endif
 
+  #if ENABLED(FEEDRATE_MODE_SUPPORT)
+    static bool inverse_time_enabled;
+  #endif
+
   #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
     static TempUnit input_temp_units;
   #endif
