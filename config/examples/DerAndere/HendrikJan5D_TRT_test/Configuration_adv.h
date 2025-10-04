@@ -3568,6 +3568,28 @@
 // @section cnc
 
 /**
+ * CNC Coordinate Systems
+ *
+ * Enables G53 and G54-G59.3 commands to select coordinate systems
+ * and G92.1 to reset the workspace to native machine space.
+ */
+#define CNC_COORDINATE_SYSTEMS
+
+/**
+ * Rotate Workspace
+ *
+ * Enables the G31 command to scale the workspace and G30 to cancel scaling.
+ */
+#define SCALE_WORKSPACE
+
+/**
+ * Rotate Workspace
+ *
+ * Enables the G68 command to rotate the workspace and G69 to cancel rotation.
+ */
+#define ROTATE_WORKSPACE
+
+/**
  * Spindle & Laser control
  *
  * Add the M3, M4, and M5 commands to turn the spindle/laser on and off, and
@@ -3840,16 +3862,6 @@
  * Disable protection if your stepper drivers don't support the feature.
  */
 //#define DISABLE_DRIVER_SAFE_POWER_PROTECT
-
-// @section cnc
-
-/**
- * CNC Coordinate Systems
- *
- * Enables G53 and G54-G59.3 commands to select coordinate systems
- * and G92.1 to reset the workspace to native machine space.
- */
-//#define CNC_COORDINATE_SYSTEMS
 
 // @section security
 
