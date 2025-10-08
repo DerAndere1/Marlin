@@ -425,7 +425,7 @@ public:
 
   static feedRate_t value_feedrate() { 
     #if ENABLED(FEEDRATE_MODE_SUPPORT)
-      const float fr_mm_min = inverse_time_enabled ? value_float() : value_linear_units();
+      const float fr_mm_min = (inverse_time_enabled && motion.print_move) ? value_float() : value_linear_units();
     #else
       const float fr_mm_min = value_linear_units();
     #endif

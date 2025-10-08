@@ -110,7 +110,10 @@ public:
   static xyze_pos_t position,           // High-level current tool position
                     destination;        // Destination for a move
   #if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
-    extern xyz_pos_t raw_destination;
+    static xyz_pos_t raw_destination;
+  #endif
+  #if ENABLED(FEEDRATE_MODE_SUPPORT)
+    static bool print_move;
   #endif
 
   static feedRate_t feedrate_mm_s;      // Feedrate for G-moves, set by the most recent G-move

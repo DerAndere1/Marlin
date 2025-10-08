@@ -2196,8 +2196,14 @@ bool Planner::_populate_block(
    */
 
   float inverse_secs;
-  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled)) {
+  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && motion.print_move)) {
     inverse_secs = fr_mm_s;
+    float min_inverse_secs;
+    if (esteps)
+      min_inverse_secs = settings.min_feedrate_mm_s * inverse_millimeters;
+    else
+      min_inverse_secs = settings.min_travel_feedrate_mm_s * inverse_millimeters;
+    NOLESS(inverse_secs, min_inverse_secs);
   }
   else {
     inverse_secs  = inverse_millimeters * (
