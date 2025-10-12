@@ -63,22 +63,29 @@ void GcodeSuite::G43() {
     default: return;                                              // Ignore unknown G43.x
 
     case 0:                                                       // G43 - Simple Tool Length Compensation Mode.
+      if (!(simple_tool_length_compensation || tool_centerpoint_control)) {
+        current_position += hotend_offset[active_extruder];
+      }
+
       #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
         tool_centerpoint_control = false;
       #endif
       simple_tool_length_compensation = true;
+      sync_plan_position();
       break;
 
     #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
       case 4:                                                     // G43.4 - Rotational Tool Center Point Control Mode.
+        if (!(simple_tool_length_compensation || tool_centerpoint_control)) {
+          current_position += hotend_offset[active_extruder];
+        }
         simple_tool_length_compensation = false;
         tool_centerpoint_control = true;
+        sync_plan_position();
         break;
     #endif
   }
 
-  current_position += hotend_offset[active_extruder];
-  sync_plan_position();
 }
 
 
@@ -91,12 +98,13 @@ void GcodeSuite::G43() {
  * Rotational Tool Center Point Control Mode can be enabled with G43.4
  */
 void GcodeSuite::G49() {
+  if (simple_tool_length_compensation || tool_centerpoint_control) {
+    current_position -= hotend_offset[active_extruder];
+  }
   simple_tool_length_compensation = false;
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
     tool_centerpoint_control = false;
   #endif
-
-  current_position -= hotend_offset[active_extruder];
   sync_plan_position();
 }
 
