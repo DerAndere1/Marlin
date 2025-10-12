@@ -43,6 +43,7 @@ bool GCodeParser::volumetric_enabled;
 
 #if ENABLED(FEEDRATE_MODE_SUPPORT)
   bool GCodeParser::inverse_time_enabled;
+  bool GCodeParser::print_move;
 #endif
 
 #if ENABLED(TEMPERATURE_UNITS_SUPPORT)

@@ -222,7 +222,7 @@ void plan_arc(
   // Get the ideal segment length for the move based on settings
   const float ideal_segment_mm = (
     #if ARC_SEGMENTS_PER_SEC  // Length based on segments per second and feedrate
-      constrain(RECIPROCAL(scaled_fr_mm_s * ARC_SEGMENTS_PER_SEC), MIN_ARC_SEGMENT_MM, MAX_ARC_SEGMENT_MM)
+      constrain(scaled_fr_mm_s * RECIPROCAL( ARC_SEGMENTS_PER_SEC), MIN_ARC_SEGMENT_MM, MAX_ARC_SEGMENT_MM)
     #else
       MAX_ARC_SEGMENT_MM      // Length using the maximum segment size
     #endif
@@ -436,7 +436,7 @@ void GcodeSuite::G2_G3(const bool clockwise) {
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_RUNNING));
 
-  TERN_(FEEDRATE_MODE_SUPPORT, print_move = true);
+  TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = true);
 
   #if ENABLED(SF_ARC_FIX)
     const bool relative_mode_backup = relative_mode;
@@ -497,7 +497,7 @@ void GcodeSuite::G2_G3(const bool clockwise) {
   else
     SERIAL_ERROR_MSG(STR_ERR_ARC_ARGS);
 
-  TERN_(FEEDRATE_MODE_SUPPORT, print_move = false);
+  TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = false);
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
 }

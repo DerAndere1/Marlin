@@ -1,4 +1,8 @@
 /**
+ * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ *
+ * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -50,7 +54,7 @@
   #define TOOL_SENSOR2_PIN                  PI4
   //#define TOOL_SENSOR3_PIN                PF4
 #else
-  #define PS_ON_PIN                         PH6
+  #define SOL1_PIN                          PH6
 #endif
 
 //
@@ -106,33 +110,13 @@
 // Pins on the extender
 //
 #if ENABLED(M5_EXTENDER)
-  #define USES_DIAG_JUMPERS                       // DIAG jumpers work on M5 extender
-  #ifndef X2_STOP_PIN
-    #define X2_STOP_PIN                     PI4   // M5 M1_STOP
-  #endif
-  #ifndef Y2_STOP_PIN
-    #define Y2_STOP_PIN                     PF12  // M5 M5_STOP
-  #endif
-  #ifndef Z2_STOP_PIN
-    #define Z2_STOP_PIN                     PF4   // M5 M2_STOP
-  #endif
-  #ifndef Z3_STOP_PIN
-    #define Z3_STOP_PIN                     PI7   // M5 M4_STOP
-  #endif
-  #ifndef Z4_STOP_PIN
-    #define Z4_STOP_PIN                     PF6   // M5 M3_STOP
-  #endif
+  #define Y2_STOP_PIN                      PF12  // M5 M5_STOP
+  #define J_STOP_PIN                       PI7   // M5 M4_STOP
+  #define I_STOP_PIN                       PF6   // M5 M3_STOP
 #endif
 
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PH11  // Z Probe must be PH11
-#endif
-
-//
-// Probe enable
-//
-#if ENABLED(PROBE_ENABLE_DISABLE) && !defined(PROBE_ENABLE_PIN)
-  #define PROBE_ENABLE_PIN            SERVO0_PIN
 #endif
 
 //
@@ -166,11 +150,11 @@
   #define E0_CS_PIN                         PG10
 #endif
 
-#define E1_STEP_PIN                         PD6
-#define E1_DIR_PIN                          PD5
-#define E1_ENABLE_PIN                       PD7
-#ifndef E1_CS_PIN
-  #define E1_CS_PIN                         PD4
+#define Y2_STEP_PIN                         PD6
+#define Y2_DIR_PIN                          PD5
+#define Y2_ENABLE_PIN                       PD7
+#ifndef Y2_CS_PIN
+  #define Y2_CS_PIN                         PD4
 #endif
 
 #define E2_STEP_PIN                         PD1
@@ -182,32 +166,18 @@
 
 #if ENABLED(M5_EXTENDER)
 
-  #define E3_STEP_PIN                       PF3
-  #define E3_DIR_PIN                        PG3
-  #define E3_ENABLE_PIN                     PF8
-  #ifndef E3_CS_PIN
-    #define E3_CS_PIN                       PG4
+  #define I_STEP_PIN                       PE12
+  #define I_DIR_PIN                        PE10
+  #define I_ENABLE_PIN                     PF14
+  #ifndef I_CS_PIN
+    #define I_CS_PIN                       PE7
   #endif
 
-  #define E4_STEP_PIN                       PD14
-  #define E4_DIR_PIN                        PD11
-  #define E4_ENABLE_PIN                     PG2
-  #ifndef E4_CS_PIN
-    #define E4_CS_PIN                       PE15
-  #endif
-
-  #define E5_STEP_PIN                       PE12
-  #define E5_DIR_PIN                        PE10
-  #define E5_ENABLE_PIN                     PF14
-  #ifndef E5_CS_PIN
-    #define E5_CS_PIN                       PE7
-  #endif
-
-  #define E6_STEP_PIN                       PG0
-  #define E6_DIR_PIN                        PG1
-  #define E6_ENABLE_PIN                     PE8
-  #ifndef E6_CS_PIN
-    #define E6_CS_PIN                       PF15
+  #define J_STEP_PIN                       PG0
+  #define J_DIR_PIN                        PG1
+  #define J_ENABLE_PIN                     PE8
+  #ifndef J_CS_PIN
+    #define J_CS_PIN                       PF15
   #endif
 
   #define E7_STEP_PIN                       PH12
@@ -266,24 +236,19 @@
   #define E0_SERIAL_TX_PIN                  PG10
   #define E0_SERIAL_RX_PIN      E0_SERIAL_TX_PIN
 
-  #define E1_SERIAL_TX_PIN                  PD4
-  #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
+  #define Y2_SERIAL_TX_PIN                  PD4
+  #define Y2_SERIAL_RX_PIN      Y2_SERIAL_TX_PIN
 
   #define E2_SERIAL_TX_PIN                  PC12
   #define E2_SERIAL_RX_PIN      E2_SERIAL_TX_PIN
 
   #if ENABLED(M5_EXTENDER)
-    #define E3_SERIAL_TX_PIN                PG4
-    #define E3_SERIAL_RX_PIN    E3_SERIAL_TX_PIN
 
-    #define E4_SERIAL_TX_PIN                PE15
-    #define E4_SERIAL_RX_PIN    E4_SERIAL_TX_PIN
+    #define I_SERIAL_TX_PIN                PE7
+    #define I_SERIAL_RX_PIN    I_SERIAL_TX_PIN
 
-    #define E5_SERIAL_TX_PIN                PE7
-    #define E5_SERIAL_RX_PIN    E5_SERIAL_TX_PIN
-
-    #define E6_SERIAL_TX_PIN                PF15
-    #define E6_SERIAL_RX_PIN    E6_SERIAL_TX_PIN
+    #define J_SERIAL_TX_PIN                PF15
+    #define J_SERIAL_RX_PIN    J_SERIAL_TX_PIN
 
     #define E7_SERIAL_TX_PIN                PH14
     #define E7_SERIAL_RX_PIN    E7_SERIAL_TX_PIN

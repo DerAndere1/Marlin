@@ -1,8 +1,4 @@
 /**
- * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
- * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
- *
- * Based on:
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -29,11 +25,10 @@
 // Prefix header for all Marlin sources
 //
 
-#include "MarlinConfigPre-6-type.h" // Include even with __MARLIN_DEPS__
+#include "Conditionals-6-type.h"
 
 #ifndef __MARLIN_DEPS__
 
-  #include "Conditionals-6-type.h"
   #include HAL_PATH(.., inc/Conditionals_type.h)
 
   #include "Changes.h"
