@@ -60,24 +60,28 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
   #ifdef G0_FEEDRATE
     feedRate_t old_feedrate;
     #if ENABLED(VARIABLE_G0_FEEDRATE)
+      TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = true);
       if (fast_move) {
         old_feedrate = motion.feedrate_mm_s;            // Back up the (old) motion mode feedrate
         motion.feedrate_mm_s = fast_move_feedrate;      // Get G0 feedrate from last usage
       }
-      #if ENABLED(FEEDRATE_MODE_SUPPORT)
-        else
-          motion.print_move = true;
-      #endif
+    #elif defined(FEEDRATE_MODE_SUPPORT)
+      if (fast_move) {
+        parser.print_move = false;
+      }
+      else {
+        parser.print_move = true;
+      }
     #endif
   #elif ENABLED(FEEDRATE_MODE_SUPPORT)
-    motion.print_move = true;
+    parser.print_move = true;
   #endif
 
   get_destination_from_command();                       // Get X Y [Z[I[J[K]]]] [E] F (and set cutter power)
 
   #ifdef G0_FEEDRATE
     if (fast_move) {
-      TERN_(FEEDRATE_MODE_SUPPORT, motion.print_move = false);
+      TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = false);
       
       #if ENABLED(VARIABLE_G0_FEEDRATE)
         fast_move_feedrate = motion.feedrate_mm_s;      // Save feedrate for the next G0
@@ -86,13 +90,6 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
         motion.feedrate_mm_s = MMM_TO_MMS(G0_FEEDRATE); // Get the fixed G0 feedrate
       #endif
     }
-    #if ENABLED(FEEDRATE_MODE_SUPPORT)
-      else {
-        motion.print_move = true;
-      }
-    #endif
-  #elif defined(FEEDRATE_MODE_SUPPORT)
-    motion.print_move = true;
   #endif
 
   #if ALL(FWRETRACT, FWRETRACT_AUTORETRACT)
@@ -125,7 +122,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
     if (fast_move) motion.feedrate_mm_s = old_feedrate;
   #endif
 
-  TERN_(FEEDRATE_MODE_SUPPORT, motion.print_move = false);
+  TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = false);
 
   #if ENABLED(NANODLP_Z_SYNC)
     #if ENABLED(NANODLP_ALL_AXIS)

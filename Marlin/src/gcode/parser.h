@@ -82,7 +82,9 @@ public:
 
   #if ENABLED(FEEDRATE_MODE_SUPPORT)
     static bool inverse_time_enabled;
+    static bool print_move;
   #endif
+
 
   #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
     static TempUnit input_temp_units;

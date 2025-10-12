@@ -182,11 +182,9 @@ xyz_pos_t Motion::cartes;
 #ifndef DEFAULT_FEEDRATE_MM_M
   #define DEFAULT_FEEDRATE_MM_M 4000
 #endif
-feedRate_t Motion::feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
-#if ENABLED(FEEDRATE_MODE_SUPPORT)
-  bool Motion::print_move = false;
-#endif
-int16_t Motion::feedrate_percentage = 100;
+feedRate_t feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
+
+int16_t feedrate_percentage = 100;
 #if ENABLED(EDITABLE_HOMING_FEEDRATE)
   xyz_feedrate_t Motion::homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
 #else
