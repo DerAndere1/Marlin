@@ -2207,7 +2207,7 @@ bool Planner::_populate_block(
    */
 
   float inverse_secs;
-  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && print_move)) {
+  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
     inverse_secs = fr_mm_s;
     float min_inverse_secs;
     if (esteps)
@@ -3008,21 +3008,13 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const feedRate_t fr_mm_s
         cart.u - position_cart.u, cart.v - position_cart.v, cart.w - position_cart.w
       );
     #endif
-
+    
     PlannerHints ph = hints;
     if (!hints.millimeters)
       ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, ph.cartesian_move));
 
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) 
-      if (NEAR_ZERO(cart.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(cart.j)) && NEAR_ZERO(position_cart.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(position_cart.j))) {
-        delta += cart_dist_mm;
-      }
-      else
-    #endif
-
     // Cartesian XYZ to kinematic ABC, stored in global 'delta'
     inverse_kinematics(machine);
-
     #if DISABLED(FEEDRATE_SCALING)
 
       const feedRate_t feedrate = fr_mm_s;

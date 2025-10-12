@@ -169,7 +169,7 @@ xyze_pos_t destination; // {0}
   #define DEFAULT_FEEDRATE_MM_M 4000
 #endif
 feedRate_t feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
-bool print_move = false;
+
 int16_t feedrate_percentage = 100;
 #if ENABLED(EDITABLE_HOMING_FEEDRATE)
   xyz_feedrate_t homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
@@ -853,10 +853,12 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
 
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(pos, true));
 
-  if (axis == ALL_AXES_ENUM)
+  if (axis == ALL_AXES_ENUM) {
     current_position = pos;
-  else
+  } 
+  else {
     current_position[axis] = pos[axis];
+  }
 }
 
 /**
