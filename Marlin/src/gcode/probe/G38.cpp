@@ -54,8 +54,17 @@ inline void G38_single_probe(const uint8_t move_value) {
 FORCE_INLINE bool G38_run_probe() {
 
   bool G38_pass_fail = false;
-  const xyze_pos_t npos_start = motion.position - ((!(motion.simple_tool_length_compensation || motion.tool_centerpoint_control)) ? probe.offset : DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]));
-  const xyze_pos_t npos_destination = motion.destination - ((!(motion.simple_tool_length_compensation || motion.tool_centerpoint_control)) ? probe.offset : DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]));
+  const xyze_pos_t start_pos = motion.position;
+  const xyze_pos_t old_destination = motion.destination;
+  probe.use_probing_tool();
+  if (probe.deploy()) {
+    SERIAL_ERROR_MSG("Failed to deploy probe");
+    endstops.not_homing();
+    probe.use_probing_tool(false);
+    return false;
+  }
+  const xyze_pos_t npos_start = start_pos - ((!(motion.simple_tool_length_compensation || motion.tool_centerpoint_control)) ? probe.offset : DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]));
+  const xyze_pos_t npos_destination = old_destination - ((!(motion.simple_tool_length_compensation || motion.tool_centerpoint_control)) ? probe.offset : DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]));
   motion.blocking_move_to(npos_start);
   motion.destination = npos_destination;
 
@@ -95,7 +104,11 @@ FORCE_INLINE bool G38_run_probe() {
       #if ENABLED(SOLENOID_PROBE)
         probe.stow();
         safe_delay(1000);
-        probe.deploy();
+        if (probe.deploy()) {
+          endstops.not_homing();
+          probe.use_probing_tool(false);
+          return false;
+        }
       #endif
       REMEMBER(fr, motion.feedrate_mm_s, motion.feedrate_mm_s * 0.25);
 
@@ -107,8 +120,10 @@ FORCE_INLINE bool G38_run_probe() {
   }
   endstops.enable(false);
   TERN_(SOLENOID_PROBE, probe.stow());
-  motion.destination = motion.position + ((!(motion.simple_tool_length_compensation || motion.tool_centerpoint_control)) ? probe.offset : DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]));
-  motion.blocking_move_to(motion.destination);
+  const xyze_pos_t probed_pos = motion.position + DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]);
+  probe.use_probing_tool(false);
+  motion.destination = probed_pos;
+  do_blocking_move_to(motion.destination);
   planner.synchronize();
   endstops.not_homing();
   return G38_pass_fail;
@@ -131,7 +146,6 @@ void GcodeSuite::G38(const int8_t subcode) {
   get_destination_from_command();
 
   motion.remember_feedrate_scaling_off();
-  probe.use_probing_tool();
   const bool error_on_fail = TERN(G38_PROBE_AWAY, !TEST(subcode, 0), subcode == 2);
 
   // If any axis has enough movement, do the move
@@ -146,7 +160,6 @@ void GcodeSuite::G38(const int8_t subcode) {
       break;
     }
   }
-  probe.use_probing_tool(false);
   motion.restore_feedrate_and_scaling();
   TERN_(FEEDRATE_MODE_SUPPORT, parser.print_move = false);
 }
