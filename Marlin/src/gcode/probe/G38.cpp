@@ -31,6 +31,8 @@
 #include "../../module/planner.h"
 #include "../../module/probe.h"
 
+
+/**
 inline void G38_single_probe(const uint8_t move_value) {
   endstops.enable(true);
   G38_move = move_value;
@@ -42,8 +44,31 @@ inline void G38_single_probe(const uint8_t move_value) {
   sync_plan_position();
 }
 
+*/
+
 inline bool G38_run_probe() {
 
+  // Move flag value
+  #if ENABLED(G38_PROBE_AWAY)
+    const uint8_t move_value = parser.subcode;
+  #else
+    constexpr uint8_t move_value = 1;
+  #endif
+
+  const xyz_pos_t probed_pos = probe.probe_straight(destination, PROBE_PT_NONE, move_value, 0, true, true, Z_CLEARANCE_DEPLOY_PROBE, false);
+  LOOP_NUM_AXES(i) {
+    if (isnan(probed_pos.i)) return true;
+  }
+
+  endstops.enable(false);
+  destination = probed_pos;
+  do_blocking_move_to(destination);
+  planner.synchronize();
+  endstops.not_homing();
+  return false;
+}
+
+  /**
   bool G38_pass_fail = false;
   const xyze_pos_t start_pos = current_position;
   const xyze_pos_t old_destination = destination;
@@ -120,6 +145,8 @@ inline bool G38_run_probe() {
   return G38_pass_fail;
 }
 
+*/
+
 /**
  * G38 Probe Target
  *
@@ -147,7 +174,7 @@ void GcodeSuite::G38(const int8_t subcode) {
         feedrate_mm_s = homing_feedrate((AxisEnum)i);
       }
       // If G38.2 fails throw an error
-      if (!G38_run_probe() && error_on_fail) SERIAL_ERROR_MSG("Failed to reach target");
+      if (G38_run_probe() && error_on_fail) SERIAL_ERROR_MSG("Failed to reach target");
       break;
     }
   }
