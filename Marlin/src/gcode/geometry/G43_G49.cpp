@@ -63,7 +63,7 @@ void GcodeSuite::G43() {
     default: return;                                              // Ignore unknown G43.x
 
     case 0:                                                       // G43 - Simple Tool Length Compensation Mode.
-      if (!(simple_tool_length_compensation || tool_centerpoint_control)) {
+      if (!(simple_tool_length_compensation || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) {
         current_position += hotend_offset[active_extruder];
       }
 
@@ -98,7 +98,7 @@ void GcodeSuite::G43() {
  * Rotational Tool Center Point Control Mode can be enabled with G43.4
  */
 void GcodeSuite::G49() {
-  if (simple_tool_length_compensation || tool_centerpoint_control) {
+  if (simple_tool_length_compensation || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control)) {
     current_position -= hotend_offset[active_extruder];
   }
   simple_tool_length_compensation = false;
