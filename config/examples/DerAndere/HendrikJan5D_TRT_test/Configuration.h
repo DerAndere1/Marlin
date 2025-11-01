@@ -346,7 +346,7 @@
   #define SWITCHING_TOOLHEAD_Z_POS        150         // (mm) Z position of the toolhead dock.
                                                         // Leave this option disabled if the bed can move in Z direction
   #define SWITCHING_TOOLHEAD_Z_CLEAR       30         // (mm) Minimum distance from dock along Z for unobstructed X axis if the tools are placed onto the dock in Z direction
-  #define SWITCHING_TOOLHEAD_Y_POS          0         // (mm) Y position of the toolhead dock
+  #define SWITCHING_TOOLHEAD_Y_POS         -60         // (mm) Y position of the toolhead dock
   #define SWITCHING_TOOLHEAD_Y_SECURITY      0         // (mm) Security distance Y axis
   #define SWITCHING_TOOLHEAD_Y_CLEAR         20         // (mm) Minimum distance from dock for unobstructed X axis
   #define SWITCHING_TOOLHEAD_X_POS          { 0, 10, 30 }  // (mm) X positions for parking the extruders
@@ -391,9 +391,9 @@
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
 // For the other hotends it is their distance from the extruder 0 hotend in positive axis direction.
-#define HOTEND_OFFSET_X { 0.0, 00.00, 0.00 } // (mm) relative X-offset for each nozzle
-#define HOTEND_OFFSET_Y { 0.0, 0.00, 0.00 }  // (mm) relative Y-offset for each nozzle
-#define HOTEND_OFFSET_Z { 0.0, -10.00, -30.00 }  // (mm) relative Z-offset for each nozzle
+#define HOTEND_OFFSET_X { 0.0, 00.00, 10 } // (mm) relative X-offset for each nozzle
+#define HOTEND_OFFSET_Y { 0.0, 0.00, -22 }  // (mm) relative Y-offset for each nozzle
+#define HOTEND_OFFSET_Z { 0.0, -10.00, -2.2 }  // (mm) relative Z-offset for each nozzle
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
 #define DEFAULT_TOOL_LENGTH_COMPENSATION false
@@ -1702,7 +1702,7 @@
 #define NOZZLE_TO_PROBE_OFFSET { 10, -22, -2.2, 0, 0 }
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
-#define PROBING_TOOL 0
+#define PROBING_TOOL 2
 #ifdef PROBING_TOOL
   //#define PROBE_TOOLCHANGE_NO_MOVE  // Suppress motion on probe tool-change
 #endif
@@ -1784,7 +1784,7 @@
 #define Z_CLEARANCE_DEPLOY_PROBE   10 // (mm) Z Clearance for Deploy/Stow
 #define Z_CLEARANCE_BETWEEN_PROBES  5 // (mm) Z Clearance between probe points
 #define Z_CLEARANCE_MULTI_PROBE     5 // (mm) Z Clearance between multiple probes
-#define Z_PROBE_ERROR_TOLERANCE     3 // (mm) Tolerance for early trigger (<= -probe.offset.z + ZPET)
+#define Z_PROBE_ERROR_TOLERANCE    20 // (mm) Tolerance for early trigger (<= -probe.offset.z + ZPET)
 //#define Z_AFTER_PROBING           5 // (mm) Z position after probing is done
 
 #define Z_PROBE_LOW_POINT          -2 // (mm) Farthest distance below the trigger-point to go before stopping
