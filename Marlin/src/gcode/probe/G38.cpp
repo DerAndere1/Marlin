@@ -55,7 +55,7 @@ inline bool G38_run_probe() {
     constexpr uint8_t move_value = 1;
   #endif
 
-  const xyz_pos_t probed_pos = probe.probe_straight(destination, PROBE_PT_NONE, move_value, 0, true, true, Z_CLEARANCE_DEPLOY_PROBE, false);
+  const xyz_pos_t probed_pos = probe.probe_safely(destination, PROBE_PT_NONE, move_value, 0, true, true, Z_CLEARANCE_DEPLOY_PROBE, false);
   LOOP_NUM_AXES(i) {
     if (isnan(probed_pos.i)) return true;
   }
