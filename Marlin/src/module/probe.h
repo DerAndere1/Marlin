@@ -193,7 +193,7 @@ public:
       const bool         sanity_check       = true,
       const_float_t      z_clearance        = Z_TWEEN_SAFE_CLEARANCE,
       const bool         raise_after_is_rel = false,
-      const bool         probe_3d     = false
+      const bool         probe_3d           = false
     );
 
     static float probe_at_point(
@@ -388,8 +388,8 @@ public:
 
 private:
   #if HAS_BED_PROBE
-    static bool probe_to_target(const xyz_pos_t pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d);
-    static xyz_pos_t run_probe(const bool sanity_check, const xyz_pos_t target, const_float_t z_clearance, const bool probe_3d, const uint8_t move_value);
+    static bool probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d);
+    static xyz_pos_t run_probe(const bool sanity_check, const xyz_pos_t &target, const_float_t z_clearance, const uint8_t move_value, const bool probe_3d);
   #endif
 };
 
