@@ -379,8 +379,8 @@ public:
 
 private:
   #if HAS_BED_PROBE
-    static bool probe_to_target(const xyz_pos_t pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d);
-    static xyz_pos_t run_probe(const bool sanity_check, const xyz_pos_t target, const_float_t z_clearance, const uint8_t move_value, const bool probe_3d);
+    static bool probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d);
+    static xyz_pos_t run_probe(const bool sanity_check, const xyz_pos_t &target, const_float_t z_clearance, const uint8_t move_value, const bool probe_3d);
   #endif
 };
 

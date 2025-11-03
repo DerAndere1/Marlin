@@ -626,7 +626,7 @@ bool Probe::set_deployed(const bool deploy, const bool no_return/*=false*/) {
  *
  * @return TRUE if the probe failed to trigger.
  */
-bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d) {
+bool Probe::probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d) {
   DEBUG_SECTION(log_probe, "Probe::probe_to_tagret", DEBUGGING(LEVELING));
   if (TERN1(G38_PROBE_TARGET, !probe_3d)) {
     #if ALL(HAS_HEATED_BED, WAIT_FOR_BED_HEATER)
@@ -689,23 +689,24 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
       // Move down until the probe is triggered
       prepare_line_to_destination();
       planner.synchronize();
-  
       probe_triggered = G38_did_trigger;
       endstops.not_homing();  
       G38_move = 0;
     }
     else
   #endif
-    // Move down until the probe is triggered
-    do_blocking_move_to_z(pos.z, fr_mm_s);
-    // Check to see if the probe was triggered
-  probe_triggered = (
-      #if HAS_DELTA_SENSORLESS_PROBING
-        endstops.trigger_state() & (_BV(X_MAX) | _BV(Y_MAX) | _BV(Z_MAX))
-      #else
-        TEST(endstops.trigger_state(), Z_MIN_PROBE)
-      #endif
-  );
+    {
+      // Move down until the probe is triggered
+      do_blocking_move_to_z(pos.z, fr_mm_s);
+      // Check to see if the probe was triggered
+      probe_triggered = (
+        #if HAS_DELTA_SENSORLESS_PROBING
+          endstops.trigger_state() & (_BV(X_MAX) | _BV(Y_MAX) | _BV(Z_MAX))
+        #else
+          TEST(endstops.trigger_state(), Z_MIN_PROBE)
+        #endif
+      );
+    }
   
   // Offset sensorless probing
   #if HAS_DELTA_SENSORLESS_PROBING
@@ -810,7 +811,7 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
  *
  * @return The Z position of the bed at the current XY or NAN on error.
  */
-xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &target, const float z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/, const uint8_t move_value, const bool probe_3d) {
+xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &target, const_float_t z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/, const uint8_t move_value, const bool probe_3d) {
   DEBUG_SECTION(log_probe, "Probe::run_probe", DEBUGGING(LEVELING));
 
   const xyz_pos_t nan_pos = {NUM_AXIS_LIST(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN)};
