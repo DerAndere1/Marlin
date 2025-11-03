@@ -876,7 +876,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
     if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
     // Do a first probe at the fast speed
-    if (try_to_probe(PSTR("FAST"), probe_target_point, z_probe_fast_mm_s, sanity_check, move_value, probe_3d)) return nan_pos;
+    if (try_to_probe(PSTR("FAST"), probe_target_point, probe_3d ? feedrate_mm_s : z_probe_fast_mm_s, sanity_check, move_value, probe_3d)) return nan_pos;
     xyze_pos_t targ1 = current_position;
     #if ENABLED(G38_PROBE_TARGET)
       if (probe_3d) {
@@ -900,7 +900,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   #elif Z_PROBE_FEEDRATE_FAST != Z_PROBE_FEEDRATE_SLOW
     #if ENABLED(G38_PROBE_TARGET)
       if (probe_3d) {
-        if(!probe_to_target(probe_target_point, z_probe_fast_mm_s, move_value, true)) {
+        if(!probe_to_target(probe_target_point, feedrate_mm_s, move_value, true)) {
           // Move away by the retract distance
           destination = current_position + retract_mm;
           prepare_line_to_destination();
@@ -940,9 +940,10 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       // If the probe won't tare, return
       if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
+      const_feedRate_t fr = (TERN0(G38_PROBE_TARGET, probe_3d && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? feedrate_mm_s : z_probe_slow_mm_s;
       // Probe downward slowly to find the bed
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Slow Probe:");
-      if (try_to_probe(PSTR("SLOW"), probe_target_point, z_probe_slow_mm_s, sanity_check, move_value, probe_3d)) return nan_pos;
+      if (try_to_probe(PSTR("SLOW"), probe_target_point, fr, sanity_check, move_value, probe_3d)) return nan_pos;
 
       TERN_(MEASURE_BACKLASH_WHEN_PROBING, backlash.measure_with_probe());
 
