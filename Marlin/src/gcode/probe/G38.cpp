@@ -43,7 +43,7 @@ inline bool G38_run_probe(const ProbePtRaise raise_after) {
     constexpr uint8_t move_value = 1;
   #endif
 
-  const xyz_pos_t measured = probe.probe_safely(destination, raise_after, move_value, 0, true, true, 0, true, true);
+  const xyz_pos_t measured = probe.probe_safely(destination, raise_after, move_value, 0, true, true, Z_TWEEN_SAFE_CLEARANCE, true, true);
   
   LOOP_NUM_AXES(a) {
     if (isnan(measured[a])) return true;
@@ -58,11 +58,16 @@ inline bool G38_run_probe(const ProbePtRaise raise_after) {
   msg.echoln();
   TERN_(VERBOSE_SINGLE_PROBE, ui.set_status(msg));
 
-    // If the probe is stowed or above the nozzle, move the nozzle to the position of the probe
-  if ((!endstops.z_probe_enabled) || (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, hotend_offset[active_extruder].z))) {
-    destination = measured;
-    do_blocking_move_to(destination);
-    planner.synchronize();
+    // If the probe is stowed, move the nozzle to the position of the probe
+  if (!endstops.z_probe_enabled) {
+    if (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, hotend_offset[active_extruder].z)) {
+      if (TERN1(HAS_HOTEND_OFFSET, probe.offset != hotend_offset[active_extruder])) {
+        do_z_clearance_by(Z_TWEEN_SAFE_CLEARANCE);
+      }
+      destination = measured;
+      do_blocking_move_to(destination);
+      planner.synchronize();
+    }
   }
   endstops.not_homing();
   report_current_position();

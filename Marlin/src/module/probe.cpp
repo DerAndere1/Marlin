@@ -829,12 +829,12 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
 
     // Probe and ckeck for failure
     const bool probe_fail = probe_to_target(target_point, fr_mm_s, move_value, probe_3d),              // No probe trigger?
-               early_fail = (sanity_check && (!probe_fail) && current_position.z > target.z + offs.z + error_tolerance); // Probe triggered too high?
+               early_fail = (scheck && (!probe_fail) && current_position.z > target_point.z + error_tolerance); // Probe triggered too high?
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING) && (probe_fail || early_fail)) {
         DEBUG_ECHOPGM(" Probe fail! - ");
         if (probe_fail) DEBUG_ECHOLNPGM("No trigger.");
-        if (early_fail) DEBUG_ECHOLNPGM("Triggered early (above ", target.z + offs.z + error_tolerance, "mm)");
+        if (early_fail) DEBUG_ECHOLNPGM("Triggered early (above ", target_point.z + error_tolerance, "mm)");
       }
     #else
       UNUSED(plbl);
@@ -1013,7 +1013,12 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
 
   #endif
   
-    return measured;
+  #if HAS_HOTEND_OFFSET
+    if ((TERN0(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control)))
+      return measured - hotend_offset[active_extruder];
+    else
+  #endif
+      return measured;
 }
 
 #if DO_TOOLCHANGE_FOR_PROBING
@@ -1119,8 +1124,9 @@ xyz_pos_t Probe::probe_safely(
 
   // On delta keep Z below clip height or do_blocking_move_to will abort
   xyz_pos_t npos = current_position;
+  npos.z = TERN(DELTA, _MIN(delta_clip_start_height, safe_z), safe_z);
   if (TERN1(G38_PROBE_TARGET, !probe_3d)) {
-    npos.set(target.x, target.y, TERN(DELTA, _MIN(delta_clip_start_height, safe_z), safe_z));
+    npos.set(target.x, target.y);
   } 
 
   if (!can_reach(target, probe_relative)) {
@@ -1132,14 +1138,15 @@ xyz_pos_t Probe::probe_safely(
   if (probe_relative) { // Get the nozzle position, adjust for active hotend if not 0
     if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("-relative");
     if (TERN0(G38_PROBE_TARGET, probe_3d))
-      npos -= (!(TERN0(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) ? offset : DIFF_TERN(HAS_HOTEND_OFFSET, offset, hotend_offset[active_extruder]);
+      npos -= (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) ? offset : DIFF_TERN(HAS_HOTEND_OFFSET, offset, hotend_offset[active_extruder]);
     else
       npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, xy_pos_t(hotend_offset[active_extruder]));
   }
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM(" point");
 
-  // Move the probe to the starting XYZ
-  do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
+  if (!probe_3d) {
+    // Move the probe to the starting XY
+    do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
+  }
 
   // Change Z motor current to homing current
   TERN_(PROBING_USE_CURRENT_HOME, set_homing_current(Z_AXIS));
@@ -1147,6 +1154,9 @@ xyz_pos_t Probe::probe_safely(
   xyz_pos_t measured;
 
   #if ENABLED(BD_SENSOR)
+
+    // Move the probe to the starting XYZ
+    do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
 
     safe_delay(4);
 
@@ -1169,7 +1179,13 @@ xyz_pos_t Probe::probe_safely(
       }
     }
     else {
-      measured = run_probe(sanity_check, target, z_clearance, move_value, probe_3d);
+
+      if (probe_3d) {
+        // Move the probe to the starting XYZ
+        do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
+      }
+
+      measured = run_probe(sanity_check, target, z_clearance, move_value, probe_3d) + offset;
     }
     // Deploy succeeded and a successful measurement was done.
     // Raise and/or stow the probe depending on 'raise_after' and settings.
@@ -1212,7 +1228,7 @@ xyz_pos_t Probe::probe_safely(
   // Restore the Z homing current
   TERN_(PROBING_USE_CURRENT_HOME, restore_homing_current(Z_AXIS));
 
-  return measured + (!(TERN0(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) ? (offset) : SUM_TERN(HAS_HOTEND_OFFSET, offset, hotend_offset[active_extruder]);;
+  return measured;
 }
 
 #if HAS_Z_SERVO_PROBE
