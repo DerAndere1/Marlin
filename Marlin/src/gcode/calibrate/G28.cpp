@@ -92,10 +92,13 @@
                 fr_mm_s = HYPOT(minfr, minfr);
 
     // Set homing current to X and Y axis if defined
-    TERN_(X_HAS_HOME_CURRENT, motion.set_homing_current(X_AXIS));
-    #if Y_HAS_HOME_CURRENT && NONE(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
+    #if HAS_CURRENT_HOME(X)
+      motion.set_homing_current(X_AXIS);
+    #endif
+    #if HAS_CURRENT_HOME(Y) && NONE(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
       motion.set_homing_current(Y_AXIS);
     #endif
+
 
     #if ENABLED(SENSORLESS_HOMING)
       sensorless_t stealth_states {
@@ -115,8 +118,10 @@
 
     motion.position.set(0.0, 0.0);
 
-    TERN_(X_HAS_HOME_CURRENT, motion.restore_homing_current(X_AXIS));
-    #if Y_HAS_HOME_CURRENT && NONE(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
+    #if HAS_CURRENT_HOME(X)
+      motion.restore_homing_current(X_AXIS);
+    #endif
+    #if HAS_CURRENT_HOME(Y) && NONE(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
       motion.restore_homing_current(Y_AXIS);
     #endif
 

@@ -2182,11 +2182,22 @@ bool Planner::_populate_block(
     }
   #endif // HAS_EXTRUDERS
 
-  if (esteps)
-    NOLESS(fr_mm_s, settings.min_feedrate_mm_s);
-  else
-    NOLESS(fr_mm_s, settings.min_travel_feedrate_mm_s);
-
+  if (esteps) {
+    if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
+      NOLESS(fr_mm_s, RECIPROCAL(settings.min_feedrate_mm_s));
+    }
+    else {
+     NOLESS(fr_mm_s, settings.min_feedrate_mm_s);
+    }
+  }
+  else {
+    if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
+      NOLESS(fr_mm_s, RECIPROCAL(settings.min_travel_feedrate_mm_s));
+    }
+    else {
+      NOLESS(fr_mm_s, settings.min_travel_feedrate_mm_s);
+    }
+  }
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   /**
@@ -2197,7 +2208,11 @@ bool Planner::_populate_block(
 
   float inverse_secs;
   if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
-    inverse_secs = fr_mm_s;
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      inverse_secs = hints.inv_duration ? : fr_mm_s; 
+    #else
+      inverse_secs = fr_mm_s; // TODO (DerAndere): Fix inverse time mode for FEEDRATE_MODE_SUPPORT with FEEDRATE_SCALING
+    #endif
     float min_inverse_secs;
     if (esteps)
       min_inverse_secs = settings.min_feedrate_mm_s * inverse_millimeters;
@@ -2206,7 +2221,11 @@ bool Planner::_populate_block(
     NOLESS(inverse_secs, min_inverse_secs);
   }
   else {
-    inverse_secs  = inverse_millimeters * (
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(FEEDRATE_MODE_SUPPORT)
+      inverse_secs = hints.inv_duration ? : inverse_millimeters * (
+    #else
+      inverse_secs  = inverse_millimeters * (
+    #endif
       #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
         /**
          * Workaround for premature feedrate conversion
@@ -2225,7 +2244,7 @@ bool Planner::_populate_block(
   // Slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
   #if ANY(SLOWDOWN, HAS_WIRED_LCD) || defined(XY_FREQUENCY_LIMIT)
     // Segment time in microseconds
-    int32_t segment_time_us = LROUND(1000000.0f / inverse_secs);
+    int32_t segment_time_us = LROUND(1000000.0f * RECIPROCAL(inverse_secs));
   #endif
 
   #if ENABLED(SLOWDOWN)

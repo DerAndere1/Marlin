@@ -375,7 +375,7 @@
     // Add hints to help optimize the move
     PlannerHints hints(SQRT(cart_xy_mm_2 + sq(total.z)) * inv_segments);       // Length of each segment
     #if ENABLED(FEEDRATE_SCALING)
-      hints.inv_duration = scaled_fr_mm_s / hints.millimeters;
+      hints.inv_duration = scaled_fr_mm_s / hints.millimeters; // TODO (DerAndere): Fix inverse time mode for FEEDRATE_MODE_SUPPORT
     #endif
 
     xyze_float_t diff = total * inv_segments;
