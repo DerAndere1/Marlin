@@ -59,15 +59,14 @@ inline bool G38_run_probe(const ProbePtRaise raise_after) {
   TERN_(VERBOSE_SINGLE_PROBE, ui.set_status(msg));
 
     // If the probe is stowed, move the nozzle to the position of the probe
-  if (!endstops.z_probe_enabled) {
-    if (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, hotend_offset[active_extruder].z)) {
-      if (TERN1(HAS_HOTEND_OFFSET, probe.offset != hotend_offset[active_extruder])) {
-        do_z_clearance_by(Z_TWEEN_SAFE_CLEARANCE);
-      }
-      destination = measured;
-      do_blocking_move_to(destination);
-      planner.synchronize();
+  const xyz_pos_t offs = DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, hotend_offset[active_extruder]);
+  if ((!endstops.z_probe_enabled) && (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, hotend_offset[active_extruder].z))) {
+    if ((!NEAR_ZERO(offs.x)) || (!NEAR_ZERO(offs.y)) || offs.z > 0.0f) {
+      do_z_clearance_by(Z_TWEEN_SAFE_CLEARANCE);
     }
+    destination = measured;
+    do_blocking_move_to(destination);
+    planner.synchronize();
   }
   endstops.not_homing();
   report_current_position();
