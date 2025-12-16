@@ -77,10 +77,6 @@ extern xyz_pos_t cartes;
   #endif
 #endif
 
-#if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
-  extern float cartesian_mm;
-#endif
-
 // Determine XY_PROBE_FEEDRATE_MM_S - The feedrate used between Probe Points
 #if HAS_ABL_NOT_UBL
   // ABL LINEAR and BILINEAR use 'G29 S' value, or MMM_TO_MMS(XY_PROBE_FEEDRATE)

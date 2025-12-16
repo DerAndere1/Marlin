@@ -54,6 +54,10 @@ void GcodeSuite::G42() {
       return;
     }
 
+    #if HAS_ROTATIONAL_AXES || IS_KINEAMETIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+      parser.linear_motion_gcode = true;
+    #endif
+
     // Move to current_position, as modified by I, J, P parameters
     destination = current_position;
 
@@ -75,6 +79,10 @@ void GcodeSuite::G42() {
       prepare_internal_fast_move_to_destination(fr_mm_s);
     #else
       prepare_internal_move_to_destination(fr_mm_s);
+    #endif
+
+    #if HAS_ROTATIONAL_AXES || IS_KINEAMETIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+      parser.linear_motion_gcode = false;
     #endif
   }
 }
