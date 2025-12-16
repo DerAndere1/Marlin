@@ -2048,8 +2048,10 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
       }
 
       // Get the linear distance in XYZ
-      if (!parser.print_move)
-        cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
+      #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+        if (!parser.print_move)
+      #endif
+          cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
 
       // If the move is very short, check the E move distance
       TERN_(HAS_EXTRUDERS, if (UNEAR_ZERO(cartesian_mm)) cartesian_mm = ABS(diff.e));

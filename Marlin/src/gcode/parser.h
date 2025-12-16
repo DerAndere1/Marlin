@@ -82,6 +82,8 @@ public:
 
   #if ENABLED(FEEDRATE_MODE_SUPPORT)
     static bool inverse_time_enabled;
+  #endif
+  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
     static bool print_move;
   #endif
 
