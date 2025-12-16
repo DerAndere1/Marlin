@@ -53,6 +53,10 @@ void GcodeSuite::G42() {
     SERIAL_ECHOLNPGM(STR_ERR_MESH_XY);
     return;
   }
+  #if HAS_ROTATIONAL_AXES || IS_KINEAMETIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+    parser.linear_motion_gcode = true;
+  #endif
+
 
   // Move to motion.position, as modified by I, J, P parameters
   motion.destination = motion.position;
@@ -76,6 +80,11 @@ void GcodeSuite::G42() {
   #else
     motion.prepare_internal_move_to_destination(fr_mm_s);
   #endif
+  #if HAS_ROTATIONAL_AXES || IS_KINEAMETIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+    parser.linear_motion_gcode = false;
+  #endif
+  
+  }
 }
 
 #endif // HAS_MESH
