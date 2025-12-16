@@ -362,9 +362,11 @@
       planner.buffer_line(destination, scaled_fr_mm_s);
       return false; // caller will update current_position
     }
+    bool cartes_move = true;
+    float cartesian_mm = get_move_distance(total OPTARG(HAS_ROTATIONAL_AXES, cartes_move));
 
-      if (!parser.print_move)
-        cartesian_mm = get_move_distance(total OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
+      // If the move is very short, check the E move distance
+    TERN_(HAS_EXTRUDERS, if (UNEAR_ZERO(cartesian_mm)) cartesian_mm = ABS(total.e));
 
     // No E move either? Game over.
     if (UNEAR_ZERO(cartesian_mm)) return true;
@@ -375,6 +377,7 @@
 
       uint16_t segments = LROUND(segments_per_second * seconds),               // Preferred number of segments for distance @ feedrate
                seglimit = LROUND(cartesian_mm * RECIPROCAL(SEGMENT_MIN_LENGTH)); // Number of segments at minimum segment length
+    
       NOMORE(segments, seglimit);                                              // Limit to minimum segment length (fewer segments)
     #else
       uint16_t segments = LROUND(cartesian_mm * RECIPROCAL(SEGMENT_MIN_LENGTH)); // Cartesian fixed segment length

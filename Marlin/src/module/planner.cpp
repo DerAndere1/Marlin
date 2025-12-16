@@ -2060,7 +2060,7 @@ bool Planner::_populate_block(
         dist_mm.u, dist_mm.v, dist_mm.w
       );
 
-      block->millimeters = get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));
+      block->millimeters = get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
     }
 
     /**
@@ -2995,11 +2995,8 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const feedRate_t fr_mm_s
     #endif
     
     PlannerHints ph = hints;
-    #if HAS_ROTATIONAL_AXES
-      bool cartesian_move;
-    #endif
     if (!hints.millimeters)
-      ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));
+      ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, parser.cartesian_move));
 
     // Cartesian XYZ to kinematic ABC, stored in global 'delta'
     inverse_kinematics(machine);

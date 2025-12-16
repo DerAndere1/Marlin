@@ -63,11 +63,7 @@
      */
     void mesh_bed_leveling::line_to_destination(const feedRate_t scaled_fr_mm_s, uint8_t x_splits, uint8_t y_splits) {
       // Get current and destination cells for this line
-      xy_uint8_t scel = cell_indexes(current_position), ecel = cell_indexes(destination);
-      NOMORE(scel.x, GRID_MAX_CELLS_X - 1);
-      NOMORE(scel.y, GRID_MAX_CELLS_Y - 1);
-      NOMORE(ecel.x, GRID_MAX_CELLS_X - 1);
-      NOMORE(ecel.y, GRID_MAX_CELLS_Y - 1);
+      xy_uint8_t scel = cell_indexes(current_position), ecel = cell_indexes(destination); 
 
       // Start and end in the same cell? No split needed.
       if (scel == ecel) {
