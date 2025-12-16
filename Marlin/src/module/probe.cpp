@@ -879,7 +879,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
     if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
     // Do a first probe at the fast speed
-    if (try_to_probe(PSTR("FAST"), probe_target_point, probe_3d ? feedrate_mm_s : z_probe_fast_mm_s, sanity_check, move_value, probe_3d)) return nan_pos;
+    if (try_to_probe(PSTR("FAST"), probe_target_point, probe_3d ? feedrate_mm_s : motion.z_probe_fast_mm_s, sanity_check, move_value, probe_3d)) return nan_pos;
     xyze_pos_t targ1 = current_position;
     #if ENABLED(G38_PROBE_TARGET)
       if (probe_3d) {
@@ -949,7 +949,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       // If the probe won't tare, return
       if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
-      const_feedRate_t fr = (TERN0(G38_PROBE_TARGET, probe_3d && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? feedrate_mm_s : z_probe_slow_mm_s;
+      const_feedRate_t fr = (TERN0(G38_PROBE_TARGET, probe_3d && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? motion.feedrate_mm_s : motion.z_probe_slow_mm_s;
       // Probe downward slowly to find the bed
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Slow Probe:");
       if (try_to_probe(PSTR("SLOW"), probe_target_point, fr, sanity_check, move_value, probe_3d)) return nan_pos;

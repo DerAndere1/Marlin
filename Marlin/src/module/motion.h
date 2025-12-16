@@ -121,9 +121,13 @@ public:
     return f * 0.01f * feedrate_percentage;
   }
 
-#if HAS_TOOL_LENGTH_COMPENSATION
-  extern bool simple_tool_length_compensation;
-#endif
+  #if HAS_TOOL_LENGTH_COMPENSATION
+    static bool simple_tool_length_compensation;
+  #endif
+
+  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+    static float cartesian_mm;
+  #endif
 
 
   #if IS_KINEMATIC
@@ -132,9 +136,9 @@ public:
 
 // Until kinematics.cpp is created, declare this here
 #if IS_KINEMATIC
-  extern abce_pos_t delta;
-  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-    extern bool tool_centerpoint_control;
+  static abce_pos_t delta;
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+    static bool tool_centerpoint_control;
   #endif
 
   #if HAS_SCARA_OFFSET

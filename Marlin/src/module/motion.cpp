@@ -182,7 +182,7 @@ xyz_pos_t Motion::cartes;
 #ifndef DEFAULT_FEEDRATE_MM_M
   #define DEFAULT_FEEDRATE_MM_M 4000
 #endif
-feedRate_t feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
+feedRate_t Motion::feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
 
 int16_t feedrate_percentage = 100;
 #if ENABLED(EDITABLE_HOMING_FEEDRATE)
@@ -224,6 +224,10 @@ xyz_pos_t Motion::artes;
   #endif
 
 #endif // IS_KINEMATIC
+
+#if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+  float Motion::cartesian_mm = 0.0f;
+#endif
 
 /**
  * The workspace can be offset by some commands, or
@@ -1787,12 +1791,8 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
       if (!can_reach(destination)) return true;
     #endif
 
-    // Get the linear distance in XYZ
-    #if HAS_ROTATIONAL_AXES
-      bool cartes_move = true;
-    #endif
-    float cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, cartes_move));
-
+    if (!parser.print_move)
+      cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
     // If the move is very short, check the E move distance
     TERN_(HAS_EXTRUDERS, if (UNEAR_ZERO(cartesian_mm)) cartesian_mm = ABS(diff.e));
 
@@ -1800,23 +1800,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
     if (UNEAR_ZERO(cartesian_mm)) return true;
 
     // Minimum number of seconds to move the given distance
-    #if ENABLED(FEEDRATE_MODE_SUPPORT)
-      const float seconds = (parser.print_move && parser.inverse_time_enabled) ? RECIPROCAL(scaled_fr_mm_s) : cartesian_mm / (
-        #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-          cartes_move ? scaled_fr_mm_s : LINEAR_UNIT(scaled_fr_mm_s)
-        #else
-          scaled_fr_mm_s
-        #endif
-      );
-    #else
-      const float seconds = cartesian_mm / (
-        #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-          cartes_move ? scaled_fr_mm_s : LINEAR_UNIT(scaled_fr_mm_s)
-        #else
-          scaled_fr_mm_s
-        #endif
-      );
-    #endif
+    const float seconds = cartesian_mm / scaled_fr_mm_s;
 
     // The number of segments-per-second times the duration
     // gives the number of segments
@@ -1838,10 +1822,8 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
 
     // Add hints to help optimize the move
     PlannerHints hints(cartesian_mm * inv_segments);
-    TERN_(HAS_ROTATIONAL_AXES, hints.cartesian_move = cartes_move);
-    TERN_(FEEDRATE_SCALING, hints.inv_duration = scaled_fr_mm_s / hints.millimeters); // TODO (DerAndere): Fix inverse time mode for FEEDRATE_MODE_SUPPORT
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(FEEDRATE_MODE_SUPPORT)
-      hints.inv_duration = (parser.inverse_time_enabled && parser.print_move) ? scaled_fr_mm_s * segments : scaled_fr_mm_s / hints.millimeters;
+    #if ENABLED(FEEDRATE_SCALING)
+        hints.inv_duration = scaled_fr_mm_s / hints.millimeters;
     #endif
 
     /*
@@ -1892,10 +1874,10 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
       }
 
       // Get the linear distance in XYZ
-      #if HAS_ROTATIONAL_AXES
-        bool cartes_move = true;
+      #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+        if (!parser.print_move)
       #endif
-      float cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, cartes_move));
+          cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
 
       // If the move is very short, check the E move distance
       TERN_(HAS_EXTRUDERS, if (UNEAR_ZERO(cartesian_mm)) cartesian_mm = ABS(diff.e));
@@ -1914,9 +1896,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
 
       // Add hints to help optimize the move
       PlannerHints hints(cartesian_mm * inv_segments);
-      TERN_(HAS_ROTATIONAL_AXES, hints.cartesian_move = cartes_move);
-      TERN_(FEEDRATE_SCALING, hints.inv_duration = scaled_fr_mm_s / hints.millimeters);  // TODO (DerAndere): Fix inverse time mode for FEEDRATE_MODE_SUPPORT
-
+      TERN_(FEEDRATE_SCALING, hints.inv_duration = scaled_fr_mm_s / hints.millimeters);
       //SERIAL_ECHOPGM("mm=", cartesian_mm);
       //SERIAL_ECHOLNPGM(" segments=", segments);
       //SERIAL_ECHOLNPGM(" segment_mm=", hints.millimeters);
