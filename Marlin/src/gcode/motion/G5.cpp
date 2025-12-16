@@ -52,9 +52,6 @@ void GcodeSuite::G5() {
       return;
     }
   #endif
-  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
-    parser.print_move = true;
-  #endif
   get_destination_from_command();
 
   const xy_pos_t offsets[2] = {
@@ -64,9 +61,6 @@ void GcodeSuite::G5() {
 
   cubic_b_spline(current_position, destination, offsets, MMS_SCALED(feedrate_mm_s), active_extruder);
   current_position = destination;
-  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
-    parser.print_move = false;
-  #endif
 }
 
 #endif // BEZIER_CURVE_SUPPORT
