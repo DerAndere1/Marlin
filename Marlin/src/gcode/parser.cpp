@@ -46,6 +46,10 @@ bool GCodeParser::volumetric_enabled;
   bool GCodeParser::print_move;
 #endif
 
+#if HAS_ROTATIONAL_AXES
+  bool GCodeParser::cartes_move;
+#endif
+
 #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
   TempUnit GCodeParser::input_temp_units = TEMPUNIT_C;
 #endif

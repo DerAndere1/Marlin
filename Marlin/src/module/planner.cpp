@@ -2037,7 +2037,7 @@ bool Planner::_populate_block(
   TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator += dist_mm.e);
 
   #if HAS_ROTATIONAL_AXES
-    bool cartesian_move = hints.cartesian_move;
+    bool cartesian_move;
   #endif
 
   if (true NUM_AXIS_GANG(
@@ -2199,20 +2199,10 @@ bool Planner::_populate_block(
   #endif // HAS_EXTRUDERS
 
   if (esteps) {
-    if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
-      NOLESS(fr_mm_s, RECIPROCAL(settings.min_feedrate_mm_s));
-    }
-    else {
      NOLESS(fr_mm_s, settings.min_feedrate_mm_s);
-    }
   }
   else {
-    if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
-      NOLESS(fr_mm_s, RECIPROCAL(settings.min_travel_feedrate_mm_s));
-    }
-    else {
       NOLESS(fr_mm_s, settings.min_travel_feedrate_mm_s);
-    }
   }
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 
@@ -2222,37 +2212,13 @@ bool Planner::_populate_block(
    * EXAMPLE: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
    */
 
-  float inverse_secs;
-  if (TERN0(FEEDRATE_MODE_SUPPORT, parser.inverse_time_enabled && parser.print_move)) {
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
-      inverse_secs = hints.inv_duration ? : fr_mm_s; 
+  float inverse_secs = (
+    #if ANY(FEEDRATE_SCALING, FEEDRATE_MODE_SUPPORT)
+      hints.inv_duration ? : inverse_millimeters * fr_mm_s
     #else
-      inverse_secs = fr_mm_s; // TODO (DerAndere): Fix inverse time mode for FEEDRATE_MODE_SUPPORT with FEEDRATE_SCALING
+      inverse_millimeters * fr_mm_s
     #endif
-    float min_inverse_secs;
-    if (esteps)
-      min_inverse_secs = settings.min_feedrate_mm_s * inverse_millimeters;
-    else
-      min_inverse_secs = settings.min_travel_feedrate_mm_s * inverse_millimeters;
-    NOLESS(inverse_secs, min_inverse_secs);
-  }
-  else {
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(FEEDRATE_MODE_SUPPORT)
-      inverse_secs = hints.inv_duration ? : inverse_millimeters * (
-    #else
-      inverse_secs  = inverse_millimeters * (
-    #endif
-      #if ALL(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-        /**
-         * Workaround for premature feedrate conversion
-         * from in/s to mm/s by get_distance_from_command.
-         */
-        cartesian_move ? fr_mm_s : LINEAR_UNIT(fr_mm_s)
-      #else
-        fr_mm_s
-      #endif
-    );
-  }
+  );
 
   // Get the number of non busy movements in queue (non busy means that they can be altered)
   const uint8_t moves_queued = nonbusy_movesplanned();
@@ -3022,8 +2988,11 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const_feedRate_t fr_mm_s
     #endif
     
     PlannerHints ph = hints;
+    #if HAS_ROTATIONAL_AXES
+      bool cartesian_move;
+    #endif
     if (!hints.millimeters)
-      ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, ph.cartesian_move));
+      ph.millimeters = get_move_distance(xyze_pos_t(cart_dist_mm) OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));
 
     // Cartesian XYZ to kinematic ABC, stored in global 'delta'
     inverse_kinematics(machine);

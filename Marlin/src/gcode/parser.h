@@ -85,6 +85,9 @@ public:
     static bool print_move;
   #endif
 
+  #if HAS_ROTATIONAL_AXES
+      static bool cartes_move;
+  #endif
 
   #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
     static TempUnit input_temp_units;
@@ -424,8 +427,8 @@ public:
   #endif // !TEMPERATURE_UNITS_SUPPORT
 
   static feedRate_t value_feedrate() { 
-    #if ENABLED(FEEDRATE_MODE_SUPPORT)
-      const float fr_mm_min = (inverse_time_enabled && print_move) ? value_float() : value_linear_units();
+    #if HAS_ROTATIONAL_AXES || ENABLED(FEEDRATE_MODE_SUPPORT)
+      return ((TERN0(FEEDRATE_MODE_SUPPORT, inverse_time_enabled && print_move)) || TERN0(HAS_ROTATIONAL_AXES, (!cartes_move))) ? value_float() : value_linear_units();
     #else
       const float fr_mm_min = value_linear_units();
     #endif

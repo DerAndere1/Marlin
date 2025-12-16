@@ -142,7 +142,7 @@ void GcodeSuite::M240() {
       e_move_m240(-rval, sval);
     #endif
 
-    feedRate_t fr_mm_s = parser.feedrateval('F');
+    feedRate_t fr_mm_s = MMM_TO_MMS(parser.feedrateval('F'));
     if (fr_mm_s) NOLESS(fr_mm_s, 10.0f);
 
     constexpr xyz_pos_t photo_position = PHOTO_POSITION;

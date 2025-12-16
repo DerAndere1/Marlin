@@ -212,12 +212,7 @@ void plan_arc(
   }
 
   // Feedrate for the move, scaled by the feedrate multiplier
-  #if ENABLED(FEEDRATE_MODE_SUPPORT)
-    const feedRate_t scaled_fr = MMS_SCALED(feedrate_mm_s);
-    const feedRate_t scaled_fr_mm_s = parser.inverse_time_enabled ? scaled_fr * flat_mm : scaled_fr;
-  #else
-    const feedRate_t scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
-  #endif
+  const feedRate_t scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
 
   // Get the ideal segment length for the move based on settings
   const float ideal_segment_mm = (
@@ -240,12 +235,8 @@ void plan_arc(
 
   // Add hints to help optimize the move
   PlannerHints hints;
-  #if ANY(FEEDRATE_SCALING, FEEDRATE_MODE_SUPPORT)
-    #if ENABLED(FEEDRATE_MODE_SUPPORT)
-      hints.inv_duration = segments * (parser.inverse_time_enabled ? scaled_fr : (scaled_fr_mm_s / flat_mm));
-    #else
-      hints.inv_duration = segments * (scaled_fr_mm_s / flat_mm);
-    #endif
+  #if ENABLED(FEEDRATE_SCALING)
+    hints.inv_duration = (scaled_fr_mm_s / flat_mm) * segments;
   #endif
 
   /**
@@ -380,7 +371,7 @@ void plan_arc(
       const float arc_mm_remaining = flat_mm - segment_mm * i;
       hints.safe_exit_speed_sqr = _MIN(limiting_speed_sqr, 2 * limiting_accel * arc_mm_remaining);
 
-      if (!planner.buffer_line(raw, scaled_fr, active_extruder, hints))
+      if (!planner.buffer_line(raw, scaled_fr_mm_s, active_extruder, hints))
         break;
 
       hints.curve_radius = radius;
@@ -398,7 +389,7 @@ void plan_arc(
 
   hints.curve_radius = 0;
   hints.safe_exit_speed_sqr = 0.0f;
-  planner.buffer_line(raw, scaled_fr, active_extruder, hints);
+  planner.buffer_line(raw, scaled_fr_mm_s, active_extruder, hints);
 
   current_position = cart;
 
