@@ -435,7 +435,7 @@ public:
         if (inverse_time_enabled && linear_motion_gcode)
           fr *= cartesian_mm;
       #endif
-      return fr
+      return fr;
     #else
       return value_linear_units();
     #endif
