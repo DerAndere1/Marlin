@@ -230,7 +230,7 @@ void GcodeSuite::get_destination_from_command() {
     constexpr bool skip_move = false;
   #endif
   
-   #if ENABLED(SCALE_WORKSPACE)
+  #if ENABLED(SCALE_WORKSPACE)
     const bool scaling_is_active = !(NEAR(scaling_factor_x, 1.0f) && NEAR(scaling_factor_y, 1.0f) && NEAR(scaling_factor_z, 1.0f));
   #endif
   // Get new XYZ position, whether absolute or relative
@@ -264,8 +264,7 @@ void GcodeSuite::get_destination_from_command() {
         }
       #else
         motion.destination[i] = motion.position[i];
-      else
-        motion.destination[i] = axis_is_relative((AxisEnum)i) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
+      #endif
     }
   }
 

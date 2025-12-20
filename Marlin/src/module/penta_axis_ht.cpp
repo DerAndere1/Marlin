@@ -79,18 +79,18 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
                     native.j
                   );
 
-  const_float_t pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, motion.hotend_offset[motion.extruder].z);
-  const_float_t i_rad = RADIANS(pos.i);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, motion.hotend_offset[motion.extruder].z);
+  const float i_rad = RADIANS(pos.i);
 
   #if HAS_J_AXIS || AXIS4_NAME == 'B'
     // B correction
-    const_float_t zb = pivot_length * cos(i_rad) - mrzp_offset_z;
-    const_float_t xb = pivot_length * sin(i_rad);
+    const float zb = pivot_length * cos(i_rad) - mrzp_offset_z;
+    const float xb = pivot_length * sin(i_rad);
 
     #if HAS_J_AXIS
       // C correction
-      const_float_t xyr = HYPOT(pos.x, pos.y);
-      const_float_t xytheta = ATAN2(pos.y, pos.x) - RADIANS(pos.j);
+      const float xyr = HYPOT(pos.x, pos.y);
+      const float xytheta = ATAN2(pos.y, pos.x) - RADIANS(pos.j);
     #endif
 
     const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
@@ -103,8 +103,8 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
 
   #elif (!HAS_J_AXIS) && (AXIS4_NAME == 'C')
     // C correction
-    const_float_t xyr = HYPOT(pos.x, pos.y);
-    const_float_t xytheta = ATAN2(pos.y, pos.x) - i_rad;
+    const float xyr = HYPOT(pos.x, pos.y);
+    const float xytheta = ATAN2(pos.y, pos.x) - i_rad;
 
     const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
       xyr * cos(xytheta),
@@ -126,19 +126,19 @@ void forward_kinematics(const xyz_pos_t &joint_pos) {
 xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
   if (!tool_centerpoint_control) return joint_pos;
 
-  const_float_t pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
-  const_float_t i_rad = RADIANS(joint_pos.i);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
+  const float i_rad = RADIANS(joint_pos.i);
   #if HAS_J_AXIS
-    const_float_t j_rad = RADIANS(joint_pos.j);
+    const float j_rad = RADIANS(joint_pos.j);
   #endif
   
   // B correction
-  const_float_t zb = pivot_length * cos(i_rad);
-  const_float_t xb = pivot_length * sin(i_rad);
+  const float zb = pivot_length * cos(i_rad);
+  const float xb = pivot_length * sin(i_rad);
       
   // C correction
-  const_float_t xyr = HYPOT(joint_pos.x, joint_pos.y);
-  const_float_t xytheta = ATAN2(joint_pos.y, SUM_TERN(HAS_J_AXIS, joint_pos.x, j_rad));
+  const float xyr = HYPOT(joint_pos.x, joint_pos.y);
+  const float xytheta = ATAN2(joint_pos.y, SUM_TERN(HAS_J_AXIS, joint_pos.x, j_rad));
 
   const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
     xyr * cos(xytheta) - xb,

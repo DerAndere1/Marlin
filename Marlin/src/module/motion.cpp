@@ -141,7 +141,19 @@ xyze_pos_t Motion::destination; // {0}
 // Scratch space for a cartesian result
 xyz_pos_t Motion::cartes;
 #if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
-  xyz_pos_t Motion::raw_destination = NUM_AXIS_ARRAY(X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+  xyz_pos_t Motion::raw_destination = NUM_AXIS_ARRAY(
+    X_HOME_POS, Y_HOME_POS, 
+    #ifdef Z_IDLE_HEIGHT
+      Z_IDLE_HEIGHT
+    #else
+      Z_HOME_POS
+    #endif
+    , I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS
+  );
+#endif
+// The active extruder (tool). Set with T<extruder> command.
+#if HAS_MULTI_TOOLS
+  uint8_t active_extruder = 0; // = 0
 #endif
 
 #if ENABLED(LCD_SHOW_E_TOTAL)
@@ -191,16 +203,13 @@ int16_t feedrate_percentage = 100;
   constexpr xyz_feedrate_t Motion::homing_feedrate_mm_m;
 #endif
 
-// Cartesian conversion result goes here:
-xyz_pos_t Motion::artes;
-
 #if HAS_TOOL_LENGTH_COMPENSATION
   bool Motion::simple_tool_length_compensation = DEFAULT_TOOL_LENGTH_COMPENSATION;
 #endif
 
 #if IS_KINEMATIC
 
-  abce_pos_t Motion::delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+  abce_pos_t motion.delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     bool Motion::tool_centerpoint_control = false;
@@ -763,7 +772,7 @@ void Motion::report_position_projected() {
 #endif // CARTESIAN
 
 #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && DISABLED(QUICK_HOME)
-  bool Motion::can_reach_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw)) {
+  bool Motion::can_reach_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw)) {
 
     const bool can_reach = (
       NUM_AXIS_GANG(
@@ -1141,7 +1150,7 @@ void Motion::blocking_move(const xy_pos_t &raw, const feedRate_t fr_mm_s/*=0.0f*
    * - XY, etc. move simultaneously in a coordinated manner.
    * - Before returning, wait for the planner buffer to empty.
    */
-  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const_float_t) const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const float) const feedRate_t fr_mm_s/*=0.0f*/) {
     DEBUG_SECTION(log_move, "do_blocking_move_to", DEBUGGING(LEVELING));
     #if NUM_AXES
       if (DEBUGGING(LEVELING)) DEBUG_XYZ("> ", NUM_AXIS_ARGS_LC());
@@ -1430,7 +1439,7 @@ void Motion::restore_feedrate_and_scaling() {
             TERN_(SPINDLE_FEATURE, safe_delay(1000));
             cutter.kill();
           #endif
-          stop();
+          marlin.stop();
         }
         else {
           NOLESS(target_pos[axis], soft_endstop.min[axis]);
@@ -1452,7 +1461,7 @@ void Motion::restore_feedrate_and_scaling() {
             TERN_(SPINDLE_FEATURE, safe_delay(1000));
             cutter.kill();
           #endif
-          stop();
+          marlin.stop();
         }
         else {
           NOMORE(target_pos[axis], soft_endstop.max[axis]);
@@ -1779,7 +1788,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
           TERN_(SPINDLE_FEATURE, safe_delay(1000));
           cutter.kill();
         #endif
-        stop();
+        marlin.stop();
         return true;
       }
     #else
