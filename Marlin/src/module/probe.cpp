@@ -111,6 +111,9 @@ Probe probe;
 
 xyz_pos_t Probe::offset; // Initialized by settings.load
 
+#if ENABLED(G38_PROBE_TARGET)
+  probe_target_t Probe::G38_move{0};
+#endif
 #if HAS_PROBE_XY_OFFSET
   const xy_pos_t &Probe::offset_xy = Probe::offset;
 #else
@@ -628,7 +631,7 @@ bool Probe::set_deployed(const bool deploy, const bool no_return/*=false*/) {
  *
  * @return TRUE if the probe failed to trigger.
  */
-bool Probe::probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d) {
+bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, const uint8_t move_value, const bool probe_3d) {
   DEBUG_SECTION(log_probe, "Probe::probe_to_tagret", DEBUGGING(LEVELING));
   if (TERN1(G38_PROBE_TARGET, !probe_3d)) {
     #if ALL(HAS_HEATED_BED, WAIT_FOR_BED_HEATER)
@@ -684,16 +687,16 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, cons
   bool probe_triggered;
   #if ENABLED(G38_PROBE_TARGET)
     if (probe_3d) {
-      G38_did_trigger = false;
-      G38_move = move_value;
+      G38_move.triggered = false;
+      G38_move.type = move_value;
       endstops.enable(true);
       destination = pos;
       // Move down until the probe is triggered
       prepare_line_to_destination();
       planner.synchronize();
-      probe_triggered = G38_did_trigger;
+      probe_triggered = G38_move.triggered;
       endstops.not_homing();  
-      G38_move = 0;
+      G38_move.type = 0;
     }
     else
   #endif
@@ -813,7 +816,7 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const_feedRate_t fr_mm_s, cons
  *
  * @return The Z position of the bed at the current XY or NAN on error.
  */
-xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &target, const_float_t z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/, const uint8_t move_value, const bool probe_3d) {
+xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &target, const float z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/, const uint8_t move_value, const bool probe_3d) {
   DEBUG_SECTION(log_probe, "Probe::run_probe", DEBUGGING(LEVELING));
 
   const xyz_pos_t nan_pos = {NUM_AXIS_LIST(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN)};
@@ -942,7 +945,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       // If the probe won't tare, return
       if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
-      const_feedRate_t fr = (TERN0(G38_PROBE_TARGET, probe_3d && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? feedrate_mm_s : z_probe_slow_mm_s;
+      const feedRate_t fr = (TERN0(G38_PROBE_TARGET, probe_3d && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? feedrate_mm_s : z_probe_slow_mm_s;
       // Probe downward slowly to find the bed
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Slow Probe:");
       if (try_to_probe(PSTR("SLOW"), probe_target_point, fr, sanity_check, move_value, probe_3d)) return nan_pos;
@@ -1044,42 +1047,6 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   }
 
 #endif
-
-/**
- * - Change to probing tool.
- * - Adjust for probe offset and hotend offset.
- * - Move to the given XY.
- * - Deploy the probe, if not already deployed
- * - Probe the bed, get the Z position according to settings MULTIPLE_PROBING and EXTRA_PROBING
- * - Depending on the 'stow' flag
- *   - Stow the probe, or
- *   - Raise to the BETWEEN height
- * - Return the probed Z position
- * - Revert to previous tool
- *
- * A batch of multiple probing operations should always be preceded by use_probing_tool() invocation
- * and succeeded by use_probing_tool(false), in order to avoid multiple tool changes and to end up
- * with the previously active tool.
- *
- */
-float Probe::probe_at_point(
-  const float rx, const float ry,
-  const ProbePtRaise raise_after,   // = PROBE_PT_NONE
-  const uint8_t verbose_level,      // = 0
-  const bool probe_relative,        // = true
-  const bool sanity_check,          // = true
-  const float z_min_point,          // = Z_PROBE_LOW_POINT
-  const float z_clearance,          // = Z_TWEEN_SAFE_CLEARANCE
-  const bool raise_after_is_rel     // = false
-) {
-  const xyz_pos_t probe_pos = NUM_AXIS_ARRAY(
-    rx, ry, z_min_point,
-    current_position.i, current_position.j, current_position.k,
-    current_position.u, current_position.v, current_position.w
-  );
-  const xyz_pos_t measured = probe_safely(probe_pos, raise_after, 0, verbose_level, probe_relative, sanity_check, z_clearance, raise_after_is_rel, false);
-  return measured.z;
-}
 
 /**
  * - Change to probing tool.
@@ -1302,13 +1269,13 @@ xyz_pos_t Probe::probe_safely(
  *
  */
 float Probe::probe_at_point(
-  const_float_t rx, const_float_t ry,
+  const float rx, const float ry,
   const ProbePtRaise raise_after,     // = PROBE_PT_NONE
   const uint8_t verbose_level,        // = 0
   const bool probe_relative,          // = true
   const bool sanity_check,            // = true
-  const_float_t z_min_point,          // = Z_PROBE_LOW_POINT
-  const_float_t z_clearance,          // = Z_TWEEN_SAFE_CLEARANCE
+  const float z_min_point,          // = Z_PROBE_LOW_POINT
+  const float z_clearance,          // = Z_TWEEN_SAFE_CLEARANCE
   const bool raise_after_is_rel       // = false
 ) {
   const xyz_pos_t probe_pos = NUM_AXIS_ARRAY(

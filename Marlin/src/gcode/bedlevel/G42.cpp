@@ -83,8 +83,6 @@ void GcodeSuite::G42() {
   #if HAS_ROTATIONAL_AXES || IS_KINEAMETIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
     parser.linear_motion_gcode = false;
   #endif
-  
-  }
 }
 
 #endif // HAS_MESH

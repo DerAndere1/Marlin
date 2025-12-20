@@ -33,8 +33,6 @@
 #include "../../feature/bedlevel/bedlevel.h"
 #include "../../lcd/marlinui.h"
 
-probe_target_t G38_move{0};
-
 inline bool G38_run_probe(const ProbePtRaise raise_after) {
 
   // Move flag value

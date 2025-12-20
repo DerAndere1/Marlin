@@ -131,7 +131,7 @@ void GcodeSuite::M104_M109(const bool isM109) {
   TERN_(AUTOTEMP, thermalManager.autotemp_M104_M109());
 
   if (isM109 && got_temp) {
-    (void)thermalManager.wait_for_hotend(target_extruder, no_wait_for_cooling);
+    (void)thermalManager.wait_for_hotend(target_hotend, no_wait_for_cooling);
     #if ENABLED(REMAINING_TIME_AUTOPRIME)
       if (card.isStillPrinting()) {
         print_job_timer.primeRemainingTimeEstimate(card.getIndex(), card.getFileSize());
