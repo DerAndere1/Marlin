@@ -15,6 +15,9 @@ The G-code syntax of Marlin2ForPipetBot closely resembles that of LinuxCNC (the 
 
 New G-codes:
 - G43.4 (tool centerpoint control)
+- G68 (workspace rotation)
+- G51 (workspace scaling)
+- G93 (inverse time feedrate mode)
 
 ### G1 (Linear Move)
 
