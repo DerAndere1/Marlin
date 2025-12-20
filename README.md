@@ -61,18 +61,6 @@ Set offsets. Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'. See the following refe
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L11
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L20
 
-### G30 (Cancel Wwrkspace rotation)
-
-Cancel workspace rotation. 
-See the following references:
-- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G30
-
-### G31 (Workspace rotation)
-
-Set workspace rotation. Requires 'ROTATE_WORKSPACE'.
-See the following references:
-- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G31
-
 ### G43 (Tool Length Offset)
 
 Enable simple tool length compensation. 
@@ -99,15 +87,27 @@ See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G49.html
 
-### G68 (Workspace scaling)
+### G51 (Workspace scaling)
 
 Set workspace scaling. Requires 'ROTATE_WORKSPACE'.
 See the following references:
-- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G68
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G51.html
 
-### G68 (Workspace scaling)
+### G50 (Cancel workspace scaling)
 
 Cancel workspace scaling. Requires 'ROTATE_WORKSPACE'.
+See the following references:
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G50.html
+
+### G68 (Workspace rotation)
+
+Set workspace rotation. Requires 'ROTATE_WORKSPACE'.
+See the following references:
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G68.html
+
+### G69 (Cancel workpace rotation)
+
+Cancel workspace rotation. 
 See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G69
 
@@ -357,11 +357,11 @@ Enable inverse time feedrate mode with G93, enable units-per-minute feedrate mod
 
 ### 'ROTATE_WORKSPACE
 
-Enable and set workspace rotation with G31, cancel workspace rotation with G30.
+Enable and set workspace rotation with G68, cancel workspace rotation with G69.
 
 ### 'SCALE_WORKSPACE'
 
-Enable and set workspace scaling with G68, cancel workspace scaling with G69.
+Enable and set workspace scaling with G51, cancel workspace scaling with G50.
 
 ## Marlin2ForPipetBot Branch
 
