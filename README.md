@@ -55,15 +55,29 @@ To change the feed rate interpretation, the option `ARTICULATED_ROBOT_ARM` can b
 
 ### G10 (Set offsets)
 
-Set offsets. See the following references:
+Set offsets. Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'. See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L1_
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L2_
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L11
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L20
 
+### G30 (Cancel Wwrkspace rotation)
+
+Cancel workspace rotation. 
+See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G30
+
+### G31 (Workspace rotation)
+
+Set workspace rotation. Requires 'ROTATE_WORKSPACE'.
+See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G31
+
 ### G43 (Tool Length Offset)
 
-Enable simple tool length compensation. See the following references:
+Enable simple tool length compensation. 
+Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'.
+See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
 
 #### Notes
@@ -71,7 +85,7 @@ Currently, no `H` word is supported. The tool offsets (set by G10) for the curre
 
 ### G43.4 (Tool centerpoint control)
 
-Enable tool centerpoint control. See the following references:
+Enable tool centerpoint control. Requires 'PENTA_AXIS_TRT' or 'PENTA_AXIS_HT' See the following references:
 - https://www.linkedin.com/pulse/g434-tool-center-point-control-tcp-abhilash-am?trk=read_related_article-card_title
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G234.html
 
@@ -80,10 +94,22 @@ Currently, no `H` word is supported. The tool offsets (set by G10) for the curre
 
 ### G49 (Cancel tool length compensation)
 
-Disable tool length compensation (G43) and disable tool centerpoint control (G43.4). Enter direct joint control mode (default). See the following references:
+Disable tool length compensation (G43) and disable tool centerpoint control (G43.4). Enter direct joint control mode (default). Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'.
+See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G49.html
 
+### G68 (Workspace scaling)
+
+Set workspace scaling. Requires 'ROTATE_WORKSPACE'.
+See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G68
+
+### G68 (Workspace scaling)
+
+Cancel workspace scaling. Requires 'ROTATE_WORKSPACE'.
+See the following references:
+- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G69
 
 ### M665 (PENTA_AXIS configuration)
 
@@ -320,6 +346,22 @@ For multi-axis machines it is highly recommended to enable `CLASSIC_JERK`.
 ### `HOTEND_OFFSET_X`
 
 `HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`: Arrays with offsets for each tool. With `PENTA_AXIS_TRT` or `PENTA_AXIS_HT` enabled, the machine is by default in joint control mode (tool length compensation and tool centerpoint control disabled). Use G10 to set hotend offsets (tool offsets). Use G43 to enable tool length compensation (apply hotend offsets / tool offsets). Use G43.4 to enable tool centerpoint control. Use G49 to cancel tool length compensation and tool centerpoint control.
+
+### 'DEFAULT_TOOL_LENGTH_COMPENSATION'
+
+Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
+
+### 'FEEDRATE_MODE_SUPPORT'
+
+Enable inverse time feedrate mode with G93, enable units-per-minute feedrate mode with G94.
+
+### 'ROTATE_WORKSPACE
+
+Enable and set workspace rotation with G31, cancel workspace rotation with G30.
+
+### 'SCALE_WORKSPACE'
+
+Enable and set workspace scaling with G68, cancel workspace scaling with G69.
 
 ## Marlin2ForPipetBot Branch
 
