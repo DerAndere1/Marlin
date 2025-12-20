@@ -107,9 +107,9 @@ See the following references:
 
 ### G69 (Cancel workpace rotation)
 
-Cancel workspace rotation. 
+Cancel workspace rotation. Requires ROTATE_WORKSPACE.
 See the following references:
-- https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G69
+- https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G69.html
 
 ### M665 (PENTA_AXIS configuration)
 
