@@ -131,7 +131,15 @@ xyze_pos_t current_position = LOGICAL_AXIS_ARRAY(0,
 xyze_pos_t destination; // {0}
 
 #if ANY(ROTATE_WORKSPACE, SCALE_WORKSPACE)
-  xyz_pos_t raw_destination = NUM_AXIS_ARRAY(X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+  xyz_pos_t raw_destination = NUM_AXIS_ARRAY(
+    X_HOME_POS, Y_HOME_POS, 
+    #ifdef Z_IDLE_HEIGHT
+      Z_IDLE_HEIGHT
+    #else
+      Z_HOME_POS
+    #endif
+    , I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS
+  );
 #endif
 // The active extruder (tool). Set with T<extruder> command.
 #if HAS_MULTI_TOOLS
@@ -146,14 +154,14 @@ xyze_pos_t destination; // {0}
 #if HAS_HOTEND_OFFSET
   xyz_pos_t hotend_offset[TOOLS]; // Initialized by settings.load
   void reset_hotend_offsets() {
-    constexpr float tmp[XYZ][TOOLS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
+    constexpr float tmp[3][TOOLS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
     static_assert(
       !tmp[X_AXIS][0] && !tmp[Y_AXIS][0] && !tmp[Z_AXIS][0],
       "Offsets for the first hotend must be 0.0."
     );
     // Transpose from [XYZ][HOTENDS] to [HOTENDS][XYZ]
     for (uint8_t e = 0; e < TOOLS; e++) {
-      for (uint8_t a = 0; a < XYZ; a++) {
+      for (uint8_t a = 0; a < 3; a++) {
         hotend_offset[e][a] = tmp[a][e];
       }
     }
@@ -184,7 +192,7 @@ xyz_pos_t cartes;
 
 #if IS_KINEMATIC
 
-  abce_pos_t delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+  abce_pos_t delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
     bool tool_centerpoint_control = false;
@@ -733,7 +741,7 @@ void report_current_position_projected() {
 #endif // CARTESIAN
 
 #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && DISABLED(QUICK_HOME)
-  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw)) {
+  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw)) {
 
     const bool can_reach = (
       NUM_AXIS_GANG(
@@ -1117,7 +1125,7 @@ void do_blocking_move_to(const xyze_pos_t &raw, const feedRate_t fr_mm_s/*=0.0f*
    * - XY, etc. move simultaneously in a coordinated manner.
    * - Before returning, wait for the planner buffer to empty.
    */
-  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const_float_t) const_feedRate_t fr_mm_s/*=0.0f*/) {
+  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const float) const feedRate_t fr_mm_s/*=0.0f*/) {
     DEBUG_SECTION(log_move, "do_blocking_move_to", DEBUGGING(LEVELING));
     #if NUM_AXES
       if (DEBUGGING(LEVELING)) DEBUG_XYZ("> ", NUM_AXIS_ARGS_LC());
@@ -1390,7 +1398,7 @@ void restore_feedrate_and_scaling() {
             TERN_(SPINDLE_FEATURE, safe_delay(1000));
             cutter.kill();
           #endif
-          stop();
+          marlin.stop();
         }
         else {
           NOLESS(target_pos[axis], soft_endstop.min[axis]);
@@ -1412,7 +1420,7 @@ void restore_feedrate_and_scaling() {
             TERN_(SPINDLE_FEATURE, safe_delay(1000));
             cutter.kill();
           #endif
-          stop();
+          marlin.stop();
         }
         else {
           NOMORE(target_pos[axis], soft_endstop.max[axis]);
@@ -1739,7 +1747,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
           TERN_(SPINDLE_FEATURE, safe_delay(1000));
           cutter.kill();
         #endif
-        stop();
+        marlin.stop();
         return true;
       }
     #else

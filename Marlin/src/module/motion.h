@@ -426,7 +426,7 @@ void do_blocking_move_to(const xyze_pos_t &raw, const feedRate_t fr_mm_s=0.0f);
 #endif
 
 #if ENABLED(QUICK_HOME_SECONDARY_AXES) && !IS_KINEMATIC
-  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const_float_t) const_feedRate_t fr_mm_s=0.0f);
+  void do_blocking_coordinated_move_to(NUM_AXIS_ARGS_(const float) const feedRate_t fr_mm_s=0.0f);
 #endif
 
 void remember_feedrate_scaling_off();
@@ -601,7 +601,7 @@ void home_if_needed(const bool keeplev=false);
 
 #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
 
-  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw));
+  bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw));
   inline bool position_is_reachable_xyijkuvw(const xyz_pos_t &pos) {
     return position_is_reachable_xyijkuvw(NUM_AXIS_LIST(pos.x, pos.y, pos.z, pos.i, pos.j, pos.k, pos.u, pos.v, pos.w));
   }

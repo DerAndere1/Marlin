@@ -85,17 +85,17 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
   }
   else {
 
-  const_float_t pivot_length_x = native.x - mrzp_offset_x;
-  const_float_t pivot_length_y = native.y - mrzp_offset_y;
-  const_float_t pivot_length_z = native.z - mrzp_offset_z;
+  const float pivot_length_x = native.x - mrzp_offset_x;
+  const float pivot_length_y = native.y - mrzp_offset_y;
+  const float pivot_length_z = native.z - mrzp_offset_z;
 
-  const_float_t i_rad = RADIANS(native.i);
-  const_float_t cos_i = cos(i_rad);
-  const_float_t sin_i = sin(i_rad);
+  const float i_rad = RADIANS(native.i);
+  const float cos_i = cos(i_rad);
+  const float sin_i = sin(i_rad);
 
-  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(native.j));
-  const_float_t cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
-  const_float_t sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
+  const float j_rad = TERN0(HAS_J_AXIS, RADIANS(native.j));
+  const float cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
+  const float sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
 
   #if AXIS4_NAME == 'A'
     // computed position
@@ -173,16 +173,16 @@ xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
   const xyz_pos_t pos = joint_pos + hotend_offset[active_extruder];
 
   // Note: 'principal' joints are used
-  const_float_t pivot_length_x = pos.x - mrzp_offset_x;
-  const_float_t pivot_length_y = pos.y - mrzp_offset_y;
-  const_float_t pivot_length_z = pos.z - mrzp_offset_z;
-  const_float_t i_rad = RADIANS(pos.i);
-  const_float_t sin_i = sin(i_rad);
-  const_float_t cos_i = cos(i_rad);
+  const float pivot_length_x = pos.x - mrzp_offset_x;
+  const float pivot_length_y = pos.y - mrzp_offset_y;
+  const float pivot_length_z = pos.z - mrzp_offset_z;
+  const float i_rad = RADIANS(pos.i);
+  const float sin_i = sin(i_rad);
+  const float cos_i = cos(i_rad);
 
-  const_float_t j_rad = TERN0(HAS_J_AXIS, RADIANS(pos.j));
-  const_float_t sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
-  const_float_t cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
+  const float j_rad = TERN0(HAS_J_AXIS, RADIANS(pos.j));
+  const float sin_j = TERN0(HAS_J_AXIS, sin(j_rad));
+  const float cos_j = TERN1(HAS_J_AXIS, cos(j_rad));
 
 
   #if AXIS4_NAME == 'A'
