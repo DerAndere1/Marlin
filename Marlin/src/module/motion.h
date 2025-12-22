@@ -65,7 +65,7 @@ extern xyz_pos_t cartes;
 // Until kinematics.cpp is created, declare this here
 #if IS_KINEMATIC
   extern abce_pos_t delta;
-  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     extern bool tool_centerpoint_control;
   #endif
 #endif
@@ -576,7 +576,7 @@ void home_if_needed(const bool keeplev=false);
 /**
  * position_is_reachable family of functions
  */
-#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT)  // (DELTA or SCARA)
+#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)  // (DELTA or SCARA)
 
   #if HAS_SCARA_OFFSET
     extern abc_pos_t scara_home_offset; // A and B angular offsets, Z mm offset
@@ -599,7 +599,7 @@ void home_if_needed(const bool keeplev=false);
 
 #endif
 
-#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
 
   bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw));
   inline bool position_is_reachable_xyijkuvw(const xyz_pos_t &pos) {

@@ -67,6 +67,8 @@
   #include "penta_axis_trt.h"
 #elif ENABLED(PENTA_AXIS_HT)
   #include "penta_axis_ht.h"
+#elif ENABLED(PENTA_AXIS_HH)
+  #include "penta_axis_head_head.h"
 #endif
 
 #if ABL_PLANAR
@@ -430,7 +432,7 @@ typedef struct PlannerSettings {
 
 struct PlannerHints {
   float millimeters = 0.0;            // Move Length, if known, else 0.
-  #if ENABLED(FEEDRATE_SCALING) || (ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(FEEDRATE_MODE_SUPPORT))
+  #if ENABLED(FEEDRATE_SCALING) || (ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && ENABLED(FEEDRATE_MODE_SUPPORT))
     float inv_duration = 0.0;         // Reciprocal of the move duration, if known
   #endif
   #if ENABLED(HINTS_CURVE_RADIUS)

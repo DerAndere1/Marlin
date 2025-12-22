@@ -176,6 +176,8 @@
   #include "module/penta_axis_trt.h"
 #elif ENABLED(PENTA_AXIS_HT)
   #include "module/penta_axis_ht.h"
+#elif ENABLED(PENTA_AXIS_HH)
+  #include "module/penta_axis_head_head.h"
 #endif
 
 #if HAS_LEVELING

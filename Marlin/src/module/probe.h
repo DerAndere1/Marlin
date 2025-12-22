@@ -112,7 +112,7 @@ public:
 
     static bool set_deployed(const bool deploy, const bool no_return=false);
 
-    #if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
 
       #if HAS_PROBE_XY_OFFSET
         // Return true if the both nozzle and the probe can reach the given point.

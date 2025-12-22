@@ -820,7 +820,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   DEBUG_SECTION(log_probe, "Probe::run_probe", DEBUGGING(LEVELING));
 
   const xyz_pos_t nan_pos = {NUM_AXIS_LIST(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN)};
-  const xyz_pos_t offs = (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) ? (-offset) : SUM_TERN(HAS_HOTEND_OFFSET, -offset, hotend_offset[active_extruder]);
+  const xyz_pos_t offs = (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, tool_centerpoint_control))) ? (-offset) : SUM_TERN(HAS_HOTEND_OFFSET, -offset, hotend_offset[active_extruder]);
   
   auto try_to_probe = [&](PGM_P const plbl, const xyz_pos_t target_point, const feedRate_t fr_mm_s, const bool scheck, const uint8_t move_value, const bool probe_3d) -> bool {
     constexpr float error_tolerance = Z_PROBE_ERROR_TOLERANCE;
@@ -1019,7 +1019,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   #endif
   
   #if HAS_HOTEND_OFFSET
-    if ((TERN0(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control)))
+    if ((TERN0(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, tool_centerpoint_control)))
       return measured - hotend_offset[active_extruder];
     else
   #endif
@@ -1107,7 +1107,7 @@ xyz_pos_t Probe::probe_safely(
   if (probe_relative) { // Get the nozzle position, adjust for active hotend if not 0
     if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("-relative");
     if (TERN0(G38_PROBE_TARGET, probe_3d))
-      npos -= (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control))) ? offset : DIFF_TERN(HAS_HOTEND_OFFSET, offset, hotend_offset[active_extruder]);
+      npos -= (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, tool_centerpoint_control))) ? offset : DIFF_TERN(HAS_HOTEND_OFFSET, offset, hotend_offset[active_extruder]);
     else
       npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, xy_pos_t(hotend_offset[active_extruder]));
   }

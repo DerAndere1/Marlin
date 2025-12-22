@@ -194,7 +194,7 @@ xyz_pos_t cartes;
 
   abce_pos_t delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
-  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     bool tool_centerpoint_control = false;
   #endif
 
@@ -670,7 +670,7 @@ void report_current_position_projected() {
 
 #endif // REALTIME_REPORTING_COMMANDS
 
-#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+#if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
 
   bool position_is_reachable(const float rx, const float ry, const float inset/*=0.0f*/) {
 
@@ -740,7 +740,7 @@ void report_current_position_projected() {
 
 #endif // CARTESIAN
 
-#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && DISABLED(QUICK_HOME)
+#if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && DISABLED(QUICK_HOME)
   bool position_is_reachable_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw)) {
 
     const bool can_reach = (
@@ -816,7 +816,7 @@ void sync_plan_position() {
  * suitable for current_position, etc.
  */
 void get_cartesian_from_steppers() {
-  #if ANY(DELTA, PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #if ANY(DELTA, PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     forward_kinematics(planner.get_axis_positions_mm());
   #elif IS_SCARA
     forward_kinematics(
@@ -966,11 +966,11 @@ void do_blocking_move_to(NUM_AXIS_ARGS_(const float) const feedRate_t fr_mm_s/*=
     const feedRate_t z_feedrate = fr_mm_s ?: homing_feedrate(Z_AXIS);
   #endif
 
-  #if IS_KINEMATIC && NONE(POLARGRAPH, PENTA_AXIS_TRT, PENTA_AXIS_HT)
+  #if IS_KINEMATIC && NONE(POLARGRAPH, PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     // kinematic machines are expected to home to a point 1.5x their range? never reachable.
     if (!position_is_reachable(x, y)) return;
     destination = current_position;          // sync destination at the start
-  #elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && DISABLED(QUICK_HOME) 
+  #elif ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && DISABLED(QUICK_HOME) 
     if (!position_is_reachable_xyijkuvw(NUM_AXIS_LIST(x, y, z, i, j, k, u, v, w))) {
       if (DEBUGGING(LEVELING)) DEBUG_POS("position not reachable. ignore move", destination);
       return;
@@ -1443,7 +1443,7 @@ void restore_feedrate_and_scaling() {
 
     if (!soft_endstop._enabled) return;
 
-    #if IS_KINEMATIC && NONE(PENTA_AXIS_HT, PENTA_AXIS_TRT)
+    #if IS_KINEMATIC && NONE(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
 
       if (TERN0(DELTA, !all_axes_homed())) return;
 
@@ -1721,7 +1721,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
     const xyze_float_t diff = destination - current_position;
 
 
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
       // If the move is only in X/Y/Z/E don't split up the move
       if ((!tool_centerpoint_control) || (NEAR_ZERO(diff.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(diff.j)))) {
     #else
@@ -1738,7 +1738,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
     }
 
     // Fail if attempting move outside printable radius
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT) && ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       // Abort if attempting move outside printable radius
       if (!position_is_reachable(destination)) {
         SERIAL_ERROR_MSG("Position not reachable.");
@@ -3006,7 +3006,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
     current_position[axis] = (axis == Z_AXIS) ? DIFF_TERN(HAS_BED_PROBE, delta_height, probe.offset.z) : base_home_pos(axis);
   #else
     current_position[axis] = SUM_TERN(HAS_HOME_OFFSET, base_home_pos(axis), home_offset[axis]);
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
       // TODO (DerAndere): Introduce a function like scara_set_axis_is_at_home.
       delta[axis] = current_position[axis];
       if (axis == J_AXIS)
