@@ -1278,7 +1278,7 @@
   // centerline of the joint that tilts the table when the table is oriented horizontally.
   #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 0.0 // (mm)
 
-  // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
+  // Moves involving rotational axes are broken up into small straight segments (linear interpolation).
   // This is a trade-off between visible corners (not enough segments)
   // and processor overload (too many expensive sqrt calls).
   #define DEFAULT_SEGMENTS_PER_SECOND 200
@@ -1301,9 +1301,41 @@
   // position 0 so that the tool holder is oriented parallel to the Z axis.
   #define DEFAULT_MRZP_OFFSET_Z 100.0 // (mm)
 
-  // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
+  // Moves involving rotational axes are broken up into small straight segments (linear interpolation).
   // This is a trade-off between visible corners (not enough segments)
   // and processor overload (too many expensive sqrt calls).
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+
+  // Print surface diameter/2
+  #define PRINTABLE_RADIUS 100.0    // (mm)
+#endif
+
+// @section PENTA_AXIS_HH
+
+/** 
+ * For a 5 axis CNC machine in tilting rotary table configuration. 
+ * This machine has a rotary table (C axis) mounted on a tilting table
+ * (A axis parallel to the X axis, or B axis parallel to the Y axis).
+ * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
+ */
+//#define PENTA_AXIS_HH
+#if ENABLED(PENTA_AXIS_HH)
+ 
+  //Machine rotary zero point offsets.
+  
+  // Machine rotary zero point offset is the distance from the tip of tool 0 (the gauge line) to the 
+  // horizontal centerline of the joint that tilts the tool head. Measured when all axes are at machine 
+  // position 0 so that the tool holder is oriented parallel to the Z axis.
+  #define DEFAULT_MRZP_OFFSET_Z 0.0 // (mm)
+
+  // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the
+  // joint that rotates the toolhead to the vertical centerline of tool 0.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
+
+
+  // Moves involving rotational axes are broken up into small straight segments (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive function calls).
   #define DEFAULT_SEGMENTS_PER_SECOND 200
 
   // Print surface diameter/2

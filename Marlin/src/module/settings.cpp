@@ -356,13 +356,16 @@ typedef struct SettingsDataStruct {
   //
   #if IS_KINEMATIC
     float segments_per_second;                          // M665 S
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
       #if ENABLED(PENTA_AXIS_TRT)
         float mrzp_offset_x;                              // M665 X
         float mrzp_offset_y;                              // M665 Y
         float rotational_offset_x;                        // M665 I
         float rotational_offset_y;                        // M665 J
         float rotational_offset_z;                        // M665 K
+      #endif 
+      #if ENABLED(PENTA_AXIS_HH)
+        float rotational_offset_y;                        // M665 J
       #endif 
       float mrzp_offset_z;                              // M665 Z
     #elif ENABLED(DELTA)
@@ -1193,7 +1196,7 @@ void MarlinSettings::postprocess() {
     #if IS_KINEMATIC
     {
       EEPROM_WRITE(segments_per_second);
-      #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+      #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
         #if ENABLED(PENTA_AXIS_TRT)
           _FIELD_TEST(mrzp_offset_x);
           EEPROM_WRITE(mrzp_offset_x);               // 1 float
@@ -1205,6 +1208,10 @@ void MarlinSettings::postprocess() {
           EEPROM_WRITE(rotational_offset_y);         // 1 float
           _FIELD_TEST(rotational_offset_z);
           EEPROM_WRITE(rotational_offset_z);         // 1 float
+        #endif
+        #elif ENABLED(PENTA_AXIS_HH)
+          _FIELD_TEST(mrzp_offset_y);
+          EEPROM_WRITE(mrzp_offset_y);                          // M665 J
         #endif
         _FIELD_TEST(mrzp_offset_z);
         EEPROM_WRITE(mrzp_offset_z);                 // 1 float
@@ -2302,7 +2309,7 @@ void MarlinSettings::postprocess() {
       #if IS_KINEMATIC
       {
         EEPROM_READ(segments_per_second);
-        #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+        #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
           #if ENABLED(PENTA_AXIS_TRT)
             _FIELD_TEST(mrzp_offset_x);
             EEPROM_READ(mrzp_offset_x);
@@ -2314,6 +2321,10 @@ void MarlinSettings::postprocess() {
             EEPROM_READ(rotational_offset_y);
             _FIELD_TEST(rotational_offset_z);
             EEPROM_READ(rotational_offset_z);
+          #endif
+          #if ENABLED(PENTA_AXIS_HH)
+            _FIELD_TEST(mrzp_offset_y);
+            EEPROM_WRITE(mrzp_offset_y);
           #endif
           _FIELD_TEST(mrzp_offset_z);
           EEPROM_READ(mrzp_offset_z);
@@ -3565,13 +3576,16 @@ void MarlinSettings::reset() {
 
   #if IS_KINEMATIC
     segments_per_second = DEFAULT_SEGMENTS_PER_SECOND;
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
       #if ENABLED(PENTA_AXIS_TRT)
         mrzp_offset_x = DEFAULT_MRZP_OFFSET_X;
         mrzp_offset_y = DEFAULT_MRZP_OFFSET_Y;
         rotational_offset_x = DEFAULT_ROTATIONAL_JOINT_OFFSET_X;
         rotational_offset_y = DEFAULT_ROTATIONAL_JOINT_OFFSET_Y;
         rotational_offset_z = DEFAULT_ROTATIONAL_JOINT_OFFSET_Z;
+      #endif
+      #if ENABLED(PENTA_AXIS_HH)
+        rotational_offset_y = DEFAULT_ROTATIONAL_JOINT_OFFSET_Y;
       #endif
       mrzp_offset_z = DEFAULT_MRZP_OFFSET_Z;
     #elif ENABLED(DELTA)
