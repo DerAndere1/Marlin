@@ -1209,10 +1209,9 @@ void MarlinSettings::postprocess() {
           EEPROM_WRITE(rotational_offset_y);         // 1 float
           _FIELD_TEST(rotational_offset_z);
           EEPROM_WRITE(rotational_offset_z);         // 1 float
-        #endif
         #elif ENABLED(PENTA_AXIS_HH)
-          _FIELD_TEST(mrzp_offset_y);
-          EEPROM_WRITE(mrzp_offset_y);                          // M665 J
+          _FIELD_TEST(rotational_offset_y);
+          EEPROM_WRITE(rotational_offset_y);         // 1 float
         #endif
         _FIELD_TEST(mrzp_offset_z);
         EEPROM_WRITE(mrzp_offset_z);                 // 1 float
@@ -2313,10 +2312,9 @@ void MarlinSettings::postprocess() {
             EEPROM_READ(rotational_offset_y);
             _FIELD_TEST(rotational_offset_z);
             EEPROM_READ(rotational_offset_z);
-          #endif
-          #if ENABLED(PENTA_AXIS_HH)
-            _FIELD_TEST(mrzp_offset_y);
-            EEPROM_WRITE(mrzp_offset_y);
+          #elif ENABLED(PENTA_AXIS_HH)
+            _FIELD_TEST(rotational_offset_y);
+            EEPROM_READ(rotational_offset_y);
           #endif
           _FIELD_TEST(mrzp_offset_z);
           EEPROM_READ(mrzp_offset_z);
@@ -3570,8 +3568,7 @@ void MarlinSettings::reset() {
         rotational_offset_x = DEFAULT_ROTATIONAL_JOINT_OFFSET_X;
         rotational_offset_y = DEFAULT_ROTATIONAL_JOINT_OFFSET_Y;
         rotational_offset_z = DEFAULT_ROTATIONAL_JOINT_OFFSET_Z;
-      #endif
-      #if ENABLED(PENTA_AXIS_HH)
+      #elif ENABLED(PENTA_AXIS_HH)
         rotational_offset_y = DEFAULT_ROTATIONAL_JOINT_OFFSET_Y;
       #endif
       mrzp_offset_z = DEFAULT_MRZP_OFFSET_Z;

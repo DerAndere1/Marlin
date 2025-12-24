@@ -270,8 +270,6 @@
     );
   }
 
-#endif // PENTA_AXIS_HT
-
 #elif ENABLED(PENTA_AXIS_HH)
 
   #include "../../module/penta_axis_head_head.h"
