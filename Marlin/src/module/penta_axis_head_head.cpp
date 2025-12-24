@@ -99,57 +99,60 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
     const float c_rad = RADIANS(pos.j);
   #endif
 
+  const float sin_b = sinf(b_rad);
   const float cos_b = cosf(b_rad);
+  const float sin_c = sinf(c_rad);
   const float cos_c = cosf(c_rad);
 
   
-    const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
-      x + sin_c * rotational_offset_y + cos_c * sin_b * pivot_length,
-      y + (cos_c - 1) * rotational_offset_y - sin_c * sin_b * pivot_length,
-      z + (cos_b - 1) * pivot_length,
-      pos.i,
-      pos.j
-    );
-  #endif
+  const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
+    pos.x - sin_c * rotational_offset_y + cos_c * sin_b * pivot_length,
+    pos.y + (cos_c - 1) * rotational_offset_y + sin_c * sin_b * pivot_length,
+    pos.z + (cos_b - 1) * pivot_length,
+    pos.i,
+    pos.j
+  );
 
   return joints_pos;
 
 }
 
-void forward_kinematics(const xyz_pos_t &joint_pos) {
-  cartes = joint_to_native(joint_pos);
+void forward_kinematics(const xyz_pos_t &joints_pos) {
+  cartes = joint_to_native(joints_pos);
 }
 
 
-xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
-  if (!tool_centerpoint_control) return joint_pos;
+xyz_pos_t joint_to_native(const xyz_pos_t &joints_pos) {
+  if (!tool_centerpoint_control) return joints_pos;
 
   const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
 
   #if AXIS4_NAME == 'C'
-    const float c_rad = RADIANS(joint_pos.i);
+    const float c_rad = RADIANS(joints_pos.i);
   #elif AXIS5_NAME == 'C'
-    const float c_rad = RADIANS(joint_pos.j);
+    const float c_rad = RADIANS(joints_pos.j);
   #endif
 
+
+  const float sin_c = sinf(c_rad);
   const float cos_c = cosf(c_rad);
 
   #if AXIS4_NAME == 'C'
-    const float rx = pivot_length * sinf(RADIANS(180.0f - joint_pos.j)) * cos_c;
-    const float ry = pivot_length * sinf(RADIANS(180.0f - joint_pos.j)) * sin_c;
-    const float rz = - pivot_length * cosf(RADIANS(180.0f - joint_pos.j));
+    const float rx = pivot_length * sinf(RADIANS(180.0f - joints_pos.j)) * cos_c;
+    const float ry = pivot_length * sinf(RADIANS(180.0f - joints_pos.j)) * sin_c;
+    const float rz = - pivot_length * cosf(RADIANS(180.0f - joints_pos.j));
   #elif AXIS5_NAME == 'C'
-    const float rx = pivot_length * sinf(RADIANS(180.0f - joint_pos.i)) * cos_c;
-    const float ry = pivot_length * sinf(RADIANS(180.0f - joint_pos.i)) * sin_c;
-    const float rz = - pivot_length * cosf(RADIANS(180.0f - joint_pos.i));
+    const float rx = pivot_length * sinf(RADIANS(180.0f - joints_pos.i)) * cos_c;
+    const float ry = pivot_length * sinf(RADIANS(180.0f - joints_pos.i)) * sin_c;
+    const float rz = - pivot_length * cosf(RADIANS(180.0f - joints_pos.i));
   #endif
 
   const xyz_pos_t native_pos = NUM_AXIS_ARRAY(
     joints_pos.x + rx,
-    joints_pos.y + ry;
-    joints_pos.z + pivot_length + rz;
-    joint_pos.i,
-    joint_pos.j
+    joints_pos.y + ry,
+    joints_pos.z + pivot_length + rz,
+    joints_pos.i,
+    joints_pos.j
   );
 
   return native_pos;
