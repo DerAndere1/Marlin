@@ -1353,7 +1353,7 @@
  * Override with M92 (when enabled below)
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160.00, 160.00, 1600.00, 888.888, 888.888, 1422.222, 106.656, 907.868 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160.00, 160.00, 1600.00, 444.444, 444.444, 1422.222, 106.656, 907.868 }
 
 /**
  * Enable support for M92. Disable to save at least ~530 bytes of flash.
@@ -1869,8 +1869,8 @@
 #define INVERT_Y_DIR false
 #define INVERT_Z_DIR false
 #define INVERT_I_DIR true
-#define INVERT_J_DIR false
-#define INVERT_K_DIR true
+#define INVERT_J_DIR true
+#define INVERT_K_DIR false
 #define INVERT_U_DIR false
 //#define INVERT_V_DIR false
 //#define INVERT_W_DIR false
@@ -1913,8 +1913,8 @@
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR  1
 #define I_HOME_DIR -1
-#define J_HOME_DIR -1
-#define K_HOME_DIR -1
+#define J_HOME_DIR  1
+#define K_HOME_DIR  1
 #define U_HOME_DIR -1
 //#define V_HOME_DIR -1
 //#define W_HOME_DIR -1
@@ -1949,10 +1949,10 @@
 #define Z_MAX_POS 255
 #define I_MIN_POS 0
 #define I_MAX_POS 90
-#define J_MIN_POS 0
-#define J_MAX_POS 900
-#define K_MIN_POS 0
-#define K_MAX_POS 90
+#define J_MIN_POS -90
+#define J_MAX_POS 0
+#define K_MIN_POS -90
+#define K_MAX_POS 0
 #define U_MIN_POS 0
 #define U_MAX_POS 360
 //#define V_MIN_POS 0

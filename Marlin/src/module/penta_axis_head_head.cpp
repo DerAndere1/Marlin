@@ -58,7 +58,7 @@
 
 // Initialized by settings.load()
 float segments_per_second;
-float mrzp_offset_z; // LB
+float rotational_offset_z; // LB
 float rotational_offset_y; // LC
 
 
@@ -89,7 +89,7 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
                     native.j
                   );
 
-  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset, hotend_offset[active_extruder].z);
 
   #if AXIS4_NAME == 'C'
     const float b_rad = RADIANS(pos.j);
@@ -125,7 +125,7 @@ void forward_kinematics(const xyz_pos_t &joints_pos) {
 xyz_pos_t joint_to_native(const xyz_pos_t &joints_pos) {
   if (!tool_centerpoint_control) return joints_pos;
 
-  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset, hotend_offset[active_extruder].z);
 
   #if AXIS4_NAME == 'C'
     const float c_rad = RADIANS(joints_pos.i);

@@ -1205,10 +1205,38 @@
 //#define PENTA_AXIS_HT
 #if ENABLED(PENTA_AXIS_HT)
 
-  // Machine rotary zero point offset is the distance from the tip of tool 0 (the gauge line) to the 
+  // This is the distance from the tip of tool 0 (the gauge line) to the 
   // horizontal centerline of the joint that tilts the tool head. Measured when all axes are at machine 
   // position 0 so that the tool holder is oriented parallel to the Z axis.
-  #define DEFAULT_MRZP_OFFSET_Z 100.0 // (mm)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 100.0 // (mm)
+
+  // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive sqrt calls).
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+
+  // Print surface diameter/2
+  #define PRINTABLE_RADIUS 100.0    // (mm)
+#endif
+
+/** 
+ * For a 5 axis CNC machine in head-head configuration. 
+ * This machine has a tilting rotary toolhead The joint that tilts the toolhead is mounted onto the rotary 
+ * joint (C axis) that rotates around the Z axis.
+ * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
+ */
+#define PENTA_AXIS_HH
+#if ENABLED(PENTA_AXIS_HH)
+
+  // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the
+  // joint that rotates the toolhead to the vertical centerline of tool 0. Measured when all axes are at machine 
+  // position 0 so that the toolhead is oriented parallel to the Z axis.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
+
+  // This is the distance from the tip of tool 0 (the gauge line) to the 
+  // horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine 
+  // position 0 so that the toolhead is oriented parallel to the Z axis.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 114.0 // (mm)
 
   // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
   // This is a trade-off between visible corners (not enough segments)

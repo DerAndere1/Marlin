@@ -254,19 +254,19 @@
    * M665: Set PENTA_AXIS_HT settings
    * Parameters:
    *   S[segments]             - Segments-per-second
-   *   Z[mrzp_offset_z]        - mrzp_offset_z
+   *   K[rotational_offset_z]  - rotational_offset_z
    */
   void GcodeSuite::M665() {
     if (!parser.seen_any()) return M665_report();
     if (parser.seenval('S')) segments_per_second = parser.value_float();
-    if (parser.seenval('Z')) mrzp_offset_z = parser.value_linear_units();
+    if (parser.seenval('K')) rotational_offset_z = parser.value_linear_units();
   }
 
   void GcodeSuite::M665_report(const bool forReplay/*=true*/) {
     report_heading_etc(forReplay, F(STR_PAX_HT_SETTINGS));
     SERIAL_ECHOLNPGM_P(
       PSTR("  M665 S"), LINEAR_UNIT(segments_per_second),
-      PSTR(" Z"), LINEAR_UNIT(mrzp_offset_z)
+      PSTR(" Z"), LINEAR_UNIT(rotational_offset_z)
     );
   }
 
@@ -278,22 +278,22 @@
    * M665: Set PENTA_AXIS_HH settings
    * Parameters:
    *   S[segments]             - Segments-per-second
-   *   Z[mrzp_offset_z]        - mrzp_offset_z
    *   J[rotational_offset_y]  - rotational_offset_y
+   *   K[rotational_offset_z]  - rotational_offset_z
    */
   void GcodeSuite::M665() {
     if (!parser.seen_any()) return M665_report();
     if (parser.seenval('S')) segments_per_second = parser.value_float();
-    if (parser.seenval('Z')) mrzp_offset_z = parser.value_linear_units();
     if (parser.seenval('J')) rotational_offset_y = parser.value_linear_units();
+    if (parser.seenval('K')) rotational_offset_z = parser.value_linear_units();
   }
 
   void GcodeSuite::M665_report(const bool forReplay/*=true*/) {
     report_heading_etc(forReplay, F(STR_PAX_HT_SETTINGS));
     SERIAL_ECHOLNPGM_P(
       PSTR("  M665 S"), LINEAR_UNIT(segments_per_second),
-      PSTR(" Z"), LINEAR_UNIT(mrzp_offset_z),
-      PSTR(" J"), LINEAR_UNIT(rotational_offset_y)
+      PSTR(" J"), LINEAR_UNIT(rotational_offset_y),
+      PSTR(" K"), LINEAR_UNIT(rotational_offset_z),
     );
   }
 

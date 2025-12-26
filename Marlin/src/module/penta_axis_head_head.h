@@ -55,7 +55,7 @@ extern bool tool_centerpoint_control;
 extern float segments_per_second;
 
 // Center of rotation of the tilting rotating table, given as native machine coorinates when all axes are at 0.
-extern float mrzp_offset_z;
+extern float rotational_offset_z;
 
 // Offsets between the Centerlines of the rotational joints.
 extern float rotational_offset_y; // For a machine with XYZBC axes, this is the y offset between the centerlines of the rotational joints

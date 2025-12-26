@@ -140,8 +140,6 @@ Configure `PENTA_AXIS_TRT`, `PENTA_AXIS_HT` or `PENTA_AXIS_HH` geometry values.
 
 Set the machine rotary zero point (MRZP) Z offset. 
 - For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from machine zero point to the center of rotation. The center of rotation is usually the center of the top surface of the table.
-- For 5 axis CNC machines in head-table configuration (PENTA_AXIS_HT) this is the distance along the Z axis from the machine zero point to the horizontal centerline of the joint that tilts the tool head when all axes are in zero position.
-- For 5 axis CNC machines in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH) this is the distance from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine position 0 so that the toolhead is oriented parallel to the Z axis.
 
 See `DEFAULT_MRZP_OFFSET_Z` and see the definition of the pivot point (`Pz`) in reference https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
@@ -151,7 +149,6 @@ Set the machine rotary zero point (MRZP) X offset.
 For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the X axis from machine zero point to the center of rotation when all axes are in neutral (zero) position. The center of rotation is usually the center of the top surface of the table.
 
 See `DEFAULT_MRZP_OFFSET_X` and see the definition of the pivot point (`Px`) in reference https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
-
 
 ##### `Y<MRZP-offset>`
 
@@ -169,17 +166,19 @@ See `DEFAULT_ROTATIONAL_JOINT_OFFSET_X`. Also, see definition of `Dx` in section
 
 ##### `J<rotational-joint-offset>`
 
-Set the rotational joint Y offset. For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) with XYZAC axes this is the distance along the Y axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table. Measured when all rotational axes are in neutral (zero) position so that the table is oriented horizontally.
+Set the rotational joint Y offset. 
+- For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) with XYZAC axes this is the distance along the Y axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table. Measured when all rotational axes are in neutral (zero) position so that the table is oriented horizontally.
+- For a machine with XYZBC axes in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH), this is the distance along the y axis from the vertical centerline of the
+yaw joint that rotates the toolhead around the Z axis to the vertical centerline tool 0. Measured when all axes are in 0 position so that the toolhead is oriented horizontally.
 
 See `DEFAULT_ROTATIONAL_JOINT_OFFSET_Y`. Also, see definition of `Dy` in sections "5.3. Transformations for a xyzbc-trt machine with rotary axis offsets" and "7. Custom Kinematics Components" in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
-For a machine with XYZBC axes in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH), this is the distance along the y axis from the vertical centerline of the
-yaw joint that rotates the toolhead around the Z axis to the vertical centerline tool 0. Measured when all axes are in 0 position so that the toolhead is oriented horizontally.
-
 ##### `K<rotational-joint-offset>`
 
-Set the rotational joint Z offset. For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table. Measured when all rotational axes are in neutral (zero) position so that the table is oriented horizontally.
+Set the rotational joint Z offset. 
+- For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table. Measured when all rotational axes are in neutral (zero) position so that the table is oriented horizontally.
+- For 5 axis CNC machines in head-table configuration (PENTA_AXIS_HT) or for 5 axis CNC machines in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH) this is the distance along the Z axis from the machine zero point to the horizontal centerline of the joint that tilts the tool head when all axes are in zero position.
 
 See `DEFAULT_ROTATIONAL_JOINT_OFFSET_Z`. Also, see definition of `Dz` in sections "5.3. Transformations for a xyzbc-trt machine with rotary axis offsets" and "7. Custom Kinematics Components" in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
@@ -291,8 +290,6 @@ Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configu
 
 Machine rotary zero point (MRZP) Z offset. 
 - For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in machine position 0 so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
-- For 5 axis CNC machines in head-table configuration (PENTA_AXIS_HT) this is the distance along the z axis from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are in machine position 0 so that the toolhead is oriented parallel to the Z axis.
-- For 5 axis CNC machines in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH) this is the distance along the z axis from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine position 0 so that the toolhead is oriented parallel to the Z axis.
 
 See the definition of the pivot point (`Pz`) in this reference: 
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
@@ -332,7 +329,8 @@ yaw joint that rotates the toolhead around the Z axis to the vertical centerline
 
 ### `DEFAULT_ROTATIONAL_JOINT_OFFSET_Z`
 
-For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table.
+- For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table.
+- For 5 axis CNC machines in head-table configuration (PENTA_AXIS_HT) or for 5 axis CNC machines in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH) this is the distance along the z axis from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine position 0 so that the toolhead is oriented parallel to the Z axis.
 
 See definition of `Dz` in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html

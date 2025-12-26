@@ -1205,10 +1205,10 @@
 //#define PENTA_AXIS_HT
 #if ENABLED(PENTA_AXIS_HT)
 
-  // Machine rotary zero point offset is the distance from the tip of tool 0 (the gauge line) to the 
+  // This is the distance from the tip of tool 0 (the gauge line) to the 
   // horizontal centerline of the joint that tilts the tool head. Measured when all axes are at machine 
   // position 0 so that the tool holder is oriented parallel to the Z axis.
-  #define DEFAULT_MRZP_OFFSET_Z 100.0 // (mm)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 100.0 // (mm)
 
   // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
   // This is a trade-off between visible corners (not enough segments)
@@ -1220,25 +1220,23 @@
 #endif
 
 /** 
- * For a 5 axis CNC machine in tilting rotary table configuration. 
- * This machine has a rotary table (C axis) mounted on a tilting table
- * (A axis parallel to the X axis, or B axis parallel to the Y axis).
+ * For a 5 axis CNC machine in head-head configuration. 
+ * This machine has a tilting rotary toolhead The joint that tilts the toolhead is mounted onto the rotary 
+ * joint (C axis) that rotates around the Z axis.
  * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
  */
 #define PENTA_AXIS_HH
 #if ENABLED(PENTA_AXIS_HH)
 
- 
-  //Machine rotary zero point offsets.
+  // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the
+  // joint that rotates the toolhead to the vertical centerline of tool 0. Measured when all axes are at machine 
+  // position 0 so that the toolhead is oriented parallel to the Z axis.
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
 
-  // Machine rotary zero point offset is the distance from the tip of tool 0 (the gauge line) to the 
+  // This is the distance from the tip of tool 0 (the gauge line) to the 
   // horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine 
   // position 0 so that the toolhead is oriented parallel to the Z axis.
-  #define DEFAULT_MRZP_OFFSET_Z 114.0 // (mm)
-
-  // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the
-  // joint that rotates the toolhead to the vertical centerline of tool 0.
-  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 114.0 // (mm)
 
   // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
   // This is a trade-off between visible corners (not enough segments)
