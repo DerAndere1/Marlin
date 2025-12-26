@@ -43,8 +43,8 @@
 
 #include "../core/types.h"
 
-// Machine rotary zero point Z offset is the distance from the center of rotation of the joint that tilts the toolhead to the gage line.
-extern float mrzp_offset_z;
+// rotational joint Z offset is the distance from the center of rotation of the joint that tilts the toolhead to the gauge line.
+extern float rotational_offset_z;
 extern bool tool_centerpoint_control;
 extern float segments_per_second;
 

@@ -50,7 +50,7 @@
 
 // Initialized by settings.load()
 float segments_per_second;
-float mrzp_offset_z;
+float rotational_offset_z;
 
 /**
  * penta axis head table inverse kinematics
@@ -79,12 +79,12 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
                     native.j
                   );
 
-  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset_z, hotend_offset[active_extruder].z);
   const float i_rad = RADIANS(pos.i);
 
   #if HAS_J_AXIS || AXIS4_NAME == 'B'
     // B correction
-    const float zb = pivot_length * cos(i_rad) - mrzp_offset_z;
+    const float zb = pivot_length * cos(i_rad) - rotational_offset_z;
     const float xb = pivot_length * sin(i_rad);
 
     #if HAS_J_AXIS
@@ -126,7 +126,7 @@ void forward_kinematics(const xyz_pos_t &joint_pos) {
 xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
   if (!tool_centerpoint_control) return joint_pos;
 
-  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, mrzp_offset_z, hotend_offset[active_extruder].z);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset_z, hotend_offset[active_extruder].z);
   const float i_rad = RADIANS(joint_pos.i);
   #if HAS_J_AXIS
     const float j_rad = RADIANS(joint_pos.j);
