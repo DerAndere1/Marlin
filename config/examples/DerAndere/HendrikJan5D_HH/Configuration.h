@@ -1231,16 +1231,13 @@
  
   //Machine rotary zero point offsets.
 
-  /** 
-   * The distance along the Z axis from machine zero point to the center of rotation. Measured when tool 0 is 
-   * selected and when all axes are at machine position 0 so that the table is oriented horizontally. 
-   * The center of rotation is usually the center of the top surface of the table.
-   */
+  // Machine rotary zero point offset is the distance from the tip of tool 0 (the gauge line) to the 
+  // horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine 
+  // position 0 so that the toolhead is oriented parallel to the Z axis.
   #define DEFAULT_MRZP_OFFSET_Z 114.0 // (mm)
 
-  // For a machine with XYZAC axes, this is the distance along the y axis from the vertical centerline of the
-  // joint of the horizontal table to the horizontal centerline of the joint that tilts the table. 
-  // Measured when the table is oriented horizontally.
+  // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the
+  // joint that rotates the toolhead to the vertical centerline of tool 0.
   #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
 
   // Moves involving rotational axes is broken up into small straight segments (linear interpolation).
