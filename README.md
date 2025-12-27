@@ -286,6 +286,11 @@ Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configu
 - XYZAC head-table machine: The rotational joint of the swivel head is parallel to the X axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
 - XYZBC head-table machine: The rotational joint of the swivel head is parallel to the Y axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
 
+### `PENTA_AXIS_HH`
+
+Define `PENTA_AXIS_HH` kinematics for a 5 axis CNC machine in tilting rotating toolhead configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus tilting toolhead (B axis) mounted on a rotary joint (C axis). The rotational joint of the tilting table is parallel to the X axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. Kinematic parametes can be set at runtime using command M665.
+This requires (`AXIS4_NAME 'B'` and `AXIS5_NAME 'C'`) or (`AXIS4_NAME 'C'` and `AXIS5_NAME 'B'`).
+
 ### `DEFAULT_MRZP_OFFSET_Z`
 
 Machine rotary zero point (MRZP) Z offset. 
@@ -368,19 +373,19 @@ For multi-axis machines it is highly recommended to enable `CLASSIC_JERK`.
 
 `HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`: Arrays with offsets for each tool. With `PENTA_AXIS_TRT` or `PENTA_AXIS_HT` enabled, the machine is by default in joint control mode (tool length compensation and tool centerpoint control disabled). Use G10 to set hotend offsets (tool offsets). Use G43 to enable tool length compensation (apply hotend offsets / tool offsets). Use G43.4 to enable tool centerpoint control. Use G49 to cancel tool length compensation and tool centerpoint control.
 
-### 'DEFAULT_TOOL_LENGTH_COMPENSATION'
+### `DEFAULT_TOOL_LENGTH_COMPENSATION`
 
 Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
 
-### 'FEEDRATE_MODE_SUPPORT'
+### `FEEDRATE_MODE_SUPPORT`
 
 Enable inverse time feedrate mode with G93, enable units-per-minute feedrate mode with G94.
 
-### 'ROTATE_WORKSPACE
+### `ROTATE_WORKSPACE`
 
 Enable and set workspace rotation with G68, cancel workspace rotation with G69.
 
-### 'SCALE_WORKSPACE'
+### `SCALE_WORKSPACE`
 
 Enable and set workspace scaling with G51, cancel workspace scaling with G50.
 
