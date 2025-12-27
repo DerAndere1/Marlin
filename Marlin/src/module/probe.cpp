@@ -1386,23 +1386,6 @@ float Probe::probe_at_point(
   return measured_z;
  */
 }
-#if HAS_Z_SERVO_PROBE
-
-  void Probe::servo_probe_init() {
-    /**
-     * Set position of Z Servo Endstop
-     *
-     * The servo might be deployed and positioned too low to stow
-     * when starting up the machine or rebooting the board.
-     * There's no way to know where the nozzle is positioned until
-     * homing has been done - no homing with z-probe without init!
-     */
-    STOW_Z_SERVO();
-
-    TERN_(Z_SERVO_DEACTIVATE_AFTER_STOW, servo[Z_PROBE_SERVO_NR].detach());
-  }
-
-#endif // HAS_Z_SERVO_PROBE
 
 #if HAS_DELTA_SENSORLESS_PROBING
 
