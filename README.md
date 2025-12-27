@@ -276,19 +276,19 @@ Define `FOAMCUTTER_XYUV` kinematics for a hot wire cutter with parallel horizont
 
 ### `PENTA_AXIS_TRT`
 
-Define `PENTA_AXIS_TRT` kinematics for a 5 axis CNC machine in tilting-rotating-table configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a rotary table (C axis) mounted on a tilting table (A or B axis). Two different machine geometries of this type are supported:
-- XYZAC TRT machine: The rotational joint of the tilting table is parallel to the X axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
+Define `PENTA_AXIS_TRT` kinematics for a 5 axis CNC machine in tilting-rotating-table configuration to add support for tool center point control (see section G43.4 tool center point control). Kinematic parametes can be set at runtime using command M665. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a rotary table (C axis) mounted on a tilting table (A or B axis). Two different machine geometries of this type are supported:
+- XYZAC TRT machine: The axis of rotation of the tilting joint is parallel to the X axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
 - XYZBC TRT machine: The rotational joint of the tilting table is parallel to the Y axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
 
 ### `PENTA_AXIS_HT`
 
-Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a swivel head (A or B axis) and a horizontal rotary table (C axis). There are two possible machine geometries:
-- XYZAC head-table machine: The rotational joint of the swivel head is parallel to the X axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
-- XYZBC head-table machine: The rotational joint of the swivel head is parallel to the Y axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
+Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configuration to add support for tool center point control (see section G43.4 tool center point control). Kinematic parametes can be set at runtime using command M665. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a swivel head (A or B axis) and a horizontal rotary table (C axis). There are two possible machine geometries:
+- XYZAC head-table machine: The axis of rotation of the tilting joint is parallel to the X axis when all axes are at zero position. This requires `AXIS4_NAME 'A'` and `AXIS5_NAME 'C'`.
+- XYZBC head-table machine: The axis of rotation of the tilting joint is parallel to the Y axis when all axes are at zero position. This requires `AXIS4_NAME 'B'`and `AXIS5_NAME 'C'` (see section `AXIS4_NAME`).
 
 ### `PENTA_AXIS_HH`
 
-Define `PENTA_AXIS_HH` kinematics for a 5 axis CNC machine in tilting rotating toolhead configuration to add support for tool center point control (see section G43.4 tool center point control). These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus tilting toolhead (B axis) mounted on a rotary joint (C axis). The rotational joint of the tilting table is parallel to the X axis and the joint that rotates the table is parallel to the Z axis when all axes are at zero position. Kinematic parametes can be set at runtime using command M665.
+Define `PENTA_AXIS_HH` kinematics for a 5 axis CNC machine in tilting rotating toolhead configuration to add support for tool center point control (see section G43.4 tool center point control). Kinematic parametes can be set at runtime using command M665. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a tilting toolhead mounted on a rotary joint (C axis) that rotates around the Z axis. The axis of rotation of the tilting joint is parallel to the Y axis when all axes are at zero position.
 This requires (`AXIS4_NAME 'B'` and `AXIS5_NAME 'C'`) or (`AXIS4_NAME 'C'` and `AXIS5_NAME 'B'`).
 
 ### `DEFAULT_MRZP_OFFSET_Z`
