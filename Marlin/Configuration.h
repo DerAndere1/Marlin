@@ -1311,9 +1311,9 @@
 // @section PENTA_AXIS_HH
 
 /** 
- * For a 5 axis CNC machine in tilting rotary table configuration. 
- * This machine has a rotary table (C axis) mounted on a tilting table
- * (A axis parallel to the X axis, or B axis parallel to the Y axis).
+ * For a 5 axis CNC machine in head-head configuration. 
+ * This machine has a tilting toolhead mounted on a rotary joint (C-axis) that rotates around the Z axis.
+ * The axis of rotation of the tilting joint (B-axis) is oriented parallel to the Y axis when all axes are at machine position 0.
  * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
  */
 //#define PENTA_AXIS_HH
