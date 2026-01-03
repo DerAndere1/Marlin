@@ -195,9 +195,8 @@ public:
       const uint8_t      verbose_level      = 0,
       const bool         probe_relative     = true,
       const bool         sanity_check       = true,
-      const float      z_clearance        = Z_TWEEN_SAFE_CLEARANCE,
-      const bool         raise_after_is_rel = false,
-      const bool         probe_3d           = false
+      const float        z_clearance        = Z_TWEEN_SAFE_CLEARANCE,
+      const bool         raise_after_is_rel = false
     );
 
     static float probe_at_point(
