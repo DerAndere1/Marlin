@@ -2030,7 +2030,7 @@ bool Planner::_populate_block(
   TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator += dist_mm.e);
 
   #if HAS_ROTATIONAL_AXES
-    bool cartesian_move;
+    bool cartesian_move = parser.cartes_move;
   #endif
 
   if (true NUM_AXIS_GANG(
@@ -2060,7 +2060,7 @@ bool Planner::_populate_block(
         dist_mm.u, dist_mm.v, dist_mm.w
       );
 
-      block->millimeters = get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
+      block->millimeters = get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));
     }
 
     /**
