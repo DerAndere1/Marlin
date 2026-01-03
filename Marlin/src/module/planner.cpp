@@ -2032,7 +2032,7 @@ bool Planner::_populate_block(
   TERN_(FT_MOTION, block->ext_distance_mm = dist_mm); // Store the distance for all axes in mm for this block
 
   #if HAS_ROTATIONAL_AXES
-    bool cartesian_move;
+    bool cartesian_move = parser.cartes_move;
   #endif
 
   // Determine linear distance for block->millimeters
@@ -2053,7 +2053,7 @@ bool Planner::_populate_block(
         dist_mm.u, dist_mm.v, dist_mm.w
       );
 
-      block->millimeters = motion.get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, parser.cartes_move));
+      block->millimeters = motion.get_move_distance(displacement OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));
     }
 
     /**
