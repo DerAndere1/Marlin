@@ -1,3 +1,11 @@
+#
+# Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+# gitattributes file by DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+#
+# Based on:
+# Marlin 3D Printer Firmware
+# gitattributes file by MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+#
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 

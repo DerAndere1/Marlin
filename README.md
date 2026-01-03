@@ -210,11 +210,11 @@ Whether to abort machining on software endstops hit (1) or whether to clamp move
 
 ## Configuration
 
-Configuration is done by editing the file Marlin/Configuration.h. E.g. change
+Configuration is done by editing the file Marlin/Configuration.h. E.g., change
 
 `//#define I_DRIVER_TYPE A4988`
 
-to: 
+to the following to enable this setting: 
 
 `#define I_DRIVER_TYPE A4988`
 
@@ -501,7 +501,7 @@ Marlin Firmware original logo design by Ahmet Cem TURAN [@ahmetcemturan](//githu
 
 Marlin2ForPipetBot (https://github.com/DerAndere1/Marlin)
 
-Copyright 2024 DerAndere
+Copyright 2026 DerAndere
 
 Marlin2ForPipetBot is modified by:
 
@@ -519,7 +519,7 @@ Marlin2ForPipetBot is based on:
 
 MarlinFirmware/Marlin Marlin 3D Printer Firmware (https://github.com/MarlinFirmware/Marlin)
 
-Copyright (c) 2024 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+Copyright (c) 2025 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
 
 ### Contributions
 

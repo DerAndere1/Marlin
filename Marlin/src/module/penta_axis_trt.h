@@ -1,10 +1,10 @@
 /**
  * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
- * Copyright 2019 - 2024 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+ * Copyright 2019 - 2026 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
  *
  * Based on:
  * Marlin 3D Printer Firmware
- * Copyright (c) 2024 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2025 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -38,7 +38,7 @@
  *     This machine has a tilting table (B axis paralel to the Y axis) and horizontal rotary
  *     mounted to the table (C axis).
  *
- * Copyright 2024 DerAndere
+ * Copyright 2024 - 2025 DerAndere
  *
  * Based on the file trtfuncs.c from LinuxCNC (https://github.com/LinuxCNC/linuxcnc/blob/master/src/emc/kinematics/trtfuncs.c)
  * Copyright 2016 Rudy du Preez <rudy@asmsa.co.za>
