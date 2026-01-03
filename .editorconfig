@@ -1,3 +1,11 @@
+#
+# Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
+# editorconfig file by DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+#
+# Based on:
+# Marlin 3D Printer Firmware
+# geditorconfig file by MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+#
 # editorconfig.org
 root = true
 

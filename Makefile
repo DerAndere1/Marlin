@@ -1,3 +1,8 @@
+# Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin] 
+# Makefile by DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
+#
+# Based on:
+# Marlin Firmware Makefile
 SCRIPTS_DIR := buildroot/share/scripts
 MAKESCRIPTS_DIR := buildroot/share/make
 CONTAINER_RT_BIN := docker
