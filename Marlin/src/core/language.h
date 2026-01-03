@@ -297,6 +297,7 @@
 #define STR_POLARGRAPH_SETTINGS             "Polargraph"
 #define STR_PAX_TRT_SETTINGS                "Penta-Axis-TRT"
 #define STR_PAX_HT_SETTINGS                 "Penta-Axis-Head-Table"
+#define STR_PAX_HH_SETTINGS                 "Penta-Axis-Head-Head"
 #define STR_SCARA_P_T_Z                     "P<theta-psi-offset> T<theta-offset> Z<home-offset>"
 #define STR_ENDSTOP_ADJUSTMENT              "Endstop adjustment"
 #define STR_SKEW_FACTOR                     "Skew Factor"
