@@ -289,11 +289,11 @@
   }
 
   void GcodeSuite::M665_report(const bool forReplay/*=true*/) {
-    report_heading_etc(forReplay, F(STR_PAX_HT_SETTINGS));
+    report_heading_etc(forReplay, F(STR_PAX_HH_SETTINGS));
     SERIAL_ECHOLNPGM_P(
       PSTR("  M665 S"), LINEAR_UNIT(segments_per_second),
       PSTR(" J"), LINEAR_UNIT(rotational_offset_y),
-      PSTR(" K"), LINEAR_UNIT(rotational_offset_z),
+      PSTR(" K"), LINEAR_UNIT(rotational_offset_z)
     );
   }
 
