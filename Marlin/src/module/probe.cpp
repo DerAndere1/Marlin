@@ -904,7 +904,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   #elif Z_PROBE_FEEDRATE_FAST != Z_PROBE_FEEDRATE_SLOW
     #if ENABLED(G38_PROBE_TARGET)
       if (move_value > 0) {
-        if(!probe_to_target(probe_target_point, motion.feedrate_mm_s, move_value, true)) {
+        if(!probe_to_target(probe_target_point, motion.feedrate_mm_s, move_value)) {
           // Move away by the retract distance
           motion.destination = motion.position + retract_mm;
           motion.prepare_line_to_destination();
@@ -920,7 +920,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       probe_pos.z = (Z_CLEARANCE_DEPLOY_PROBE) + 5.0f + _MAX(offs.z, 0.0f);
       if (motion.position.z > probe_pos.z) {
         // Probe down fast. If the probe triggered, raise for probe clearance
-        if (!probe_to_target(probe_pos, motion.z_probe_fast_mm_s, 0, false))
+        if (!probe_to_target(probe_pos, motion.z_probe_fast_mm_s, 0))
           motion.do_z_clearance(z_clearance);
       }
     }
@@ -1278,7 +1278,7 @@ float Probe::probe_at_point(
     current_position.i, current_position.j, current_position.k,
     current_position.u, current_position.v, current_position.w
   );
-  const xyz_pos_t measured = probe_safely(probe_pos, raise_after, 0, verbose_level, probe_relative, sanity_check, z_clearance, raise_after_is_rel, false);
+  const xyz_pos_t measured = probe_safely(probe_pos, raise_after, 0, verbose_level, probe_relative, sanity_check, z_clearance, raise_after_is_rel);
   return measured.z;
 /**
   DEBUG_SECTION(log_probe, "Probe::probe_at_point", DEBUGGING(LEVELING));
