@@ -270,6 +270,10 @@
   #include "feature/rs485.h"
 #endif
 
+#if ENABLED(SOFT_FEED_HOLD)
+  #include "feature/e_parser.h"
+#endif
+
 /**
  * Spin in place here while keeping temperature processing alive
  */
@@ -524,8 +528,14 @@ void Marlin::manage_inactivity(const bool no_stepper_sleep/*=false*/) {
     }
   #endif
 
-  #if ENABLED(FREEZE_FEATURE)
-    stepper.set_frozen_triggered(READ(FREEZE_PIN) == FREEZE_STATE);
+  #if ENABLED(SOFT_FEED_HOLD)
+    #if ENABLED(FREEZE_FEATURE)
+      stepper.set_frozen_triggered((READ(FREEZE_PIN) == FREEZE_STATE) || TERN0(REALTIME_REPORTING_COMMANDS, realtime_ramping_pause_flag));
+    #elif ENABLED(REALTIME_REPORTING_COMMANDS)
+      stepper.set_frozen_triggered(realtime_ramping_pause_flag);
+    #endif
+  #elif ENABLED(FREEZE_FEATURE)
+    stepper.frozen_state = READ(FREEZE_PIN) == FREEZE_STATE;
   #endif
 
   #if HAS_HOME
@@ -808,9 +818,6 @@ void Marlin::idle(const bool no_stepper_sleep/*=false*/) {
 
   // Manage Heaters (and Watchdog)
   thermalManager.task();
-
-  // Realtime pause/resume ramping loop
-  TERN_(REALTIME_RAMPING, updateSoftStopResume());
 
   // Max7219 heartbeat, animation, etc
   TERN_(MAX7219_DEBUG, max7219.idle_tasks());
@@ -1238,7 +1245,7 @@ void setup() {
     #endif
   #endif
 
-  #if ENABLED(FREEZE_FEATURE)
+  #if ENABLED(FREEZE_FEATURE) && DISABLED(NO_FREEZE_PIN)
     SETUP_LOG("FREEZE_PIN");
     #if FREEZE_STATE
       SET_INPUT_PULLDOWN(FREEZE_PIN);

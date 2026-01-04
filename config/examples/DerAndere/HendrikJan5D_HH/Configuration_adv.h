@@ -2681,7 +2681,7 @@
  * - During Hold all Emergency Parser commands are available, as usual.
  * - Enable NANODLP_Z_SYNC and NANODLP_ALL_AXIS for move command end-state reports.
  */
-//#define REALTIME_REPORTING_COMMANDS
+#define REALTIME_REPORTING_COMMANDS
 #if ENABLED(REALTIME_REPORTING_COMMANDS)
   //#define FULL_REPORT_TO_HOST_FEATURE   // Auto-report the machine status like Grbl CNC
 #endif
@@ -4288,16 +4288,47 @@
 #endif
 
 /**
- * Instant freeze / unfreeze functionality
- * Potentially useful for rapid stop that allows being resumed. Halts stepper movement.
- * Note this does NOT pause spindles, lasers, fans, heaters or any other auxiliary device.
- * @section interface
+ * Freeze / unfreeze functionality
+ * Potentially useful for rapid stop that allows being resumed.
+ * Rapidly decelerates and halts movement at FREEZE_JERK.
+ * NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
+ * @section freeze
  */
-//#define FREEZE_FEATURE
+#define FREEZE_FEATURE
 #if ENABLED(FREEZE_FEATURE)
-  //#define FREEZE_PIN 41   // Override the default (KILL) pin here
-  #define FREEZE_STATE LOW  // State of pin indicating freeze
+  //#define FREEZE_PIN   -1   // Override the default (KILL) pin here
+  #define FREEZE_JERK     2   // (mm/s) Completely halt when motion has decelerated below this value
+  #define FREEZE_STATE  LOW   // State of pin indicating freeze
 #endif
+
+/**
+ * Adds canned drilling cycle G Codes: 
+ * G73: Shallow peck drill cycle
+ * G80: End drill cycle
+ * G81: Basic drill cycle
+ * G82: Normal drill cycle (Basic with dwell)
+ * G83: Deep drill cycle (Normal with peck)
+ * G98: Start drill - retract to initial
+ * G99: Start drill - retract to specified
+ *   or when DRILL_USE_81_ONLY is specified:
+ * G81.4: Shallow peck drill cycle
+ * G81.0: End drill cycle
+ * G81.1: Basic drill cycle
+ * G81.2: Normal drill cycle (Basic with dwell)
+ * G81.3: Deep drill cycle (Normal with peck)
+ * G81.18: Start drill - retract to initial
+ * G81.19: Start drill - retract to specified
+ */
+#define DRILL_CYCLES
+#if ENABLED(DRILL_CYCLES)
+  //#define DRILL_USE_81_ONLY                   //Uses G81.x sub commands
+  #define DRILL_CYCLES_XY_FEEDRATE      1200    //Feedrate for xy operations
+  #define DRILL_CYCLES_RETRACT_FEEDRATE 1000    //Feedrate while retracting
+  #define DRILL_CYCLES_DEFAULT_FEEDRATE 300     //Default drilling freedrate if one is not specified
+  #define DRILL_CYCLES_DEFAULT_PECK     2.0     //Default pecking distance if one is not specified
+  #define DRILL_CYCLES_DEFAULT_DWELL    0       //Default dwell distance if one is not specified
+#endif
+
 
 /**
  * MAX7219 Debug Matrix

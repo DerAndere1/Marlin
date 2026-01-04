@@ -674,9 +674,3 @@ void home_if_needed(const bool keeplev=false);
   void set_homing_current(const AxisEnum axis);
   void restore_homing_current(const AxisEnum axis);
 #endif
-
-#if ENABLED(REALTIME_RAMPING)
-  void realtime_soft_stop();
-  void realtime_soft_resume();
-  void updateSoftStopResume();
-#endif

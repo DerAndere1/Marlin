@@ -318,20 +318,16 @@ constexpr ena_mask_t enable_overlap[] = {
 
 #endif // NONLINEAR_EXTRUSION
 
-// Pause resume ramping constants
-#if ENABLED(REALTIME_RAMPING)
-  #define MIN_REALTIME_RAMPING_FACTOR   500
-  #define MAX_REALTIME_RAMPING_FACTOR 10000
+#if ANY(FREEZE_FEATURE, SOFT_FEED_HOLD)
+  enum FrozenState { FROZEN_TRIGGERED, FROZEN_SOLID };
 #endif
-
-#if ENABLED(FREEZE_FEATURE)
+#if ENABLED(SOFT_FEED_HOLD)
   enum FreezePhase : uint8_t {
     FREEZE_STATIONARY,
     FREEZE_ACCELERATION,
     FREEZE_DECELERATION,
     FREEZE_CRUISE
   };
-  enum FrozenState { FROZEN_TRIGGERED, FROZEN_SOLID };
 #endif
 
 //
@@ -388,8 +384,10 @@ class Stepper {
       static constexpr uint8_t last_moved_extruder = 0;
     #endif
 
-    #if ENABLED(FREEZE_FEATURE)
+    #if ANY(FREEZE_FEATURE, SOFT_FEED_HOLD)
       static void set_frozen_triggered(const bool state) { set_frozen_flag(state, FROZEN_TRIGGERED); }
+    #endif
+    #if ENABLED(SOFT_FEED_HOLD)
       static bool is_frozen_triggered() { return TEST(frozen_state, FROZEN_TRIGGERED); }
     #endif
 
@@ -785,6 +783,11 @@ class Stepper {
       static float get_shaping_frequency(const AxisEnum axis);
     #endif
 
+    #if DISABLED(SOFT_FEED_HOLD) && ENABLED(FREEZE_FEATURE)
+      static uint8_t frozen_state;                  // Frozen flags
+      static void set_frozen_flag(const bool state, const uint8_t flag) { SET_BIT_TO(frozen_state, flag, state); }
+    #endif
+
   private:
 
     // Set the current position in steps
@@ -822,18 +825,21 @@ class Stepper {
       static void ftMotion_stepper();
     #endif
 
-    #if ENABLED(FREEZE_FEATURE)
+    #if ENABLED(SOFT_FEED_HOLD)
       static uint8_t frozen_state;                  // Frozen flags
+      static void set_frozen_flag(const bool state, const uint8_t flag) { SET_BIT_TO(frozen_state, flag, state); }
+    #endif
+
+    #if ENABLED(SOFT_FEED_HOLD)
       static uint32_t frozen_time;                  // How much time passed since frozen_state was triggered?
       #if ENABLED(LASER_FEATURE)
         static uint8_t frozen_last_laser_power;     // Saved laser power prior to halting motion
       #endif
-      static void check_frozen_time(uint32_t &step_rate);
       static void check_frozen_state(const FreezePhase type, const uint32_t interval);
-      static void set_frozen_flag(const bool state, const uint8_t flag) { SET_BIT_TO(frozen_state, flag, state); }
+      static void check_frozen_time(uint32_t &step_rate);
       static void set_frozen_solid(const bool state);
       static bool is_frozen_solid() { return TEST(frozen_state, FROZEN_SOLID); }
-    #endif // FREEZE_FEATURE
+    #endif // SOFT_FEED_HOLD
 };
 
 extern Stepper stepper;
