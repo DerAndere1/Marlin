@@ -128,10 +128,6 @@ Stepper stepper; // Singleton
 
 // public:
 
-#if ENABLED(REALTIME_RAMPING)
-  volatile uint16_t Stepper::isr_ramp_factor;
-#endif
-
 #if ANY(HAS_EXTRA_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
   bool Stepper::separate_multi_axis = false;
 #endif
@@ -1860,22 +1856,6 @@ void Stepper::isr() {
         #endif
       }
     }
-  }
-
-  // If there is no current block, do nothing
-  if (!current_block || step_events_completed >= step_event_count) return;
-
-  // Skipping step processing causes motion to freeze
-  #if ENABLED(FREEZE_FEATURE)
-    if (is_frozen_triggered() && is_frozen_solid()) return;
-  #endif
-
-  // Count of pending loops and events for this iteration
-  const uint32_t pending_events = step_event_count - step_events_completed;
-  uint8_t events_to_do = _MIN(pending_events, steps_per_isr);
-
-  // Just update the value we will get at the end of the loop
-  step_events_completed += events_to_do;
 
     // If there is no current block, do nothing
     if (!current_block || step_events_completed >= step_event_count) return;
@@ -2757,9 +2737,6 @@ void Stepper::isr() {
           recovery.info.sdpos = current_block->sdpos;
           recovery.info.current_position = current_block->start_position;
         #endif
-        #if ENABLED(FREEZE_FEATURE)
-          check_frozen_state(3, interval);
-        #endif
 
         #if ENABLED(DIRECT_STEPPING)
           if (current_block->is_page()) {
@@ -2904,10 +2881,6 @@ void Stepper::isr() {
 
         // No step events completed so far
         step_events_completed = 0;
-
-        #if ENABLED(FREEZE_FEATURE)
-          check_frozen_time(step_rate);
-        #endif
 
         // Compute the acceleration and deceleration points
         accelerate_before = current_block->accelerate_before << oversampling_factor;
@@ -3300,10 +3273,6 @@ bool Stepper::is_block_busy(const block_t * const block) {
 }
 
 void Stepper::init() {
-
-  #if ENABLED(REALTIME_RAMPING)
-    isr_ramp_factor = MAX_REALTIME_RAMPING_FACTOR;
-  #endif
 
   #if MB(ALLIGATOR)
     const float motor_current[] = MOTOR_CURRENT;
@@ -3983,6 +3952,9 @@ void Stepper::report_positions() {
     #if ENABLED(REALTIME_REPORTING_COMMANDS)
       set_and_report_grblstate(state ? M_HOLD : M_RUNNING);
     #endif
+    #if ENABLED(REALTIME_REPORTING_COMMANDS)
+      set_and_report_grblstate(state ? M_HOLD : M_RUNNING);
+    #endif
   }
 
   void Stepper::check_frozen_time(uint32_t &step_rate) {
@@ -4003,7 +3975,6 @@ void Stepper::report_positions() {
       step_rate -= freeze_rate;
     else
       step_rate = 0;
-
     if (step_rate <= min_step_rate) {
       set_frozen_solid(true);
       step_rate = min_step_rate;

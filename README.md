@@ -183,7 +183,6 @@ Set the rotational joint Z offset.
 See `DEFAULT_ROTATIONAL_JOINT_OFFSET_Z`. Also, see definition of `Dz` in sections "5.3. Transformations for a xyzbc-trt machine with rotary axis offsets" and "7. Custom Kinematics Components" in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
-
 ### M211 (Software Endstops)
 
 Set whether printing should abort or moves should be clamped in the event of any software endstop being triggered. This provides a fast way to abort a print in the event of mechanical failure such as loose couplings, lost steps, diverted axes, binding, etc., which lead to axes being very far out of position.
@@ -207,6 +206,18 @@ Whether (1) or not (0) to enable software endstops.
 ##### `H<flag>`
 
 Whether to abort machining on software endstops hit (1) or whether to clamp moves to the software endstops (0). Requires `ABORT_ON_SOFTWARE_ENDSTOP`
+
+### `P000`
+
+Instant Hold  that keeps power available and does not stop the spindle. Requires REALTIME_REPORTING_COMMANDS and EMERGENCY_PARSER.
+With `SOFT_FEED_HOLD` enabled, this is a soft feed hold decelerates and halts movement at FREEZE_JERK.
+Motion can be resumed with command R000 (requires REALTIME_REPORTING_COMMANDS).
+NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
+
+### `R000`
+
+Resume from a hold that was initiated by command P000. Requires REALTIME_REPORTING_COMMANDS and EMERGENCY_PARSER.
+With `SOFT_FEED_HOLD` enabled, this is accelerates.
 
 ## Configuration
 
@@ -388,6 +399,33 @@ Enable and set workspace rotation with G68, cancel workspace rotation with G69.
 ### `SCALE_WORKSPACE`
 
 Enable and set workspace scaling with G51, cancel workspace scaling with G50.
+
+### `DRILL_CYCLES`
+
+Adds canned drilling cycle G-codes: 
+G73: Shallow peck drill cycle
+G80: End drill cycle
+G81: Basic drill cycle
+G82: Normal drill cycle (Basic with dwell)
+G83: Deep drill cycle (Normal with peck)
+G98: Start drill - retract to initial
+G99: Start drill - retract to specified
+
+### SOFT_FEED_HOLD
+
+Command P000 (requires `REALTIME_REPORTING_COMMANDS` and `EMERGENCY_PARSER`) or `FREEZE_PIN` (requires `FREEZE_FEATURE`) initiates a soft feed hold that 
+keeps power available and does not stop the spindle.
+The soft feed hold decelerates and halts movement at `FREEZE_JERK`.
+Motion can be resumed with command R000 (requires `REALTIME_REPORTING_COMMANDS`) or by using the `FREEZE_PIN` (requires `FREEZE_FEATURE`).
+NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
+
+### SPINDLE_FEATURE
+
+The tools with the highest TOOL index are spindle tools. Adds several Spindle/Laser-related G-codes, including M222 (Spindle override). `SPINDLE_FEATURE` is compatible with `LASER_FEATURE` and `EXTRUDERS` <= 8.
+
+### LASER_FEATURE
+
+The tool with a tool index (EXTRUDERS + 1) is a laser. Adds several Spindle/Laser-related G-codes. M222 is currently not enabled. `LASER_FEATURE` compatible with `SPINDLE_FEATURE` and `EXTRUDERS` <= 8.
 
 ## Marlin2ForPipetBot Branch
 

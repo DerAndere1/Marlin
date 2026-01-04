@@ -793,6 +793,11 @@ class Stepper {
       static float get_shaping_frequency(const AxisEnum axis);
     #endif
 
+    #if DISABLED(SOFT_FEED_HOLD) && ENABLED(FREEZE_FEATURE)
+      static uint8_t frozen_state;                  // Frozen flags
+      static void set_frozen_flag(const bool state, const uint8_t flag) { SET_BIT_TO(frozen_state, flag, state); }
+    #endif
+
   private:
 
     // Set the current position in steps
