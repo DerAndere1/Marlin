@@ -10,14 +10,24 @@ Marlin2ForPipetBot supports up to nine non-extruder axes plus extruders (e.g. XY
 The G-code syntax of Marlin2ForPipetBot closely resembles that of LinuxCNC (the successor of NIST RS274NGC interpreter - version 3). Here is a list of G-codes that deviated in official MarlinFirmware/Marlin and that are brought more in line with LinuxCNC syntax:
 - F (feedrate for G0, G1, G2, G3, G4, G5, G81, G82, G83)
 - G10 (set offsets)
-- G43 (tool length compensation)
 - G49 (cancel tool length compensation and cancel tool centerpoint control)
 
 New G-codes:
+- G43 (tool length compensation)
 - G43.4 (tool centerpoint control)
 - G68 (workspace rotation)
+- G69 (cancel workspace rotation)
+- G50 (cancel workspace scaling)
 - G51 (workspace scaling)
+- G73: Shallow peck drill cycle
+- G80: End drill cycle
+- G81: Basic drill cycle
+- G82: Normal drill cycle (Basic with dwell)
+- G83: Deep drill cycle (Normal with peck)
+- G98: Start drill - retract to initial
+- G99: Start drill - retract to specified
 - G93 (inverse time feedrate mode)
+- G94 (units-per-minute feedrate mode)
 
 ### G1 (Linear Move)
 
@@ -32,19 +42,19 @@ G1 [Xx.xxxx] [Yy.yyyy] [Zz.zzzz] [Aa.aaaa] [Bb.bbbb] [Cc.cccc] [Uu.uuuu] [Vv.vvv
 
 ##### `X`, `Y`, `Z`
 
-Position in the cartesian coordinate system consisting of primary linear axes X, Y and Z. Unit: mm (after G-code G21) or imperial inch (after G-code G20)
+Position in the cartesian coordinate system consisting of primary linear axes X, Y and Z. Unit: mm (after G-code G21) or imperial inch (after G-code G20).
 
 ##### `A`, `B`, `C`
 
-Angular position in the pseudo-cartesian coordinate system consisting of rotational axes A, B, and C that are parallel to axes X, Y and Z, respectively. Unit: degrees
+Angular position along axes A, B and C. Requires more than 3 axes and joints (see `I_AXIS_DRIVER`). With tool centerpoint control enabled (G43.4), A, B, and C indicate the angular position of the tool relative to the workpiece in a cartesian coordinate system consisting of rotational axes A, B, and C that are parallel to axes X, Y and Z, respectively. With tool centerpoint control disabled (G49 or G43), A, B, and C indicate the angular position of joints in joints space. The mapping beteen joints and axis names is defined by settings `AXIS4_NAME` ... `AXIS9_NAME`. Unit: degrees (With `AXIS4_ROTATES`, `AXIS5_ROTATES`, `AXIS6_ROTATES`). 
 
 ##### `U`, `V`, `W`
 
-Position in the cartesian coordinate system consisting of secondary linear axes U, V and W that are parallel to axes X, Y and Z. Unit: mm (after G-code G21) or imperial inch (after G-code G20)
+Position in the cartesian coordinate system consisting of secondary linear axes U, V and W that are parallel to axes X, Y and Z. Requires more than 3 axes and joints (see `I_AXIS_DRIVER`). The mapping beteen joints and axis names is defined by settings `AXIS4_NAME` ... `AXIS9_NAME`. Unit: mm (after G-code G21) or imperial inch (after G-code G20). 
 
 ##### `E`
 
-Distance the E stepper should move. Unit: mm (after G-code G21) or imperial inch (after G-code G20)
+Distance the E stepper should move. Unit: mm (after G-code G21) or imperial inch (after G-code G20).
 
 ##### `F`
 
@@ -58,7 +68,7 @@ To change the feed rate interpretation, the option `ARTICULATED_ROBOT_ARM` can b
 
 ### G10 (Set offsets)
 
-Set offsets. Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'. See the following references:
+Set offsets. Requires `DEFAULT_TOOL_LENGTH_COMPENSATION`. See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L1_
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L2_
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G10-L11
@@ -67,7 +77,7 @@ Set offsets. Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'. See the following refe
 ### G43 (Tool Length Offset)
 
 Enable simple tool length compensation. 
-Requires 'DEFAULT_TOOL_LENGTH_COMPENSATION'.
+Requires `DEFAULT_TOOL_LENGTH_COMPENSATION`.
 See the following references:
 - https://linuxcnc.org/docs/2.6/html/gcode/gcode.html#sec:G43
 
@@ -76,7 +86,7 @@ Currently, no `H` word is supported. The tool offsets (set by G10) for the curre
 
 ### G43.4 (Tool centerpoint control)
 
-Enable tool centerpoint control. Requires 'PENTA_AXIS_TRT' or 'PENTA_AXIS_HT' See the following references:
+Enable tool centerpoint control. Requires `PENTA_AXIS_TRT` or `PENTA_AXIS_HT` See the following references:
 - https://www.linkedin.com/pulse/g434-tool-center-point-control-tcp-abhilash-am?trk=read_related_article-card_title
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G234.html
 
@@ -92,25 +102,25 @@ See the following references:
 
 ### G51 (Workspace scaling)
 
-Set workspace scaling. Requires 'ROTATE_WORKSPACE'.
+Set workspace scaling. Requires `SCALE_WORKSPACE`.
 See the following references:
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G51.html
 
 ### G50 (Cancel workspace scaling)
 
-Cancel workspace scaling. Requires 'ROTATE_WORKSPACE'.
+Cancel workspace scaling. Requires `SCALE_WORKSPACE`.
 See the following references:
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G50.html
 
 ### G68 (Workspace rotation)
 
-Set workspace rotation. Requires 'ROTATE_WORKSPACE'.
+Set workspace rotation. Requires `ROTATE_WORKSPACE`.
 See the following references:
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G68.html
 
 ### G69 (Cancel workpace rotation)
 
-Cancel workspace rotation. Requires ROTATE_WORKSPACE.
+Cancel workspace rotation. Requires `ROTATE_WORKSPACE`.
 See the following references:
 - https://www.haascnc.com/service/codes-settings.type=gcode.machine=mill.value=G69.html
 
@@ -139,21 +149,21 @@ Configure `PENTA_AXIS_TRT`, `PENTA_AXIS_HT` or `PENTA_AXIS_HH` geometry values.
 ##### `Z<MRZP-offset>`
 
 Set the machine rotary zero point (MRZP) Z offset. 
-- For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from machine zero point to the center of rotation. The center of rotation is usually the center of the top surface of the table.
+- For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the Z axis from machine zero point to the center of rotation. The center of rotation is usually the center of the top surface of the table.
 
 See `DEFAULT_MRZP_OFFSET_Z` and see the definition of the pivot point (`Pz`) in reference https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
 ##### `X<MRZP-offset>`
 
 Set the machine rotary zero point (MRZP) X offset.
-For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the X axis from machine zero point to the center of rotation when all axes are in neutral (zero) position. The center of rotation is usually the center of the top surface of the table.
+For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the X axis from machine zero point to the center of rotation when all axes are in neutral (zero) position. The center of rotation is usually the center of the top surface of the table.
 
 See `DEFAULT_MRZP_OFFSET_X` and see the definition of the pivot point (`Px`) in reference https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
 ##### `Y<MRZP-offset>`
 
 Set the machine rotary zero point (MRZP) Y offset. 
-For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Y axis from machine zero point to the center of rotation when all axes are in neutral (zero) position. The center of rotation is usually the center of the top surface of the table.
+For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the Y axis from machine zero point to the center of rotation when all axes are in neutral (zero) position. The center of rotation is usually the center of the top surface of the table.
 
 See the definition of the pivot point (`Py`) in reference https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
@@ -209,19 +219,19 @@ Whether to abort machining on software endstops hit (1) or whether to clamp move
 
 ### `P000`
 
-Instant Hold  that keeps power available and does not stop the spindle. Requires REALTIME_REPORTING_COMMANDS and EMERGENCY_PARSER.
-With `SOFT_FEED_HOLD` enabled, this is a soft feed hold decelerates and halts movement at FREEZE_JERK.
-Motion can be resumed with command R000 (requires REALTIME_REPORTING_COMMANDS).
+Instant Hold  that keeps power available and does not stop the spindle. Requires `REALTIME_REPORTING_COMMANDS` and `EMERGENCY_PARSER`.
+With `SOFT_FEED_HOLD` enabled, this is a soft feed hold decelerates and halts movement at `FREEZE_JERK`.
+Motion can be resumed with command R000 (requires `REALTIME_REPORTING_COMMANDS`).
 NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
 
 ### `R000`
 
-Resume from a hold that was initiated by command P000. Requires REALTIME_REPORTING_COMMANDS and EMERGENCY_PARSER.
+Resume from a hold that was initiated by command P000. Requires `REALTIME_REPORTING_COMMANDS` and `EMERGENCY_PARSER`.
 With `SOFT_FEED_HOLD` enabled, this is accelerates.
 
 ## Configuration
 
-Configuration is done by editing the file Marlin/Configuration.h. E.g., change
+Configuration is done by editing the files Marlin/Configuration.h and Marlin/Configuration_adv.h. Example configuration files can be found in the folder "config". For customization, E.g., change
 
 `//#define I_DRIVER_TYPE A4988`
 
@@ -240,7 +250,7 @@ Use TMC2208/TMC2208_STANDALONE for TMC2225 drivers and TMC2209/TMC2209_STANDALON
 Each driver is associated with an axis (internal axis identifiers: 
 X, Y, Z, I, J, K, U, V, W) or an extruder (E0 to E7). 
 Each axis gets its own stepper control and endstops depending on the following settings:
-`[[I, [J, [K...]]]_STEP_PIN`, `[I, [J, [K...]]]_ENABLE_PIN`, `[I, [J, [K...]]]_DIR_PIN`,
+`[AXIS4, [AXIS5, [AXIS6...]]]_NAME`, `[I, [J, [K...]]]_STEP_PIN`, `[I, [J, [K...]]]_ENABLE_PIN`, `[I, [J, [K...]]]_DIR_PIN`,
 `[I, [J, [K...]]]_STOP_PIN`, `USE_[I, [J, [K...]]][MIN || MAX]_PLUG`, 
 `[I, [J, [K...]]]_ENABLE_ON`, `DISABLE_[I, [J, [K...]]]`, `[I, [J, [K...]]]_MIN_POS`, 
 `[I, [J, [K...]]]_MAX_POS`, `[I, [J, [K...]]]_HOME_DIR`, possibly `DEFAULT_[I, [J, [K...]]]JERK`, 
@@ -257,8 +267,8 @@ Allowed values: [A4988, A5984, DRV8825, LV8729, L6470, L6474, POWERSTEP01, TB656
 ### `AXIS4_ROTATES`
 
 `AXIS4_ROTATES`, `AXIS5_ROTATES`, `AXIS6_ROTATES`, `AXIS7_ROTATES`, `AXIS8_ROTATES`, `AXIS9_ROTATES`:
-If enabled, the corresponding axis is a rotational axis for which positions are specified in angular degrees.
-For moves involving only rotational axes, feedrate is interpreted in angular degrees.
+If enabled, the corresponding axis is a rotational axis for which positions are specified in angular degrees. In units-per-minute feedrate mode (G94),
+feedrate for moves involving only rotational axes is interpreted in angular degrees per minute.
 
 ### `AXIS4_NAME`
 
@@ -272,7 +282,7 @@ This defines the axis code that is used in G-code commands to reference a specif
    * 'V' for secondary linear axis parallel to Y
    * 'W' for secondary linear axis parallel to Z
 
-Regardless of the settings, firmware-internal axis names are
+Regardless of the settings, firmware-internal axis names (joints names), are
 I (AXIS4), J (AXIS5), K (AXIS6), U (AXIS7), V (AXIS8), W (AXIS9).
 
 Allowed values: ['A', 'B', 'C', 'U', 'V', 'W'] 
@@ -302,18 +312,10 @@ Define `PENTA_AXIS_HT` kinematics for a 5 axis CNC machine in head-table configu
 Define `PENTA_AXIS_HH` kinematics for a 5 axis CNC machine in tilting rotating toolhead configuration to add support for tool center point control (see section G43.4 tool center point control). Kinematic parametes can be set at runtime using command M665. These machines have 3 mutually orthogonal prismatic ("linear") joints aligned with axes XYZ plus a tilting toolhead mounted on a rotary joint (C axis) that rotates around the Z axis. The axis of rotation of the tilting joint is parallel to the Y axis when all axes are at zero position.
 This requires (`AXIS4_NAME 'B'` and `AXIS5_NAME 'C'`) or (`AXIS4_NAME 'C'` and `AXIS5_NAME 'B'`).
 
-### `DEFAULT_MRZP_OFFSET_Z`
-
-Machine rotary zero point (MRZP) Z offset. 
-- For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in machine position 0 so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
-
-See the definition of the pivot point (`Pz`) in this reference: 
-- https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
-
 ### `DEFAULT_MRZP_OFFSET_X`
 
 Machine rotary zero point (MRZP) X offset.
-For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the X axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in zero position so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
+For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the X axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in zero position so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
 
 See the definition of the pivot point (`Px`) in this reference: 
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
@@ -321,39 +323,47 @@ See the definition of the pivot point (`Px`) in this reference:
 ### `DEFAULT_MRZP_OFFSET_Y`
 
 Machine rotary zero point (MRZP) Y offset. 
-For 5 axis CNC machines with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Y axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in zero position so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
+For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the Y axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in zero position so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
+
+See the definition of the pivot point (`Pz`) in this reference: 
+- https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
+
+### `DEFAULT_MRZP_OFFSET_Z`
+
+Machine rotary zero point (MRZP) Z offset. 
+- For 5 axis CNC machines with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the Z axis from machine zero point to the center of rotation. Measured when tool 0 is selected and when all axes are in machine position 0 so that the table is oriented horizontally. The center of rotation is usually the center of the top surface of the table.
 
 See the definition of the pivot point (`Pz`) in this reference: 
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
 ### `DEFAULT_ROTATIONAL_JOINT_OFFSET_X`
 
-For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) with XYZBC axes this is the distance along the X axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table.
+For a 5 axis CNC machine with a tilting rotary table (`PENTA_AXIS_TRT`) with XYZBC axes this is the distance along the X axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table.
 
 See definition of `Dx` in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
 ### `DEFAULT_ROTATIONAL_JOINT_OFFSET_Y`
 
-For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) with XYZAC axes this is the distance along the Y axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table.
+For a 5 axis CNC machine with a tilting rotary table (`PENTA_AXIS_TRT`) with XYZAC axes this is the distance along the Y axis from the vertical centerline of the joint of the rotary table to the horizontal centerline of the joint that tilts the table.
 
 See definition of `Dy` in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
-For a machine with XYZBC axes in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH), this is the distance along the y axis from the vertical centerline of the
+For a machine with XYZBC axes in head-head configuration (tilting rotating toolhead, `PENTA_AXIS_HH`), this is the distance along the y axis from the vertical centerline of the
 yaw joint that rotates the toolhead around the Z axis to the vertical centerline tool 0. Measured when all axes are in 0 position so that the toolhead is oriented horizontally.
 
 ### `DEFAULT_ROTATIONAL_JOINT_OFFSET_Z`
 
-- For a 5 axis CNC machine with a tilting rotary table (PENTA_AXIS_TRT) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table.
-- For 5 axis CNC machines in head-table configuration (PENTA_AXIS_HT) or for 5 axis CNC machines in head-head configuration (tilting rotating toolhead, PENTA_AXIS_HH) this is the distance along the z axis from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine position 0 so that the toolhead is oriented parallel to the Z axis.
+- For a 5 axis CNC machine with a tilting rotary table (`PENTA_AXIS_TRT`) this is the distance along the Z axis from the surface at the top of the table to the horizontal centerline of the joint that tilts the table.
+- For 5 axis CNC machines in head-table configuration (`PENTA_AXIS_HT`) or for 5 axis CNC machines in head-head configuration (tilting rotating toolhead, `PENTA_AXIS_HH`) this is the distance along the z axis from the tip of tool 0 (the gauge line) to the horizontal centerline of the joint that tilts the toolhead. Measured when all axes are at machine position 0 so that the toolhead is oriented parallel to the Z axis.
 
 See definition of `Dz` in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
 ### `TOOLS`
 
-Number of tools, including extruders. Tool indices, starting with 0, must be assigned in the following order: extruders (requires EXTRUDERS > 0), laser (requires `LASER_FEATURE`), anf finally tools for a spindle (requires `SPINDLE_FEATURE`). Offsets of each tool from tool 0 must be defined with `HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`.
+Number of tools, including extruders. Tool indices, starting with 0, must be assigned in the following order: extruders (requires `EXTRUDERS` > 0), laser (requires `LASER_FEATURE`), anf finally tools for a spindle (requires `SPINDLE_FEATURE`). Offsets of each tool from tool 0 must be defined with `HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`.
 
 ### `ABORT_ON_SOFTWARE_ENDSTOPS`
 
@@ -370,7 +380,7 @@ Note: If inverse kinematics for your machine are not implemented, bed leveling p
 
 ### `LCD_SHOW_SECONDARY_AXES`
 
-Show the position of secondary axes I[J[K]] instead of icons on an DOGM LCD (e.g. REPRAP_FULL_GRAPHICS_DISPLAY).
+Show the position of secondary axes I[J[K]] instead of icons on an DOGM LCD (e.g. `REPRAP_FULL_GRAPHICS_DISPLAY`).
 
 ### `QUICK_HOME_SECONDARY_AXES`
 
@@ -411,7 +421,7 @@ G83: Deep drill cycle (Normal with peck)
 G98: Start drill - retract to initial
 G99: Start drill - retract to specified
 
-### SOFT_FEED_HOLD
+### `SOFT_FEED_HOLD`
 
 Command P000 (requires `REALTIME_REPORTING_COMMANDS` and `EMERGENCY_PARSER`) or `FREEZE_PIN` (requires `FREEZE_FEATURE`) initiates a soft feed hold that 
 keeps power available and does not stop the spindle.
@@ -419,11 +429,11 @@ The soft feed hold decelerates and halts movement at `FREEZE_JERK`.
 Motion can be resumed with command R000 (requires `REALTIME_REPORTING_COMMANDS`) or by using the `FREEZE_PIN` (requires `FREEZE_FEATURE`).
 NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
 
-### SPINDLE_FEATURE
+### `SPINDLE_FEATURE`
 
 The tools with the highest TOOL index are spindle tools. Adds several Spindle/Laser-related G-codes, including M222 (Spindle override). `SPINDLE_FEATURE` is compatible with `LASER_FEATURE` and `EXTRUDERS` <= 8.
 
-### LASER_FEATURE
+### `LASER_FEATURE`
 
 The tool with a tool index (EXTRUDERS + 1) is a laser. Adds several Spindle/Laser-related G-codes. M222 is currently not enabled. `LASER_FEATURE` compatible with `SPINDLE_FEATURE` and `EXTRUDERS` <= 8.
 
