@@ -32,8 +32,8 @@
 #include "../../module/planner.h"
 #include "../../module/stepper.h" // for various
 
-#if HAS_HOMING_CURRENT
-  #include "../../module/motion.h" // for set/restore_homing_current
+#if HAS_HOMING_CURRENT || ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+  #include "../../module/motion.h" // for set/restore_homing_current, tool_centerpoint_control
 #endif
 
 #if HAS_TOOLCHANGE
@@ -390,6 +390,12 @@ void GcodeSuite::G28() {
     // Potentially disable Fixed-Time Motion for homing
     TERN_(FT_MOTION, FTM_DISABLE_IN_SCOPE());
 
+    // Disable tool centerpoint control (IK) during homing for PENTA_AXIS
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+      const bool saved_tool_centerpoint_control = motion.tool_centerpoint_control;
+      motion.tool_centerpoint_control = false;
+    #endif
+
     // Always home with tool 0 active
     #if HAS_TOOLCHANGE
       #if DISABLED(DELTA) || ENABLED(DELTA_HOME_TO_SAFE_ZONE)
@@ -649,6 +655,11 @@ void GcodeSuite::G28() {
       SERIAL_ECHOLNPGM(STR_Z_MOVE_COMP);
 
   #endif // NUM_AXES
+
+  // Restore tool centerpoint control (IK) after homing for PENTA_AXIS
+  #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
+    motion.tool_centerpoint_control = saved_tool_centerpoint_control;
+  #endif
 
   ui.refresh();
 

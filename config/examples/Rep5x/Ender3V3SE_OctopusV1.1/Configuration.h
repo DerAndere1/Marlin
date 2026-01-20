@@ -393,6 +393,15 @@
 //#define HOTEND_OFFSET_Y { 0.0, 5.00 }  // (mm) relative Y-offset for each nozzle
 //#define HOTEND_OFFSET_Z { 0.0, 0.00 }  // (mm) relative Z-offset for each nozzle
 
+/**
+ * Tool Centerpoint Control (Inverse Kinematics)
+ * For 5-axis printing with rotational axes (PENTA_AXIS)
+ * - DEFAULT_TOOL_LENGTH_COMPENSATION: Enable tool length compensation (G43)
+ * - DEFAULT_TOOL_CENTERPOINT_CONTROL: Enable inverse kinematics by default (G43.4)
+ */
+#define DEFAULT_TOOL_LENGTH_COMPENSATION false
+#define DEFAULT_TOOL_CENTERPOINT_CONTROL true
+
 // @section multi-material
 
 /**

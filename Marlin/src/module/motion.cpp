@@ -206,7 +206,10 @@ int16_t Motion::feedrate_percentage = 100;
   abce_pos_t Motion::delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
-    bool Motion::tool_centerpoint_control = false;
+    #ifndef DEFAULT_TOOL_CENTERPOINT_CONTROL
+      #define DEFAULT_TOOL_CENTERPOINT_CONTROL false
+    #endif
+    bool Motion::tool_centerpoint_control = DEFAULT_TOOL_CENTERPOINT_CONTROL;
   #endif
 
   #if HAS_SCARA_OFFSET
