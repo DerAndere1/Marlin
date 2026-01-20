@@ -1948,6 +1948,20 @@
 //#define W_MAX_POS 50
 
 /**
+ * Rep5x Inverse Kinematics Parameters
+ *
+ * LC (OFFSET_Y): Distance along Y axis from the vertical centerline of the
+ *                C-axis (yaw) joint to the horizontal centerline of the B-axis (tilt) joint.
+ * LB (OFFSET_Z): Distance along Z axis from the nozzle tip to the horizontal
+ *                centerline of the B-axis (tilt) joint when the tool is vertical.
+ *
+ * These values are determined through the Rep5x calibration procedure.
+ * Use M424 Y<LC> Z<LB> to set at runtime, or update these defaults.
+ */
+#define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0   // LC (mm) - Y offset to tilt axis
+#define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // LB (mm) - Z offset to tilt axis
+
+/**
  * Software Endstops
  *
  * - Prevent moves outside the set machine bounds.
