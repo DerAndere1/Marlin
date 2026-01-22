@@ -206,7 +206,7 @@
  * Regardless of these settings the axes are internally named I, J, K, U, V, W.
  */
 #ifdef I_DRIVER_TYPE
-  #define AXIS4_NAME 'A' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define AXIS4_NAME 'C' // :['A', 'B', 'C', 'U', 'V', 'W']
   #define AXIS4_ROTATES
 #endif
 #ifdef J_DRIVER_TYPE
@@ -1374,7 +1374,7 @@
  * When changing speed and direction, if the difference is less than the
  * value set here, it may happen instantaneously.
  */
-//#define CLASSIC_JERK
+#define CLASSIC_JERK  // Required for PENTA_AXIS_HH
 #if ENABLED(CLASSIC_JERK)
   #define DEFAULT_XJERK 10.0
   #define DEFAULT_YJERK 10.0
@@ -1957,7 +1957,11 @@
 //#define W_MAX_POS 50
 
 /**
- * Rep5x Inverse Kinematics Parameters
+ * Rep5x Inverse Kinematics (PENTA_AXIS_HH)
+ *
+ * For a 5-axis printer in head-head configuration with C (yaw) and B (tilt) axes.
+ * The tilting toolhead is mounted on a rotary joint (C-axis) that rotates around Z.
+ * The B-axis tilts the toolhead, with its rotation axis parallel to Y when at machine zero.
  *
  * LC (OFFSET_Y): Distance along Y axis from the vertical centerline of the
  *                C-axis (yaw) joint to the horizontal centerline of the B-axis (tilt) joint.
@@ -1967,8 +1971,13 @@
  * These values are determined through the Rep5x calibration procedure.
  * Use M424 Y<LC> Z<LB> to set at runtime, or update these defaults.
  */
-#define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0   // LC (mm) - Y offset to tilt axis
-#define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // LB (mm) - Z offset to tilt axis
+#define PENTA_AXIS_HH
+#if ENABLED(PENTA_AXIS_HH)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0   // LC (mm) - Y offset to tilt axis
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // LB (mm) - Z offset to tilt axis
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+  #define PRINTABLE_RADIUS 100.0  // (mm)
+#endif
 
 /**
  * Software Endstops
