@@ -206,7 +206,7 @@
  * Regardless of these settings the axes are internally named I, J, K, U, V, W.
  */
 #ifdef I_DRIVER_TYPE
-  #define AXIS4_NAME 'C' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define AXIS4_NAME 'C' // :['A', 'B', 'C', 'U', 'V', 'W']  // Rep5x: C-axis (yaw)
   #define AXIS4_ROTATES
 #endif
 #ifdef J_DRIVER_TYPE
@@ -232,8 +232,7 @@
 
 // @section extruder
 
-// TOOLS enables G43.4/G49 commands for controlling IK at runtime.
-// Set higher than EXTRUDERS to enable HAS_HOTEND_OFFSET.
+// Rep5x: TOOLS required for tool length compensation (G43/G49) to work
 #define TOOLS 3
 
 // This defines the number of extruders
@@ -393,18 +392,16 @@
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
 // For the other hotends it is their distance from the extruder 0 hotend.
-// Tool offsets required for G43.4/G49 commands (one value per TOOL)
-#define HOTEND_OFFSET_X { 0.0, 0.0, 0.0 } // (mm) relative X-offset for each tool
-#define HOTEND_OFFSET_Y { 0.0, 0.0, 0.0 } // (mm) relative Y-offset for each tool
-#define HOTEND_OFFSET_Z { 0.0, 0.0, 0.0 } // (mm) relative Z-offset for each tool
+// Rep5x: Required for tool length compensation (G43/G49)
+#define HOTEND_OFFSET_X { 0.0, 0.0, 10 }   // (mm) relative X-offset for each nozzle
+#define HOTEND_OFFSET_Y { 0.0, 0.0, -22 }  // (mm) relative Y-offset for each nozzle
+#define HOTEND_OFFSET_Z { 0.0, -10.0, -2.2 }  // (mm) relative Z-offset for each nozzle
 
-/**
- * Tool Centerpoint Control (Inverse Kinematics)
- * For 5-axis printing with rotational axes (PENTA_AXIS)
- * - DEFAULT_TOOL_LENGTH_COMPENSATION: Enable tool length compensation (G43)
- * - DEFAULT_TOOL_CENTERPOINT_CONTROL: Enable inverse kinematics by default (G43.4)
- */
+// Rep5x: Enable G43/G49 commands (required for IK)
 #define DEFAULT_TOOL_LENGTH_COMPENSATION false
+
+// Rep5x: Enable inverse kinematics (tool centerpoint control) by default
+// G43.4 to enable, G49 to disable at runtime
 #define DEFAULT_TOOL_CENTERPOINT_CONTROL true
 
 // @section multi-material
@@ -837,9 +834,9 @@
 
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKP  10.00
-  #define DEFAULT_bedKI   0.023
-  #define DEFAULT_bedKD 305.4
+  #define DEFAULT_bedKp  10.00
+  #define DEFAULT_bedKi   0.023
+  #define DEFAULT_bedKd 305.4
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #else
@@ -1202,6 +1199,35 @@
 #endif
 
 //===========================================================================
+//========================= Rep5x 5-Axis Kinematics =========================
+//===========================================================================
+
+// @section PENTA_AXIS_HH
+
+/**
+ * Rep5x 5-axis printer - Head-head configuration
+ * C-axis (yaw): rotates toolhead around Z axis
+ * B-axis (tilt): tilts toolhead, rotation parallel to Y at zero position
+ *
+ * More info: https://rep5x.com
+ * Kinematics: https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
+ */
+#define PENTA_AXIS_HH
+#if ENABLED(PENTA_AXIS_HH)
+  // Rep5x LC: Y-offset from yaw axis center to tool (typically 0)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0  // (mm)
+
+  // Rep5x LB: Z-offset from tilt axis to nozzle tip
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // (mm)
+
+  // Segments per second for rotational moves
+  #define DEFAULT_SEGMENTS_PER_SECOND 200
+
+  // Print surface radius
+  #define PRINTABLE_RADIUS 100.0  // (mm)
+#endif
+
+//===========================================================================
 //============================== Endstop Settings ===========================
 //===========================================================================
 
@@ -1379,7 +1405,7 @@
  * When changing speed and direction, if the difference is less than the
  * value set here, it may happen instantaneously.
  */
-#define CLASSIC_JERK  // Required for PENTA_AXIS_HH
+#define CLASSIC_JERK
 #if ENABLED(CLASSIC_JERK)
   #define DEFAULT_XJERK 10.0
   #define DEFAULT_YJERK 10.0
@@ -1868,7 +1894,7 @@
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR true
 #define INVERT_Z_DIR false
-#define INVERT_I_DIR false
+#define INVERT_I_DIR true
 #define INVERT_J_DIR false
 //#define INVERT_K_DIR false
 //#define INVERT_U_DIR false
@@ -1960,29 +1986,6 @@
 //#define V_MAX_POS 50
 //#define W_MIN_POS 0
 //#define W_MAX_POS 50
-
-/**
- * Rep5x Inverse Kinematics (PENTA_AXIS_HH)
- *
- * For a 5-axis printer in head-head configuration with C (yaw) and B (tilt) axes.
- * The tilting toolhead is mounted on a rotary joint (C-axis) that rotates around Z.
- * The B-axis tilts the toolhead, with its rotation axis parallel to Y when at machine zero.
- *
- * LC (OFFSET_Y): Distance along Y axis from the vertical centerline of the
- *                C-axis (yaw) joint to the horizontal centerline of the B-axis (tilt) joint.
- * LB (OFFSET_Z): Distance along Z axis from the nozzle tip to the horizontal
- *                centerline of the B-axis (tilt) joint when the tool is vertical.
- *
- * These values are determined through the Rep5x calibration procedure.
- * Use M424 Y<LC> Z<LB> to set at runtime, or update these defaults.
- */
-#define PENTA_AXIS_HH
-#if ENABLED(PENTA_AXIS_HH)
-  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0   // LC (mm) - Y offset to tilt axis
-  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // LB (mm) - Z offset to tilt axis
-  #define DEFAULT_SEGMENTS_PER_SECOND 200
-  #define PRINTABLE_RADIUS 100.0  // (mm)
-#endif
 
 /**
  * Software Endstops
@@ -2414,7 +2417,7 @@
 //#define MANUAL_X_HOME_POS 0
 //#define MANUAL_Y_HOME_POS 0
 //#define MANUAL_Z_HOME_POS 0
-#define MANUAL_I_HOME_POS 177
+#define MANUAL_I_HOME_POS 0
 //#define MANUAL_J_HOME_POS 0
 //#define MANUAL_K_HOME_POS 0
 //#define MANUAL_U_HOME_POS 0
