@@ -232,6 +232,10 @@
 
 // @section extruder
 
+// TOOLS enables G43.4/G49 commands for controlling IK at runtime.
+// Set higher than EXTRUDERS to enable HAS_HOTEND_OFFSET.
+#define TOOLS 3
+
 // This defines the number of extruders
 // :[0, 1, 2, 3, 4, 5, 6, 7, 8]
 #define EXTRUDERS 1
@@ -389,9 +393,10 @@
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
 // For the other hotends it is their distance from the extruder 0 hotend.
-//#define HOTEND_OFFSET_X { 0.0, 20.00 } // (mm) relative X-offset for each nozzle
-//#define HOTEND_OFFSET_Y { 0.0, 5.00 }  // (mm) relative Y-offset for each nozzle
-//#define HOTEND_OFFSET_Z { 0.0, 0.00 }  // (mm) relative Z-offset for each nozzle
+// Tool offsets required for G43.4/G49 commands (one value per TOOL)
+#define HOTEND_OFFSET_X { 0.0, 0.0, 0.0 } // (mm) relative X-offset for each tool
+#define HOTEND_OFFSET_Y { 0.0, 0.0, 0.0 } // (mm) relative Y-offset for each tool
+#define HOTEND_OFFSET_Z { 0.0, 0.0, 0.0 } // (mm) relative Z-offset for each tool
 
 /**
  * Tool Centerpoint Control (Inverse Kinematics)
