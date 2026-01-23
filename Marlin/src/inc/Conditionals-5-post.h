@@ -3519,7 +3519,7 @@
   #define HAS_WORKSPACE_OFFSET 1
 #endif
 #if DISABLED(NO_HOME_OFFSETS)
-  #if IS_CARTESIAN
+  #if IS_CARTESIAN || ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     #define HAS_HOME_OFFSET 1     // M206 affects the Native Machine Space on G28
   #elif IS_SCARA
     #define HAS_SCARA_OFFSET 1    // The SCARA home offset applies only on G28
