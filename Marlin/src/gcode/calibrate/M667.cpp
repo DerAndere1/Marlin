@@ -31,19 +31,35 @@
 #include "../../module/calibration_correction.h"
 
 /**
- * Parse colon-separated float values into an array
- * @param str - String like "1.23:-4.56:7.89"
+ * Find parameter value in command string and parse colon-separated floats
+ * @param cmd - Full command string (e.g., "M667 A1.0:2.0:3.0 B4.0:5.0")
+ * @param param - Parameter letter to find (e.g., 'A')
  * @param arr - Output array
  * @param max_count - Maximum number of values to parse
  * @return Number of values parsed
  */
-static int parse_colon_floats(const char* str, float* arr, int max_count) {
-  int count = 0;
-  const char* p = str;
+static int parse_param_floats(const char* cmd, char param, float* arr, int max_count) {
+  // Find the parameter letter in the command
+  const char* p = cmd;
+  while (*p) {
+    // Skip to next letter (parameters are uppercase letters)
+    if (*p == param || *p == (param + 32)) {  // Match upper or lowercase
+      p++;  // Move past the parameter letter
+      break;
+    }
+    p++;
+  }
 
+  if (!*p) return 0;  // Parameter not found
+
+  int count = 0;
   while (*p && count < max_count) {
-    // Skip leading whitespace
+    // Skip whitespace
     while (*p == ' ' || *p == '\t') p++;
+
+    // Check if we hit another parameter (letter) or end
+    if ((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z')) break;
+    if (!*p) break;
 
     // Parse float
     char* end;
@@ -56,7 +72,6 @@ static int parse_colon_floats(const char* str, float* arr, int max_count) {
 
     // Skip colon separator
     if (*p == ':') p++;
-    else if (*p && *p != ' ' && *p != '\t') break;  // Invalid character
   }
 
   return count;
@@ -94,76 +109,61 @@ void GcodeSuite::M667() {
     SERIAL_ECHOLNPGM("Calibration coefficients reset");
   }
 
+  // Get the raw command string for parsing colon-separated values
+  const char* cmd = parser.command_ptr;
+
   // A - C-sweep X coefficients (7 values)
   if (parser.seen('A')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_c_x, CALIBRATION_C_COEFFS);
-      SERIAL_ECHOPGM("Set C-sweep X: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("C-sweep X:", calibration_c_x, CALIBRATION_C_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'A', calibration_c_x, CALIBRATION_C_COEFFS);
+    SERIAL_ECHOPGM("Set C-sweep X: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("C-sweep X:", calibration_c_x, CALIBRATION_C_COEFFS);
   }
 
   // B - C-sweep Y coefficients
   if (parser.seen('B')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_c_y, CALIBRATION_C_COEFFS);
-      SERIAL_ECHOPGM("Set C-sweep Y: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("C-sweep Y:", calibration_c_y, CALIBRATION_C_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'B', calibration_c_y, CALIBRATION_C_COEFFS);
+    SERIAL_ECHOPGM("Set C-sweep Y: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("C-sweep Y:", calibration_c_y, CALIBRATION_C_COEFFS);
   }
 
   // C - C-sweep Z coefficients
   if (parser.seen('C')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_c_z, CALIBRATION_C_COEFFS);
-      SERIAL_ECHOPGM("Set C-sweep Z: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("C-sweep Z:", calibration_c_z, CALIBRATION_C_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'C', calibration_c_z, CALIBRATION_C_COEFFS);
+    SERIAL_ECHOPGM("Set C-sweep Z: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("C-sweep Z:", calibration_c_z, CALIBRATION_C_COEFFS);
   }
 
   // D - B-sweep X coefficients (5 values)
   if (parser.seen('D')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_b_x, CALIBRATION_B_COEFFS);
-      SERIAL_ECHOPGM("Set B-sweep X: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("B-sweep X:", calibration_b_x, CALIBRATION_B_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'D', calibration_b_x, CALIBRATION_B_COEFFS);
+    SERIAL_ECHOPGM("Set B-sweep X: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("B-sweep X:", calibration_b_x, CALIBRATION_B_COEFFS);
   }
 
   // E - B-sweep Y coefficients
   if (parser.seen('E')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_b_y, CALIBRATION_B_COEFFS);
-      SERIAL_ECHOPGM("Set B-sweep Y: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("B-sweep Y:", calibration_b_y, CALIBRATION_B_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'E', calibration_b_y, CALIBRATION_B_COEFFS);
+    SERIAL_ECHOPGM("Set B-sweep Y: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("B-sweep Y:", calibration_b_y, CALIBRATION_B_COEFFS);
   }
 
   // F - B-sweep Z coefficients
   if (parser.seen('F')) {
-    const char* val = parser.string_arg;
-    if (val) {
-      int n = parse_colon_floats(val, calibration_b_z, CALIBRATION_B_COEFFS);
-      SERIAL_ECHOPGM("Set B-sweep Z: ");
-      SERIAL_ECHO(n);
-      SERIAL_ECHOLNPGM(" coefficients");
-      report_coeffs("B-sweep Z:", calibration_b_z, CALIBRATION_B_COEFFS);
-    }
+    int n = parse_param_floats(cmd, 'F', calibration_b_z, CALIBRATION_B_COEFFS);
+    SERIAL_ECHOPGM("Set B-sweep Z: ");
+    SERIAL_ECHO(n);
+    SERIAL_ECHOLNPGM(" coefficients");
+    report_coeffs("B-sweep Z:", calibration_b_z, CALIBRATION_B_COEFFS);
   }
 }
 
