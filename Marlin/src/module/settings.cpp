@@ -36,7 +36,7 @@
  */
 
 // Change EEPROM version if the structure changes
-#define EEPROM_VERSION "V90"
+#define EEPROM_VERSION "V91"
 #define EEPROM_OFFSET 100
 
 // Check the integrity of data offsets.
@@ -98,6 +98,10 @@
 #endif
 
 #include "../feature/fwretract.h"
+
+#if ENABLED(CALIBRATION_CORRECTION)
+  #include "calibration_correction.h"
+#endif
 
 #if ENABLED(POWER_LOSS_RECOVERY)
   #include "../feature/powerloss.h"
@@ -379,6 +383,19 @@ typedef struct SettingsDataStruct {
       float polargraph_max_belt_len;                    // M665 H
     #endif
 
+  #endif
+
+  //
+  // Calibration Correction Coefficients (Rep5x)
+  //
+  #if ENABLED(CALIBRATION_CORRECTION)
+    bool calibration_correction_on;                       // M667 S
+    float calib_c_x[7];                                   // M667 A - C-sweep X coefficients
+    float calib_c_y[7];                                   // M667 B - C-sweep Y coefficients
+    float calib_c_z[7];                                   // M667 C - C-sweep Z coefficients
+    float calib_b_x[5];                                   // M667 D - B-sweep X coefficients
+    float calib_b_y[5];                                   // M667 E - B-sweep Y coefficients
+    float calib_b_z[5];                                   // M667 F - B-sweep Z coefficients
   #endif
 
   //
@@ -1227,6 +1244,28 @@ void MarlinSettings::postprocess() {
         EEPROM_WRITE(draw_area_max);             // 2 floats
         EEPROM_WRITE(polargraph_max_belt_len);   // 1 float
       #endif
+    }
+    #endif
+
+    //
+    // Calibration Correction Coefficients (Rep5x)
+    //
+    #if ENABLED(CALIBRATION_CORRECTION)
+    {
+      _FIELD_TEST(calibration_correction_on);
+      EEPROM_WRITE(calibration_correction_enabled);   // bool - enabled state
+      _FIELD_TEST(calib_c_x);
+      EEPROM_WRITE(calibration_c_x);                  // 7 floats - C-sweep X
+      _FIELD_TEST(calib_c_y);
+      EEPROM_WRITE(calibration_c_y);                  // 7 floats - C-sweep Y
+      _FIELD_TEST(calib_c_z);
+      EEPROM_WRITE(calibration_c_z);                  // 7 floats - C-sweep Z
+      _FIELD_TEST(calib_b_x);
+      EEPROM_WRITE(calibration_b_x);                  // 5 floats - B-sweep X
+      _FIELD_TEST(calib_b_y);
+      EEPROM_WRITE(calibration_b_y);                  // 5 floats - B-sweep Y
+      _FIELD_TEST(calib_b_z);
+      EEPROM_WRITE(calibration_b_z);                  // 5 floats - B-sweep Z
     }
     #endif
 
@@ -2336,6 +2375,28 @@ void MarlinSettings::postprocess() {
           EEPROM_READ(draw_area_max);             // 2 floats
           EEPROM_READ(polargraph_max_belt_len);   // 1 float
         #endif
+      }
+      #endif
+
+      //
+      // Calibration Correction Coefficients (Rep5x)
+      //
+      #if ENABLED(CALIBRATION_CORRECTION)
+      {
+        _FIELD_TEST(calibration_correction_on);
+        EEPROM_READ(calibration_correction_enabled);   // bool - enabled state
+        _FIELD_TEST(calib_c_x);
+        EEPROM_READ(calibration_c_x);                  // 7 floats - C-sweep X
+        _FIELD_TEST(calib_c_y);
+        EEPROM_READ(calibration_c_y);                  // 7 floats - C-sweep Y
+        _FIELD_TEST(calib_c_z);
+        EEPROM_READ(calibration_c_z);                  // 7 floats - C-sweep Z
+        _FIELD_TEST(calib_b_x);
+        EEPROM_READ(calibration_b_x);                  // 5 floats - B-sweep X
+        _FIELD_TEST(calib_b_y);
+        EEPROM_READ(calibration_b_y);                  // 5 floats - B-sweep Y
+        _FIELD_TEST(calib_b_z);
+        EEPROM_READ(calibration_b_z);                  // 5 floats - B-sweep Z
       }
       #endif
 
@@ -3595,6 +3656,14 @@ void MarlinSettings::reset() {
       draw_area_max.set(X_MAX_POS, Y_MAX_POS);
       polargraph_max_belt_len = POLARGRAPH_MAX_BELT_LEN;
     #endif
+  #endif
+
+  //
+  // Calibration Correction Coefficients (Rep5x)
+  //
+  #if ENABLED(CALIBRATION_CORRECTION)
+    calibration_correction_enabled = false;
+    reset_calibration_coefficients();
   #endif
 
   //
