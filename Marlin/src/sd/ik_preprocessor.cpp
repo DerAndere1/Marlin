@@ -16,6 +16,7 @@
 #include "../module/motion.h"
 #include "../module/penta_axis_head_head.h"
 #include "../lcd/marlinui.h"
+#include "../MarlinCore.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -129,11 +130,13 @@ bool preprocess_ik_file() {
   while (read_line(line, IK_LINE_MAXLEN)) {
     line_count++;
 
-    // Progress update every 100 lines
-    if ((line_count % 100) == 0) {
+    // Keep watchdog, thermal management, and serial alive
+    marlin.idle_no_sleep();
+
+    // Progress update every 500 lines
+    if ((line_count % 500) == 0) {
       const uint8_t pct = (uint8_t)((uint32_t)card.getIndex() * 100 / source_size);
       SERIAL_ECHOLNPGM("M668: ", pct, "% processed");
-      ui.update();
     }
 
     // Skip empty lines and comments — copy as-is
