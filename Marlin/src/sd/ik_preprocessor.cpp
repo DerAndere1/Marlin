@@ -303,6 +303,10 @@ bool preprocess_ik_file() {
     return false;
   }
 
+  // openFileRead() calls abortFilePrintNow() which clears the printing flag,
+  // so we must restart it
+  card.startOrResumeFilePrinting();
+
   CardReader::ik_temp_file_active = true;
   SERIAL_ECHOLNPGM("M668: IK pre-processing complete (", line_count, " lines)");
   ui.set_status(F("IK ready"));
