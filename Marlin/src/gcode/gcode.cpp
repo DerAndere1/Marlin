@@ -1164,6 +1164,10 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
         case 667: M667(); break;                                  // M667: Set calibration correction coefficients
       #endif
 
+      #if ENABLED(IK_PREPROCESS)
+        case 668: M668(); break;                                  // M668: Pre-process IK
+      #endif
+
       #if ENABLED(DUET_SMART_EFFECTOR) && PIN_EXISTS(SMART_EFFECTOR_MOD)
         case 672: M672(); break;                                  // M672: Set/clear Duet Smart Effector sensitivity
       #endif

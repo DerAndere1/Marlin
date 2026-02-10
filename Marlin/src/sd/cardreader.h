@@ -331,6 +331,11 @@ public:
     static AutoReporter<AutoReportSD> auto_reporter;
   #endif
 
+  // IK pre-processor temp file tracking
+  #if ENABLED(IK_PREPROCESS)
+    static bool ik_temp_file_active;
+  #endif
+
 private:
   //
   // Driver, volume, and temporary file

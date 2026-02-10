@@ -1232,6 +1232,7 @@
 // Requires PENTA_AXIS_HH (defined above)
 #ifdef PENTA_AXIS_HH
   #define CALIBRATION_CORRECTION
+  #define IK_PREPROCESS             // M668: Pre-process IK before printing
 #endif
 
 //===========================================================================

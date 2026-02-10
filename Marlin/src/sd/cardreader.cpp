@@ -153,6 +153,10 @@ MediaFile CardReader::myfile;
 
 uint32_t CardReader::filesize, CardReader::sdpos;
 
+#if ENABLED(IK_PREPROCESS)
+  bool CardReader::ik_temp_file_active = false;
+#endif
+
 CardReader::CardReader() {
   #if ENABLED(SDCARD_SORT_ALPHA)
     #if DISABLED(SDSORT_DYNAMIC_RAM)
@@ -1650,6 +1654,13 @@ int16_t CardReader::get_num_items() {
 //
 void CardReader::fileHasFinished() {
   myfile.close();
+
+  #if ENABLED(IK_PREPROCESS)
+    if (ik_temp_file_active) {
+      ik_temp_file_active = false;
+      removeFile("_iktmp.gco");
+    }
+  #endif
 
   #if HAS_MEDIA_SUBCALLS
     if (file_subcall_ctr > 0) { // Resume calling file after closing procedure

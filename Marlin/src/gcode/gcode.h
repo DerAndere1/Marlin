@@ -1283,6 +1283,10 @@ private:
     static void M667();
   #endif
 
+  #if ENABLED(IK_PREPROCESS)
+    static void M668();
+  #endif
+
   #if ENABLED(DUET_SMART_EFFECTOR) && PIN_EXISTS(SMART_EFFECTOR_MOD)
     static void M672();
   #endif
