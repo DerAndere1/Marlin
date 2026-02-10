@@ -22,9 +22,14 @@
   #include "../module/calibration_correction.h"
 #endif
 
-#define IK_LINE_MAXLEN 256
+#define IK_LINE_MAXLEN 128
 #define IK_TEMP_FILENAME "_iktmp.gco"
 #define IK_SUBDIVISION_DEG 1.0f
+
+// Static buffers to avoid stack overflow on STM32
+static char line_buf[IK_LINE_MAXLEN];
+static char out_buf[IK_LINE_MAXLEN];
+static MediaFile tempfile;
 
 // Read one line from the currently open SD card file.
 // Returns false at EOF.
@@ -61,30 +66,28 @@ static bool parse_gcode_value(const char *line, const char param, float &out) {
 }
 
 // Write a string to the temp file. Returns false on write error.
-static bool write_line(MediaFile &file, const char *line) {
+static bool write_line(const char *line) {
   const uint16_t len = strlen(line);
-  if (len > 0 && file.write(line, len) != (int16_t)len) return false;
-  if (file.write("\n", 1) != 1) return false;
+  if (len > 0 && tempfile.write(line, len) != (int16_t)len) return false;
+  if (tempfile.write("\n", 1) != 1) return false;
   return true;
 }
 
-// Format and write a transformed G1 line
+// Format and write a transformed G1 line using static out_buf
 static bool write_transformed_line(
-  MediaFile &file,
   const bool is_g0,
   const abce_pos_t &transformed,
   const float i_val, const float j_val,
   const bool has_e, const float e_val,
   const bool has_f, const float f_val
 ) {
-  char buf[IK_LINE_MAXLEN];
-  int pos = sprintf(buf, "%s X%.3f Y%.3f Z%.3f I%.3f J%.3f",
+  int pos = sprintf(out_buf, "%s X%.3f Y%.3f Z%.3f I%.3f J%.3f",
     is_g0 ? "G0" : "G1",
     (double)transformed.x, (double)transformed.y, (double)transformed.z,
     (double)i_val, (double)j_val);
-  if (has_e) pos += sprintf(buf + pos, " E%.5f", (double)e_val);
-  if (has_f) pos += sprintf(buf + pos, " F%.0f", (double)f_val);
-  return write_line(file, buf);
+  if (has_e) pos += sprintf(out_buf + pos, " E%.5f", (double)e_val);
+  if (has_f) pos += sprintf(out_buf + pos, " F%.0f", (double)f_val);
+  return write_line(out_buf);
 }
 
 bool preprocess_ik_file() {
@@ -93,7 +96,6 @@ bool preprocess_ik_file() {
   const uint32_t source_size = card.getFileSize();
 
   // Open temp file for writing
-  MediaFile tempfile;
   if (!tempfile.open(&card.getWorkDir(), IK_TEMP_FILENAME, O_CREAT | O_WRITE | O_TRUNC)) {
     SERIAL_ERROR_MSG("M668: Failed to create temp file");
     return false;
@@ -103,7 +105,7 @@ bool preprocess_ik_file() {
   SERIAL_ECHOLNPGM("M668: IK pre-processing started");
 
   // Write G49 as first line to disable TCPC in the processed file
-  if (!write_line(tempfile, "G49")) {
+  if (!write_line("G49")) {
     SERIAL_ERROR_MSG("M668: Write error");
     tempfile.close();
     card.removeFile(IK_TEMP_FILENAME);
@@ -125,9 +127,7 @@ bool preprocess_ik_file() {
   bool success = true;
   uint32_t line_count = 0;
 
-  char line[IK_LINE_MAXLEN];
-
-  while (read_line(line, IK_LINE_MAXLEN)) {
+  while (read_line(line_buf, IK_LINE_MAXLEN)) {
     line_count++;
 
     // Keep watchdog, thermal management, and serial alive
@@ -140,18 +140,18 @@ bool preprocess_ik_file() {
     }
 
     // Skip empty lines and comments — copy as-is
-    if (line[0] == '\0' || line[0] == ';') {
-      if (!write_line(tempfile, line)) { success = false; break; }
+    if (line_buf[0] == '\0' || line_buf[0] == ';') {
+      if (!write_line(line_buf)) { success = false; break; }
       continue;
     }
 
     // Detect command type
-    const bool is_g = (line[0] == 'G' || line[0] == 'g');
+    const bool is_g = (line_buf[0] == 'G' || line_buf[0] == 'g');
     int cmd_num = -1;
-    if (is_g) cmd_num = atoi(line + 1);
+    if (is_g) cmd_num = atoi(line_buf + 1);
 
     // G43.4 — skip (replaced by G49 at top)
-    if (is_g && strstr(line, "G43.4")) continue;
+    if (is_g && strstr(line_buf, "G43.4")) continue;
     // G49 — skip (already written at top)
     if (is_g && cmd_num == 49) continue;
 
@@ -164,13 +164,13 @@ bool preprocess_ik_file() {
       float new_i = track_i, new_j = track_j;
       float e_val = 0;
       float f_val = 0;
-      bool has_x = parse_gcode_value(line, 'X', new_x);
-      bool has_y = parse_gcode_value(line, 'Y', new_y);
-      bool has_z = parse_gcode_value(line, 'Z', new_z);
-      bool has_i = parse_gcode_value(line, 'I', new_i);
-      bool has_j = parse_gcode_value(line, 'J', new_j);
-      bool has_e = parse_gcode_value(line, 'E', e_val);
-      bool has_f = parse_gcode_value(line, 'F', f_val);
+      bool has_x = parse_gcode_value(line_buf, 'X', new_x);
+      bool has_y = parse_gcode_value(line_buf, 'Y', new_y);
+      bool has_z = parse_gcode_value(line_buf, 'Z', new_z);
+      bool has_i = parse_gcode_value(line_buf, 'I', new_i);
+      bool has_j = parse_gcode_value(line_buf, 'J', new_j);
+      bool has_e = parse_gcode_value(line_buf, 'E', e_val);
+      bool has_f = parse_gcode_value(line_buf, 'F', f_val);
 
       // Handle relative mode offsets
       if (!absolute_mode) {
@@ -192,7 +192,6 @@ bool preprocess_ik_file() {
       // Starting position for interpolation
       const float start_x = track_x, start_y = track_y, start_z = track_z;
       const float start_i = track_i, start_j = track_j;
-      const float start_e = 0;  // E is relative within this move
 
       for (int seg = 1; seg <= segments; seg++) {
         const float t = (float)seg / (float)segments;
@@ -203,7 +202,7 @@ bool preprocess_ik_file() {
         const float seg_z = start_z + (new_z - start_z) * t;
         const float seg_i = start_i + delta_i * t;
         const float seg_j = start_j + delta_j * t;
-        const float seg_e = has_e ? start_e + e_val * t : 0;
+        const float seg_e = has_e ? e_val * t : 0;
 
         // Build position for IK
         xyz_pos_t ik_input;
@@ -221,11 +220,14 @@ bool preprocess_ik_file() {
         // Run inverse kinematics (result stored in global `delta`)
         inverse_kinematics(ik_input);
         const bool seg_has_f = has_f && (seg == 1);  // F only on first segment
-        if (!write_transformed_line(tempfile, is_g0, delta, seg_i, seg_j,
+        if (!write_transformed_line(is_g0, delta, seg_i, seg_j,
                                     has_e, seg_e, seg_has_f, f_val)) {
           success = false;
           break;
         }
+
+        // Feed watchdog during long subdivision sequences
+        if ((seg % 10) == 0) marlin.idle_no_sleep();
       }
 
       if (!success) break;
@@ -241,7 +243,7 @@ bool preprocess_ik_file() {
 
     // G28 — copy as-is, reset tracked position
     if (is_g && cmd_num == 28) {
-      if (!write_line(tempfile, line)) { success = false; break; }
+      if (!write_line(line_buf)) { success = false; break; }
       track_x = track_y = track_z = 0;
       track_i = 0;
       track_j = 0;
@@ -250,30 +252,30 @@ bool preprocess_ik_file() {
 
     // G90/G91 — copy and track absolute/relative mode
     if (is_g && cmd_num == 90) {
-      if (!write_line(tempfile, line)) { success = false; break; }
+      if (!write_line(line_buf)) { success = false; break; }
       absolute_mode = true;
       continue;
     }
     if (is_g && cmd_num == 91) {
-      if (!write_line(tempfile, line)) { success = false; break; }
+      if (!write_line(line_buf)) { success = false; break; }
       absolute_mode = false;
       continue;
     }
 
     // G92 — copy and update tracked position
     if (is_g && cmd_num == 92) {
-      if (!write_line(tempfile, line)) { success = false; break; }
+      if (!write_line(line_buf)) { success = false; break; }
       float val;
-      if (parse_gcode_value(line, 'X', val)) track_x = val;
-      if (parse_gcode_value(line, 'Y', val)) track_y = val;
-      if (parse_gcode_value(line, 'Z', val)) track_z = val;
-      if (parse_gcode_value(line, 'I', val)) track_i = val;
-      if (parse_gcode_value(line, 'J', val)) track_j = val;
+      if (parse_gcode_value(line_buf, 'X', val)) track_x = val;
+      if (parse_gcode_value(line_buf, 'Y', val)) track_y = val;
+      if (parse_gcode_value(line_buf, 'Z', val)) track_z = val;
+      if (parse_gcode_value(line_buf, 'I', val)) track_i = val;
+      if (parse_gcode_value(line_buf, 'J', val)) track_j = val;
       continue;
     }
 
     // Everything else (M-codes, other G-codes, etc.) — copy as-is
-    if (!write_line(tempfile, line)) { success = false; break; }
+    if (!write_line(line_buf)) { success = false; break; }
   }
 
   // Sync and close temp file
