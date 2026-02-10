@@ -15,8 +15,8 @@
 #include "cardreader.h"
 #include "../module/motion.h"
 #include "../module/penta_axis_head_head.h"
+#include "../module/temperature.h"
 #include "../lcd/marlinui.h"
-#include "../MarlinCore.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -25,6 +25,16 @@
 #define IK_LINE_MAXLEN 128
 #define IK_TEMP_FILENAME "_iktmp.gco"
 #define IK_SUBDIVISION_DEG 1.0f
+
+// G-code axis letters for the rotational axes
+// Input files may use either the axis name (C/B) or positional letter (I/J)
+#if AXIS4_NAME == 'C'
+  #define IK_AXIS4_LETTER 'C'
+  #define IK_AXIS5_LETTER 'B'
+#else
+  #define IK_AXIS4_LETTER 'I'
+  #define IK_AXIS5_LETTER 'J'
+#endif
 
 // Static buffers to avoid stack overflow on STM32
 static char line_buf[IK_LINE_MAXLEN];
@@ -65,6 +75,14 @@ static bool parse_gcode_value(const char *line, const char param, float &out) {
   return false;
 }
 
+// Parse a rotational axis value, trying both the axis name (C/B) and positional letter (I/J)
+static bool parse_axis4(const char *line, float &out) {
+  return parse_gcode_value(line, IK_AXIS4_LETTER, out) || parse_gcode_value(line, 'I', out);
+}
+static bool parse_axis5(const char *line, float &out) {
+  return parse_gcode_value(line, IK_AXIS5_LETTER, out) || parse_gcode_value(line, 'J', out);
+}
+
 // Write a string to the temp file. Returns false on write error.
 static bool write_line(const char *line) {
   const uint16_t len = strlen(line);
@@ -88,6 +106,11 @@ static bool write_transformed_line(
   if (has_e) pos += sprintf(out_buf + pos, " E%.5f", (double)e_val);
   if (has_f) pos += sprintf(out_buf + pos, " F%.0f", (double)f_val);
   return write_line(out_buf);
+}
+
+// Lightweight keepalive: feed watchdog + manage heaters without full idle() overhead
+static void keepalive() {
+  thermalManager.task();  // Manages heaters and feeds watchdog
 }
 
 bool preprocess_ik_file() {
@@ -130,8 +153,8 @@ bool preprocess_ik_file() {
   while (read_line(line_buf, IK_LINE_MAXLEN)) {
     line_count++;
 
-    // Keep watchdog, thermal management, and serial alive
-    marlin.idle_no_sleep();
+    // Feed watchdog + manage heaters (lightweight, no UI/button processing)
+    keepalive();
 
     // Progress update every 500 lines
     if ((line_count % 500) == 0) {
@@ -159,7 +182,7 @@ bool preprocess_ik_file() {
     if (is_g && (cmd_num == 0 || cmd_num == 1)) {
       const bool is_g0 = (cmd_num == 0);
 
-      // Parse parameters
+      // Parse parameters (supports both C/B and I/J axis letters)
       float new_x = track_x, new_y = track_y, new_z = track_z;
       float new_i = track_i, new_j = track_j;
       float e_val = 0;
@@ -167,8 +190,8 @@ bool preprocess_ik_file() {
       bool has_x = parse_gcode_value(line_buf, 'X', new_x);
       bool has_y = parse_gcode_value(line_buf, 'Y', new_y);
       bool has_z = parse_gcode_value(line_buf, 'Z', new_z);
-      bool has_i = parse_gcode_value(line_buf, 'I', new_i);
-      bool has_j = parse_gcode_value(line_buf, 'J', new_j);
+      bool has_i = parse_axis4(line_buf, new_i);
+      bool has_j = parse_axis5(line_buf, new_j);
       bool has_e = parse_gcode_value(line_buf, 'E', e_val);
       bool has_f = parse_gcode_value(line_buf, 'F', f_val);
 
@@ -227,7 +250,7 @@ bool preprocess_ik_file() {
         }
 
         // Feed watchdog during long subdivision sequences
-        if ((seg % 10) == 0) marlin.idle_no_sleep();
+        if ((seg % 10) == 0) keepalive();
       }
 
       if (!success) break;
@@ -269,8 +292,8 @@ bool preprocess_ik_file() {
       if (parse_gcode_value(line_buf, 'X', val)) track_x = val;
       if (parse_gcode_value(line_buf, 'Y', val)) track_y = val;
       if (parse_gcode_value(line_buf, 'Z', val)) track_z = val;
-      if (parse_gcode_value(line_buf, 'I', val)) track_i = val;
-      if (parse_gcode_value(line_buf, 'J', val)) track_j = val;
+      if (parse_axis4(line_buf, val)) track_i = val;
+      if (parse_axis5(line_buf, val)) track_j = val;
       continue;
     }
 
