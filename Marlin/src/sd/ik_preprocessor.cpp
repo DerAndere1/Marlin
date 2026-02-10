@@ -17,7 +17,7 @@
 #include "../module/penta_axis_head_head.h"
 #include "../module/temperature.h"
 #include "../lcd/marlinui.h"
-#include "../MarlinCore.h"
+#include "../HAL/HAL.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -109,9 +109,11 @@ static bool write_transformed_line(
   return write_line(out_buf);
 }
 
-// Keepalive: feed watchdog, manage heaters, handle serial
+// Minimal keepalive: feed watchdog + manage heaters only.
+// Must NOT call idle() because manage_inactivity() reads from the SD file.
 static void keepalive() {
-  marlin.idle_no_sleep();
+  hal.watchdog_refresh();
+  thermalManager.task();
 }
 
 bool preprocess_ik_file() {
@@ -125,11 +127,9 @@ bool preprocess_ik_file() {
     return false;
   }
 
-  // Pause SD command fetching so idle_no_sleep() doesn't read from our source file
-  card.pauseSDPrint();
-
   ui.set_status(F("Processing IK..."));
-  SERIAL_ECHOLNPGM("M668: IK pre-processing started");
+  SERIAL_ECHOLNPGM("M668: IK pre-processing started, source size=", source_size,
+                    " pos=", card.getIndex());
 
   // Write G49 as first line to disable TCPC in the processed file
   if (!write_line("G49")) {
@@ -335,7 +335,8 @@ bool preprocess_ik_file() {
   card.startOrResumeFilePrinting();
 
   CardReader::ik_temp_file_active = true;
-  SERIAL_ECHOLNPGM("M668: IK pre-processing complete (", line_count, " lines)");
+  SERIAL_ECHOLNPGM("M668: IK pre-processing complete (", line_count, " lines, ",
+                    card.getFileSize(), " bytes)");
   ui.set_status(F("IK ready"));
 
   return true;
