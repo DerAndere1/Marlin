@@ -17,6 +17,7 @@
 #include "../module/penta_axis_head_head.h"
 #include "../module/temperature.h"
 #include "../lcd/marlinui.h"
+#include "../MarlinCore.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -108,9 +109,9 @@ static bool write_transformed_line(
   return write_line(out_buf);
 }
 
-// Lightweight keepalive: feed watchdog + manage heaters without full idle() overhead
+// Keepalive: feed watchdog, manage heaters, handle serial
 static void keepalive() {
-  thermalManager.task();  // Manages heaters and feeds watchdog
+  marlin.idle_no_sleep();
 }
 
 bool preprocess_ik_file() {
