@@ -125,6 +125,9 @@ bool preprocess_ik_file() {
     return false;
   }
 
+  // Pause SD command fetching so idle_no_sleep() doesn't read from our source file
+  card.pauseSDPrint();
+
   ui.set_status(F("Processing IK..."));
   SERIAL_ECHOLNPGM("M668: IK pre-processing started");
 
