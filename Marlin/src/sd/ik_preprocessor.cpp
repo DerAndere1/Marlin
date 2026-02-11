@@ -100,10 +100,10 @@ static bool write_transformed_line(
   const bool has_e, const float e_val,
   const bool has_f, const float f_val
 ) {
-  int pos = sprintf(out_buf, "%s X%.3f Y%.3f Z%.3f I%.3f J%.3f",
+  int pos = sprintf(out_buf, "%s X%.3f Y%.3f Z%.3f %c%.3f %c%.3f",
     is_g0 ? "G0" : "G1",
     (double)transformed.x, (double)transformed.y, (double)transformed.z,
-    (double)i_val, (double)j_val);
+    AXIS4_NAME, (double)i_val, AXIS5_NAME, (double)j_val);
   if (has_e) pos += sprintf(out_buf + pos, " E%.5f", (double)e_val);
   if (has_f) pos += sprintf(out_buf + pos, " F%.0f", (double)f_val);
   return write_line(out_buf);
