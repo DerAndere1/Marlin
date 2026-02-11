@@ -17,7 +17,7 @@
 #include "../module/penta_axis_head_head.h"
 #include "../module/temperature.h"
 #include "../lcd/marlinui.h"
-#include "../HAL/HAL.h"
+#include "../MarlinCore.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -42,12 +42,12 @@ static char line_buf[IK_LINE_MAXLEN];
 static char out_buf[IK_LINE_MAXLEN];
 static MediaFile tempfile;
 
-// Read one line from the currently open SD card file.
+// Read one line from a given file handle.
 // Returns false at EOF.
-static bool read_line(char *buf, uint16_t maxlen) {
+static bool read_line_from(MediaFile &file, char *buf, uint16_t maxlen) {
   uint16_t i = 0;
   while (i < maxlen - 1) {
-    const int16_t c = card.get();
+    const int16_t c = file.read();
     if (c < 0) {  // EOF
       buf[i] = '\0';
       return i > 0;  // Return true if we got any chars before EOF
@@ -109,32 +109,38 @@ static bool write_transformed_line(
   return write_line(out_buf);
 }
 
-// Minimal keepalive: feed watchdog + manage heaters only.
-// Must NOT call idle() because manage_inactivity() reads from the SD file.
-static void keepalive() {
-  hal.watchdog_refresh();
-  thermalManager.task();
-}
-
 bool preprocess_ik_file() {
   if (!card.isMounted() || !card.isFileOpen()) return false;
 
   const uint32_t source_size = card.getFileSize();
+  const uint32_t start_pos = card.getIndex();
+
+  // Open a SEPARATE file handle for reading the source.
+  // This avoids conflicts with card.myfile which idle() may touch
+  // via get_sdcard_commands() during idle_no_sleep().
+  static MediaFile srcfile;
+  if (!srcfile.open(&card.getWorkDir(), card.filename, O_READ)) {
+    SERIAL_ERROR_MSG("M668: Failed to open source file for reading");
+    return false;
+  }
+  srcfile.seekSet(start_pos);
 
   // Open temp file for writing
   if (!tempfile.open(&card.getWorkDir(), IK_TEMP_FILENAME, O_CREAT | O_WRITE | O_TRUNC)) {
     SERIAL_ERROR_MSG("M668: Failed to create temp file");
+    srcfile.close();
     return false;
   }
 
   ui.set_status(F("Processing IK..."));
   SERIAL_ECHOLNPGM("M668: IK pre-processing started, source size=", source_size,
-                    " pos=", card.getIndex());
+                    " start_pos=", start_pos);
 
   // Write G49 as first line to disable TCPC in the processed file
   if (!write_line("G49")) {
     SERIAL_ERROR_MSG("M668: Write error");
     tempfile.close();
+    srcfile.close();
     card.removeFile(IK_TEMP_FILENAME);
     return false;
   }
@@ -154,15 +160,15 @@ bool preprocess_ik_file() {
   bool success = true;
   uint32_t line_count = 0;
 
-  while (read_line(line_buf, IK_LINE_MAXLEN)) {
+  while (read_line_from(srcfile, line_buf, IK_LINE_MAXLEN)) {
     line_count++;
 
-    // Feed watchdog + manage heaters (lightweight, no UI/button processing)
-    keepalive();
+    // Keep system alive (watchdog, heaters, serial, UI)
+    marlin.idle_no_sleep();
 
     // Progress update every 500 lines
     if ((line_count % 500) == 0) {
-      const uint8_t pct = (uint8_t)((uint32_t)card.getIndex() * 100 / source_size);
+      const uint8_t pct = (uint8_t)((uint32_t)srcfile.curPosition() * 100 / source_size);
       SERIAL_ECHOLNPGM("M668: ", pct, "% processed");
     }
 
@@ -254,7 +260,7 @@ bool preprocess_ik_file() {
         }
 
         // Feed watchdog during long subdivision sequences
-        if ((seg % 10) == 0) keepalive();
+        if ((seg % 10) == 0) marlin.idle_no_sleep();
       }
 
       if (!success) break;
@@ -305,7 +311,8 @@ bool preprocess_ik_file() {
     if (!write_line(line_buf)) { success = false; break; }
   }
 
-  // Sync and close temp file
+  // Close source and temp files
+  srcfile.close();
   tempfile.sync();
   tempfile.close();
 
@@ -321,7 +328,7 @@ bool preprocess_ik_file() {
     return false;
   }
 
-  // Close source file and open temp file for printing
+  // Close source file (card.myfile) and open temp file for printing
   card.closefile();
   card.openFileRead(IK_TEMP_FILENAME);
 
