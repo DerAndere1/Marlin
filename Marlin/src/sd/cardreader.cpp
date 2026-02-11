@@ -1658,7 +1658,9 @@ void CardReader::fileHasFinished() {
   #if ENABLED(IK_PREPROCESS)
     if (ik_temp_file_active) {
       ik_temp_file_active = false;
-      removeFile("_iktmp.gco");
+      // Keep temp file for debugging - user can examine _iktmp.gco on SD card
+      SERIAL_ECHOLNPGM("M668: Temp file _iktmp.gco kept on SD for inspection");
+      //removeFile("_iktmp.gco");
     }
   #endif
 

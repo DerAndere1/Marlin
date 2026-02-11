@@ -18,6 +18,7 @@
 #include "../module/temperature.h"
 #include "../lcd/marlinui.h"
 #include "../MarlinCore.h"
+#include "../gcode/queue.h"
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -161,9 +162,13 @@ bool preprocess_ik_file() {
   // Tracking state
   float track_x = 0, track_y = 0, track_z = 0;  // Current X, Y, Z
   float track_i = 0, track_j = 0;               // Current C, B angles
+  float track_e = 0;                             // Current absolute E position
   bool absolute_mode = true;
+  bool relative_e = false;                       // M83 = relative extrusion
   bool success = true;
   uint32_t line_count = 0;
+  uint32_t ik_line_count = 0;                    // Output lines transformed through IK
+  uint32_t passthrough_count = 0;                // Output lines copied as-is
 
   while (read_line_from(srcfile, line_buf, IK_LINE_MAXLEN)) {
     line_count++;
@@ -187,6 +192,14 @@ bool preprocess_ik_file() {
     const bool is_g = (line_buf[0] == 'G' || line_buf[0] == 'g');
     int cmd_num = -1;
     if (is_g) cmd_num = atoi(line_buf + 1);
+
+    // Track M82/M83 extrusion mode
+    const bool is_m = (line_buf[0] == 'M' || line_buf[0] == 'm');
+    if (is_m) {
+      const int m_cmd = atoi(line_buf + 1);
+      if (m_cmd == 82) relative_e = false;
+      if (m_cmd == 83) relative_e = true;
+    }
 
     // G43.4 — skip (replaced by G49 at top)
     if (is_g && strstr(line_buf, "G43.4")) continue;
@@ -225,11 +238,13 @@ bool preprocess_ik_file() {
       const bool has_rotation = (new_i != 0 || new_j != 0 || track_i != 0 || track_j != 0);
       if (!has_rotation) {
         if (!write_line(line_buf)) { success = false; break; }
+        passthrough_count++;
         track_x = new_x;
         track_y = new_y;
         track_z = new_z;
         track_i = new_i;
         track_j = new_j;
+        if (has_e) { if (relative_e) track_e += e_val; else track_e = e_val; }
         continue;
       }
 
@@ -254,7 +269,16 @@ bool preprocess_ik_file() {
         const float seg_z = start_z + (new_z - start_z) * t;
         const float seg_i = start_i + delta_i * t;
         const float seg_j = start_j + delta_j * t;
-        const float seg_e = has_e ? e_val * t : 0;
+
+        // E subdivision: per-segment delta for M83, interpolated absolute for M82
+        float seg_e;
+        if (!has_e) {
+          seg_e = 0;
+        } else if (relative_e) {
+          seg_e = e_val / (float)segments;  // Equal per-segment delta
+        } else {
+          seg_e = track_e + (e_val - track_e) * t;  // Interpolate absolute position
+        }
 
         // Build position for IK
         xyz_pos_t ik_input;
@@ -278,6 +302,16 @@ bool preprocess_ik_file() {
           break;
         }
 
+        ik_line_count++;
+
+        // Debug: print first 10 IK-transformed output lines
+        if (ik_line_count <= 10) {
+          SERIAL_ECHOPGM("M668 IK[");
+          SERIAL_ECHO(ik_line_count);
+          SERIAL_ECHOPGM("]: ");
+          SERIAL_ECHOLN(out_buf);
+        }
+
         // Feed watchdog during long subdivision sequences
         if ((seg % 10) == 0) marlin.idle_no_sleep();
       }
@@ -290,6 +324,7 @@ bool preprocess_ik_file() {
       track_z = new_z;
       track_i = new_i;
       track_j = new_j;
+      if (has_e) { if (relative_e) track_e += e_val; else track_e = e_val; }
       continue;
     }
 
@@ -323,6 +358,15 @@ bool preprocess_ik_file() {
       if (parse_gcode_value(line_buf, 'Z', val)) track_z = val;
       if (parse_axis4(line_buf, val)) track_i = val;
       if (parse_axis5(line_buf, val)) track_j = val;
+      if (parse_gcode_value(line_buf, 'E', val)) track_e = val;
+
+      // Debug: show G92 state changes
+      SERIAL_ECHOPGM("M668 G92: track_i=");
+      SERIAL_ECHO(track_i);
+      SERIAL_ECHOPGM(" track_j=");
+      SERIAL_ECHO(track_j);
+      SERIAL_ECHOPGM(" at line ");
+      SERIAL_ECHOLN(line_count);
       continue;
     }
 
@@ -348,6 +392,10 @@ bool preprocess_ik_file() {
     return false;
   }
 
+  // Clear command queue to prevent double-execution of start gcode
+  // commands that were buffered from the original file before M668 ran
+  queue.clear();
+
   // Close source file (card.myfile) and open temp file for printing
   card.closefile();
   card.openFileRead(IK_TEMP_FILENAME);
@@ -364,6 +412,9 @@ bool preprocess_ik_file() {
   CardReader::ik_temp_file_active = true;
   SERIAL_ECHOLNPGM("M668: IK pre-processing complete (", line_count, " lines, ",
                     card.getFileSize(), " bytes)");
+  SERIAL_ECHOLNPGM("M668: IK-transformed: ", ik_line_count,
+                    " passthrough: ", passthrough_count,
+                    " relative_e: ", relative_e ? "yes" : "no");
   ui.set_status(F("IK ready"));
 
   return true;
