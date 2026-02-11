@@ -192,7 +192,7 @@ bool preprocess_ik_file() {
     // G49 — skip (already written at top)
     if (is_g && cmd_num == 49) continue;
 
-    // G0 / G1 — transform through IK
+    // G0 / G1 — transform through IK (only when rotation is involved)
     if (is_g && (cmd_num == 0 || cmd_num == 1)) {
       const bool is_g0 = (cmd_num == 0);
 
@@ -216,6 +216,20 @@ bool preprocess_ik_file() {
         if (has_z) new_z += track_z;
         if (has_i) new_i += track_i;
         if (has_j) new_j += track_j;
+      }
+
+      // When no rotation is involved (current and target both zero),
+      // IK is identity — copy the command as-is to preserve original
+      // coordinates (avoids position tracking issues with G28/G91/G92).
+      const bool has_rotation = (new_i != 0 || new_j != 0 || track_i != 0 || track_j != 0);
+      if (!has_rotation) {
+        if (!write_line(line_buf)) { success = false; break; }
+        track_x = new_x;
+        track_y = new_y;
+        track_z = new_z;
+        track_i = new_i;
+        track_j = new_j;
+        continue;
       }
 
       // Calculate angle deltas for subdivision
