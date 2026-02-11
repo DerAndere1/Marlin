@@ -125,9 +125,10 @@ bool preprocess_ik_file() {
   }
   srcfile.seekSet(start_pos);
 
-  // Pause SD command fetching so idle_no_sleep() doesn't consume card.myfile
-  // and trigger fileHasFinished() while we're still processing.
-  card.pauseSDPrint();
+  // Prevent get_sdcard_commands() from reading card.myfile during processing.
+  // Use sdprintdone flag instead of pauseSDPrint() to avoid triggering
+  // the LCD "paused for user" state.
+  card.flag.sdprintdone = true;
 
   // Open temp file for writing
   if (!tempfile.open(&card.getWorkDir(), IK_TEMP_FILENAME, O_CREAT | O_WRITE | O_TRUNC)) {
@@ -342,6 +343,7 @@ bool preprocess_ik_file() {
 
   if (!success) {
     SERIAL_ERROR_MSG("M668: Write error during processing");
+    card.flag.sdprintdone = false;  // Restore SD state
     card.removeFile(IK_TEMP_FILENAME);
     return false;
   }
