@@ -125,6 +125,10 @@ bool preprocess_ik_file() {
   }
   srcfile.seekSet(start_pos);
 
+  // Pause SD command fetching so idle_no_sleep() doesn't consume card.myfile
+  // and trigger fileHasFinished() while we're still processing.
+  card.pauseSDPrint();
+
   // Open temp file for writing
   if (!tempfile.open(&card.getWorkDir(), IK_TEMP_FILENAME, O_CREAT | O_WRITE | O_TRUNC)) {
     SERIAL_ERROR_MSG("M668: Failed to create temp file");
