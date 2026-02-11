@@ -18,7 +18,7 @@
 #include "../module/temperature.h"
 #include "../lcd/marlinui.h"
 #include "../MarlinCore.h"
-#include "../gcode/queue.h"
+#include <stdlib.h>  // for dtostrf (float-to-string without sprintf %f)
 
 #if ENABLED(CALIBRATION_CORRECTION)
   #include "../module/calibration_correction.h"
@@ -93,7 +93,18 @@ static bool write_line(const char *line) {
   return true;
 }
 
-// Format and write a transformed G1 line using static out_buf
+// Append a dtostrf-formatted float to buf at position pos. Returns new pos.
+// Uses dtostrf instead of sprintf %f because STM32 newlib-nano doesn't support float printf.
+static int append_float(char *buf, int pos, const float val, const uint8_t prec) {
+  char tmp[16];
+  dtostrf(val, 1, prec, tmp);  // width=1 = minimum width, no padding
+  const int len = strlen(tmp);
+  memcpy(buf + pos, tmp, len);
+  return pos + len;
+}
+
+// Format and write a transformed G1 line using static out_buf.
+// Uses dtostrf for float formatting (sprintf %f is broken on STM32 newlib-nano).
 static bool write_transformed_line(
   const bool is_g0,
   const abce_pos_t &transformed,
@@ -101,12 +112,28 @@ static bool write_transformed_line(
   const bool has_e, const float e_val,
   const bool has_f, const float f_val
 ) {
-  int pos = sprintf(out_buf, "%s X%.3f Y%.3f Z%.3f %c%.3f %c%.3f",
-    is_g0 ? "G0" : "G1",
-    (double)transformed.x, (double)transformed.y, (double)transformed.z,
-    AXIS4_NAME, (double)i_val, AXIS5_NAME, (double)j_val);
-  if (has_e) pos += sprintf(out_buf + pos, " E%.5f", (double)e_val);
-  if (has_f) pos += sprintf(out_buf + pos, " F%.0f", (double)f_val);
+  int pos = 0;
+  out_buf[pos++] = 'G';
+  out_buf[pos++] = is_g0 ? '0' : '1';
+  out_buf[pos++] = ' '; out_buf[pos++] = 'X';
+  pos = append_float(out_buf, pos, transformed.x, 3);
+  out_buf[pos++] = ' '; out_buf[pos++] = 'Y';
+  pos = append_float(out_buf, pos, transformed.y, 3);
+  out_buf[pos++] = ' '; out_buf[pos++] = 'Z';
+  pos = append_float(out_buf, pos, transformed.z, 3);
+  out_buf[pos++] = ' '; out_buf[pos++] = AXIS4_NAME;
+  pos = append_float(out_buf, pos, i_val, 3);
+  out_buf[pos++] = ' '; out_buf[pos++] = AXIS5_NAME;
+  pos = append_float(out_buf, pos, j_val, 3);
+  if (has_e) {
+    out_buf[pos++] = ' '; out_buf[pos++] = 'E';
+    pos = append_float(out_buf, pos, e_val, 5);
+  }
+  if (has_f) {
+    out_buf[pos++] = ' '; out_buf[pos++] = 'F';
+    pos = append_float(out_buf, pos, f_val, 0);
+  }
+  out_buf[pos] = '\0';
   return write_line(out_buf);
 }
 
@@ -392,9 +419,10 @@ bool preprocess_ik_file() {
     return false;
   }
 
-  // Clear command queue to prevent double-execution of start gcode
-  // commands that were buffered from the original file before M668 ran
-  queue.clear();
+  // NOTE: Do NOT call queue.clear() here. M668 runs inside queue.advance(),
+  // and clearing the ring buffer during advance causes uint8_t underflow
+  // (length 0 -> 255), corrupting the queue. The few buffered start-gcode
+  // commands (e.g. G28) are harmless to re-execute from the temp file.
 
   // Close source file (card.myfile) and open temp file for printing
   card.closefile();
