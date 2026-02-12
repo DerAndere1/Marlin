@@ -26,7 +26,7 @@
 
 #define IK_LINE_MAXLEN 128
 #define IK_TEMP_FILENAME "_iktmp.gco"
-#define IK_SUBDIVISION_DEG 1.0f
+#define IK_SUBDIVISION_DEG 5.0f
 
 // G-code axis letters for the rotational axes
 // Input files may use either the axis name (C/B) or positional letter (I/J)
