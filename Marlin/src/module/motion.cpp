@@ -1157,24 +1157,24 @@ void Motion::blocking_move(const xy_pos_t &raw, const feedRate_t fr_mm_s/*=0.0f*
     #endif
 
     #if HAS_Z_AXIS  // If Z needs to raise, do it before moving XY
-      if (current_position.z < z) { current_position.z = z; line_to_current_position(z_feedrate); }
+      if (position.z < z) { position.z = z; goto_current_position(z_feedrate); }
     #endif
 
-    current_position.set(TERN_(HAS_X_AXIS, x) OPTARG(HAS_Y_AXIS, y)); 
+    position.set(TERN_(HAS_X_AXIS, x) OPTARG(HAS_Y_AXIS, y)); 
     SECONDARY_AXIS_CODE(
-      current_position.i = i,
-      current_position.j = j,
-      current_position.k = k,
-      current_position.u = u,
-      current_position.v = v,
-      current_position.w = w
+      position.i = i,
+      position.j = j,
+      position.k = k,
+      position.u = u,
+      position.v = v,
+      position.w = w
     );
     
-    line_to_current_position(xy_feedrate);
+    goto_current_position(xy_feedrate);
 
     #if HAS_Z_AXIS
       // If Z needs to lower, do it after moving XY
-      if (current_position.z > z) { current_position.z = z; line_to_current_position(z_feedrate); }
+      if (position.z > z) { position.z = z; goto_current_position(z_feedrate); }
     #endif
 
     planner.synchronize();
