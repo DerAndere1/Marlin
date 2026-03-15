@@ -2476,19 +2476,14 @@ void Stepper::isr() {
 
           // acc_step_rate is in steps/second
 
+
           // Modify acc_step_rate if the machine is freezing
           TERN_(SOFT_FEED_HOLD, check_frozen_time(acc_step_rate));
 
           // step_rate to timer interval and steps per stepper isr
-          #if ENABLED(FREEZE_FEATURE)
-            if(frozen_time) check_frozen_time(acc_step_rate);
-          #endif
           interval = calc_multistep_timer_interval(acc_step_rate << oversampling_factor);
           acceleration_time += interval;
           deceleration_time = 0; // Reset since we're doing acceleration first.
-          #if ENABLED(FREEZE_FEATURE)
-            if(frozen_pin && !frozen_solid) frozen_time += interval * 2;
-          #endif
 
           TERN_(SOFT_FEED_HOLD, check_frozen_state(FREEZE_ACCELERATION, interval));
 
@@ -2556,21 +2551,8 @@ void Stepper::isr() {
           TERN_(SOFT_FEED_HOLD, check_frozen_time(step_rate));
 
           // step_rate to timer interval and steps per stepper isr
-          #if ENABLED(FREEZE_FEATURE)
-            if(frozen_time) check_frozen_time(step_rate);
-          #endif
           interval = calc_multistep_timer_interval(step_rate << oversampling_factor);
           deceleration_time += interval;
-          #if ENABLED(FREEZE_FEATURE)
-            if(!frozen_pin) {
-              if(frozen_time) {
-                if(frozen_time > interval * 2) frozen_time -= interval * 2;
-                else frozen_time = 0;
-              }
-              
-              frozen_solid = false;
-            }
-          #endif
 
           TERN_(SOFT_FEED_HOLD, check_frozen_state(FREEZE_DECELERATION, interval));
 

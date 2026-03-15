@@ -148,16 +148,16 @@
 
     motion.sync_plan_position();
 
-    const int x_axis_home_dir = TOOL_X_HOME_DIR(active_extruder);
+    const int x_axis_home_dir = motion.tool_x_home_dir();
 
     // Use a higher diagonal feedrate so axes move at homing speed
-    const float minfr = _MIN(homing_feedrate(X_AXIS), homing_feedrate(Y_AXIS)),
+    const float minfr = _MIN(motion.homing_feedrate(X_AXIS), motion.homing_feedrate(Y_AXIS)),
                 fr_mm_s = HYPOT(minfr, minfr);
 
     feedRate_t old_max_speeds[NUM_AXES];
     LOOP_NUM_AXES(i) {
       old_max_speeds[i] = planner.settings.max_feedrate_mm_s[i];
-      planner.set_max_feedrate((AxisEnum)i, homing_feedrate((AxisEnum)i));
+      planner.set_max_feedrate((AxisEnum)i, motion.homing_feedrate((AxisEnum)i));
     }
     #if ENABLED(SENSORLESS_HOMING)
       sensorless_t stealth_states {
@@ -179,13 +179,13 @@
     #endif
 
     #if IS_KINEMATIC
-      motion.blocking_move_to(1.5f * max_length(X_AXIS) * x_axis_home_dir, 1.5f * max_length(Y_AXIS) * Y_HOME_DIR, current_position.z, 
-          SECONDARY_AXIS_LIST(1.5f * max_length(I_AXIS) * I_HOME_DIR, 1.5f * max_length(J_AXIS) * J_HOME_DIR , 1.5f * max_length(K_AXIS) * K_HOME_DIR, 1.5f * max_length(U_AXIS) * U_HOME_DIR, 1.5f * max_length(V_AXIS) * V_HOME_DIR, 1.5f * max_length(W_AXIS) * W_HOME_DIR), 
+      motion.blocking_move(1.5f * motion.max_axis_length(X_AXIS) * x_axis_home_dir, 1.5f * motion.max_axis_length(Y_AXIS) * Y_HOME_DIR, motion.position.z, 
+          SECONDARY_AXIS_LIST(1.5f * motion.max_axis_length(I_AXIS) * I_HOME_DIR, 1.5f * motion.max_axis_length(J_AXIS) * J_HOME_DIR , 1.5f * motion.max_axis_length(K_AXIS) * K_HOME_DIR, 1.5f * motion.max_axis_length(U_AXIS) * U_HOME_DIR, 1.5f * motion.max_axis_length(V_AXIS) * V_HOME_DIR, 1.5f * motion.max_axis_length(W_AXIS) * W_HOME_DIR), 
           fr_mm_s
       );
     #else
-      motion.do_blocking_coordinated_move_to(1.5f * max_length(X_AXIS) * x_axis_home_dir, 1.5f * max_length(Y_AXIS) * Y_HOME_DIR, current_position.z, 
-          SECONDARY_AXIS_LIST(1.5f * max_length(I_AXIS) * I_HOME_DIR, 1.5f * max_length(J_AXIS) * J_HOME_DIR , 1.5f * max_length(K_AXIS) * K_HOME_DIR, 1.5f * max_length(U_AXIS) * U_HOME_DIR, 1.5f * max_length(V_AXIS) * V_HOME_DIR, 1.5f * max_length(W_AXIS) * W_HOME_DIR), 
+      motion.do_blocking_coordinated_move_to(1.5f * motion.max_axis_length(X_AXIS) * x_axis_home_dir, 1.5f * motion.max_axis_length(Y_AXIS) * Y_HOME_DIR, motion.position.z, 
+          SECONDARY_AXIS_LIST(1.5f * motion.max_axis_length(I_AXIS) * I_HOME_DIR, 1.5f * motion.max_axis_length(J_AXIS) * J_HOME_DIR , 1.5f * motion.max_axis_length(K_AXIS) * K_HOME_DIR, 1.5f * motion.max_axis_length(U_AXIS) * U_HOME_DIR, 1.5f * motion.max_axis_length(V_AXIS) * V_HOME_DIR, 1.5f * motion.max_axis_length(W_AXIS) * W_HOME_DIR), 
           fr_mm_s
       );
     #endif

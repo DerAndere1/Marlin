@@ -47,13 +47,13 @@ bool move_to(xyze_pos_t position, float z, feedRate_t f) {
   if(planner.cleaning_buffer_counter) return false;
 
   LOOP_NUM_AXES(i) {
-    destination[i] = position[i];
+    motion.destination[i] = position[i];
   }
 
-  destination[Z_AXIS] = z;
-  feedrate_mm_s = f;
+  motion.destination[Z_AXIS] = z;
+  motion.feedrate_mm_s = f;
 
-  prepare_line_to_destination();
+  motion.prepare_line_to_destination();
 
   return true;
  }
@@ -66,7 +66,7 @@ void drill_cycle(uint8_t mode) {
   //drill depth, must not be NAN
   if(parser.seenval(AXIS_CHAR(Z_AXIS))) {
     const float v       = parser.value_axis_units(Z_AXIS);
-    drill_finish_depth  = gcode.axis_is_relative(AxisEnum(Z_AXIS)) ? current_position[Z_AXIS] + v : LOGICAL_TO_NATIVE(v, Z_AXIS);
+    drill_finish_depth  = gcode.axis_is_relative(AxisEnum(Z_AXIS)) ? motion.position[Z_AXIS] + v : motion.logical_to_native(v, Z_AXIS);
   }
   if(drill_finish_depth == NAN) return;
 
@@ -74,17 +74,17 @@ void drill_cycle(uint8_t mode) {
   xyze_pos_t  drill_position;
   LOOP_NUM_AXES(i) {
     if(i == Z_AXIS) {
-      drill_position[i]   = current_position.z;
+      drill_position[i]   = motion.position.z;
     } else if (parser.seenval(AXIS_CHAR(i))) {
       const float v = parser.value_axis_units((AxisEnum)i);
-      drill_position[i] = gcode.axis_is_relative(AxisEnum(i)) ? current_position[i] + v : LOGICAL_TO_NATIVE(v, i);
+      drill_position[i] = gcode.axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
     } else {
-      drill_position[i] = current_position[i];
+      drill_position[i] = motion.position[i];
     }
   }
 
   //rapid, retract planes
-  if(parser.seenval('R')) drill_rapid_z = LOGICAL_TO_NATIVE(parser.value_axis_units(Z_AXIS), Z_AXIS);
+  if(parser.seenval('R')) drill_rapid_z = motion.logical_to_native(parser.value_axis_units(Z_AXIS), Z_AXIS);
   else if(drill_rapid_z == NAN) drill_rapid_z = drill_position[Z_AXIS];
   float drill_retract_z = retract_to_initial ? drill_position[Z_AXIS] : drill_rapid_z;
 

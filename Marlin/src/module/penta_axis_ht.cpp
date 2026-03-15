@@ -68,12 +68,12 @@ void inverse_kinematics(const xyz_pos_t &raw) {
  * This is an expensive calculation.
  */
 xyz_pos_t native_to_joint(const xyz_pos_t &native) {
-  if (!tool_centerpoint_control) return native;
+  if (!motion.tool_centerpoint_control) return native;
 
   // X and Y hotend offsets must be applied in Cartesian space with no "spoofing"
   xyz_pos_t pos = NUM_AXIS_ARRAY(
-                    DIFF_TERN(HAS_HOTEND_OFFSET, native.x, motion.hotend_offset[active_extruder].x),
-                    DIFF_TERN(HAS_HOTEND_OFFSET, native.y, motion.otend_offset[active_extruder].y),
+                    DIFF_TERN(HAS_HOTEND_OFFSET, native.x, motion.hotend_offset[motion.extruder].x),
+                    DIFF_TERN(HAS_HOTEND_OFFSET, native.y, motion.hotend_offset[motion.extruder].y),
                     native.z,
                     native.i,
                     native.j
@@ -109,7 +109,7 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
     const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
       xyr * cos(xytheta),
       xyr * sin(xytheta),
-      DIFF_TERN(HAS_HOTEND_OFFSET, pos.z, motion.hotend_offset[active_extruder].z),
+      DIFF_TERN(HAS_HOTEND_OFFSET, pos.z, motion.hotend_offset[motion.extruder].z),
       pos.i,
       pos.j
     );
@@ -119,14 +119,14 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
 }
 
 void forward_kinematics(const xyz_pos_t &joint_pos) {
-  cartes = joint_to_native(joint_pos);
+  motion.cartes = joint_to_native(joint_pos);
 }
 
 
 xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
-  if (!tool_centerpoint_control) return joint_pos;
+  if (!motion.tool_centerpoint_control) return joint_pos;
 
-  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset_z, hotend_offset[active_extruder].z);
+  const float pivot_length = DIFF_TERN(HAS_HOTEND_OFFSET, rotational_offset_z, motion.hotend_offset[motion.extruder].z);
   const float i_rad = RADIANS(joint_pos.i);
   #if HAS_J_AXIS
     const float j_rad = RADIANS(joint_pos.j);

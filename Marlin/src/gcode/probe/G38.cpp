@@ -46,7 +46,7 @@ inline bool G38_run_probe(const ProbePtRaise raise_after) {
     constexpr uint8_t move_value = 1;
   #endif
 
-  const xyz_pos_t measured = probe.probe_safely(destination, raise_after, move_value, 0, true, true, Z_TWEEN_SAFE_CLEARANCE, true);
+  const xyz_pos_t measured = probe.probe_safely(motion.destination, raise_after, move_value, 0, true, true, Z_TWEEN_SAFE_CLEARANCE, true);
   
   LOOP_NUM_AXES(a) {
     if (isnan(measured[a])) return true;
@@ -62,17 +62,17 @@ inline bool G38_run_probe(const ProbePtRaise raise_after) {
   TERN_(VERBOSE_SINGLE_PROBE, ui.set_status(msg));
 
     // If the probe is stowed, move the nozzle to the position of the probe
-  const xyz_pos_t offs = DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, hotend_offset[active_extruder]);
-  if ((!endstops.z_probe_enabled) && (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, hotend_offset[active_extruder].z))) {
+  const xyz_pos_t offs = DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]);
+  if ((!endstops.z_probe_enabled) && (probe.offset.z >= TERN0(HAS_HOTEND_OFFSET, motion.hotend_offset[motion.extruder].z))) {
     if ((!NEAR_ZERO(offs.x)) || (!NEAR_ZERO(offs.y)) || offs.z > 0.0f) {
-      do_z_clearance_by(Z_TWEEN_SAFE_CLEARANCE);
+      motion.do_z_clearance_by(Z_TWEEN_SAFE_CLEARANCE);
     }
-    destination = measured;
-    do_blocking_move_to(destination);
+    motion.destination = measured;
+    motion.blocking_move(motion.destination);
     planner.synchronize();
   }
   endstops.not_homing();
-  report_current_position();
+  motion.report_position();
   return false;
 }
 

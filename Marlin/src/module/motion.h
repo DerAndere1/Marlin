@@ -120,23 +120,18 @@ public:
   static feedRate_t mms_scaled(const feedRate_t f=feedrate_mm_s) {
     return f * 0.01f * feedrate_percentage;
   }
+  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
+    static float cartesian_mm;
+  #endif
+
+  #if IS_KINEMATIC
+    static abce_pos_t delta;            // Scratch space for a kinematic result (motor positions in joint space)
+  #endif
 
   #if HAS_TOOL_LENGTH_COMPENSATION
     static bool simple_tool_length_compensation;
   #endif
 
-  #if HAS_ROTATIONAL_AXES || IS_KINEMATIC || HAS_LEVELING || ENABLED(FEEDRATE_MODE_SUPPORT)
-    static float cartesian_mm;
-  #endif
-
-
-  #if IS_KINEMATIC
-    static abce_pos_t delta;            // Scratch space for a kinematic result
-  #endif
-
-// Until kinematics.cpp is created, declare this here
-#if IS_KINEMATIC
-  static abce_pos_t delta;
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     static bool tool_centerpoint_control;
   #endif
@@ -501,6 +496,8 @@ public:
     static void update_software_endstops(const AxisEnum axis
       OPTARG(HAS_HOTEND_OFFSET, const uint8_t old_tool_index=0, const uint8_t new_tool_index=0)
     );
+    static void handle_min_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos);
+    static void handle_max_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos);
     static void set_soft_endstop_loose(const bool loose) { soft_endstop._loose = loose; }
   #else
     static void apply_limits(xyz_pos_t&) {}
@@ -531,7 +528,7 @@ public:
   #endif
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
-    bool can_reach_xyijkuvw(NUM_AXIS_LIST(const_float_t rx, const_float_t ry, const_float_t rz, const_float_t ri, const_float_t rj, const_float_t rk, const_float_t ru, const_float_t rv, const_float_t rw));
+    bool can_reach_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw));
     inline bool can_reach_xyijkuvw(const xyz_pos_t &pos) {
       return can_reach_xyijkuvw(NUM_AXIS_LIST(pos.x, pos.y, pos.z, pos.i, pos.j, pos.k, pos.u, pos.v, pos.w));
     }

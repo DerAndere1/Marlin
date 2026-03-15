@@ -195,7 +195,7 @@ int8_t GcodeSuite::get_target_hotend_from_command() {
       return -1;
     }
   #endif
-  return active_extruder;
+  return motion.extruder;
 }
 
 
@@ -251,13 +251,13 @@ void GcodeSuite::get_destination_from_command() {
       else {
         #if ANY(SCALE_WORKSPACE, ROTATE_WORKSPACE)
           if ((TERN1(SCALE_WORKSPACE, !scaling_is_active)) && TERN1(ROTATE_WORKSPACE, NEAR_ZERO(rotation_angle))) {
-            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, i);
+            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
           }
           else {
-            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.raw_destination[i] + v : motion.logical_to_native(v, i);
+            motion.raw_destination[i] = axis_is_relative(AxisEnum(i)) ? motion.raw_destination[i] + v : motion.logical_to_native(v, (AxisEnum)i);
           }
         #else
-          motion.destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, i);
+          motion.destination[i] = axis_is_relative(AxisEnum(i)) ? motion.position[i] + v : motion.logical_to_native(v, (AxisEnum)i);
         #endif
       }
     }

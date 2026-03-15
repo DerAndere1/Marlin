@@ -2059,13 +2059,8 @@ void MarlinSettings::postprocess() {
       {
         #if HAS_HOTEND_OFFSET
           // Skip hotend 0 which must be 0
-<<<<<<< HEAD
-          for (uint8_t e = 1; e < HOTENDS; ++e)
-            EEPROM_READ(motion.hotend_offset[e]);
-=======
           for (uint8_t e = 1; e < TOOLS; ++e)
-            EEPROM_READ(hotend_offset[e]);
->>>>>>> 904f106108 (add PENTA_AXIS_HT and PENTA_AXIS_TRT kinematics)
+            EEPROM_READ(motion.hotend_offset[e]);
         #endif
       }
 

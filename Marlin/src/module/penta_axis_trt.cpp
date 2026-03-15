@@ -76,12 +76,12 @@ void inverse_kinematics(const xyz_pos_t &raw) {
  * This is an expensive calculation.
  */
 xyz_pos_t native_to_joint(const xyz_pos_t &native) {
-  if (!tool_centerpoint_control) {
+  if (!motion.tool_centerpoint_control) {
 
-    return simple_tool_length_compensation ? (native - hotend_offset[active_extruder]) : native;
+    return motion.simple_tool_length_compensation ? (native - motion.hotend_offset[motion.extruder]) : native;
   }
-  else if (NEAR_ZERO(native.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(native.j)) && NEAR_ZERO(current_position.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(current_position.j))) {
-    return  native - hotend_offset[active_extruder];
+  else if (NEAR_ZERO(native.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(native.j)) && NEAR_ZERO(motion.position.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(motion.position.j))) {
+    return  native - motion.hotend_offset[motion.extruder];
   }
   else {
 
@@ -157,20 +157,20 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
 }
 
 void forward_kinematics(const xyz_pos_t &joint_pos) {
-  cartes = joint_to_native(joint_pos);
+  motion.cartes = joint_to_native(joint_pos);
 }
 
 xyz_pos_t joint_to_native(const xyz_pos_t &joint_pos) {
-  if (!tool_centerpoint_control) {
+  if (!motion.tool_centerpoint_control) {
 
-    return simple_tool_length_compensation ? (joint_pos + hotend_offset[active_extruder]) : joint_pos;
+    return motion.simple_tool_length_compensation ? (joint_pos + motion.hotend_offset[motion.extruder]) : joint_pos;
   }
-  else if (NEAR_ZERO(joint_pos.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(joint_pos.j)) && NEAR_ZERO(current_position.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(current_position.j))) {
-    return  joint_pos + hotend_offset[active_extruder];
+  else if (NEAR_ZERO(joint_pos.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(joint_pos.j)) && NEAR_ZERO(motion.position.i) && TERN1(HAS_J_AXIS, NEAR_ZERO(motion.position.j))) {
+    return  joint_pos + motion.hotend_offset[motion.extruder];
   }
   else {
 
-  const xyz_pos_t pos = joint_pos + hotend_offset[active_extruder];
+  const xyz_pos_t pos = joint_pos + motion.hotend_offset[motion.extruder];
 
   // Note: 'principal' joints are used
   const float pivot_length_x = pos.x - mrzp_offset_x;

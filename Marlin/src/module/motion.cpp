@@ -149,10 +149,6 @@ xyz_pos_t Motion::cartes;
     , I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS
   );
 #endif
-// The active extruder (tool). Set with T<extruder> command.
-#if HAS_MULTI_TOOLS
-  uint8_t active_extruder = 0; // = 0
-#endif
 
 #if ENABLED(LCD_SHOW_E_TOTAL)
   float Motion::e_move_accumulator; // = 0
@@ -165,7 +161,7 @@ xyz_pos_t Motion::cartes;
 // Extruder offsets
 #if HAS_HOTEND_OFFSET
   xyz_pos_t Motion::hotend_offset[TOOLS]; // Initialized by settings.load
-  void reset_hotend_offsets() {
+  void Motion::reset_hotend_offsets() {
     constexpr float tmp[3][TOOLS] = { HOTEND_OFFSET_X, HOTEND_OFFSET_Y, HOTEND_OFFSET_Z };
     static_assert(
       !tmp[X_AXIS][0] && !tmp[Y_AXIS][0] && !tmp[Z_AXIS][0],
@@ -194,7 +190,7 @@ xyz_pos_t Motion::cartes;
 #endif
 feedRate_t Motion::feedrate_mm_s = MMM_TO_MMS(DEFAULT_FEEDRATE_MM_M);
 
-int16_t feedrate_percentage = 100;
+int16_t Motion::feedrate_percentage = 100;
 #if ENABLED(EDITABLE_HOMING_FEEDRATE)
   xyz_feedrate_t Motion::homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
 #else
@@ -207,7 +203,7 @@ int16_t feedrate_percentage = 100;
 
 #if IS_KINEMATIC
 
-  abce_pos_t motion.delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
+  abce_pos_t Motion::delta = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_HOME_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     bool Motion::tool_centerpoint_control = false;
@@ -1426,7 +1422,7 @@ void Motion::restore_feedrate_and_scaling() {
   }
 
 
-  void handle_min_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
+  void Motion::handle_min_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
     #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       if (planner.abort_on_software_endstop) {
         if (target_pos[axis] < soft_endstop.min[axis]) {
@@ -1448,7 +1444,7 @@ void Motion::restore_feedrate_and_scaling() {
     #endif
   }
 
-  void handle_max_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
+  void Motion::handle_max_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
     #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       if (planner.abort_on_software_endstop) {
         if (target_pos[axis] > soft_endstop.max[axis]) {

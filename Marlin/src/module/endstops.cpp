@@ -384,7 +384,7 @@ void Endstops::event_handler() {
     #elif ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
       if (planner.abort_on_software_endstop) {
         TERN_(ADVANCED_PAUSE_FEATURE, did_pause_print = 0);
-        quickstop_stepper();
+        motion.quickstop_stepper();
         #if HAS_CUTTER
           TERN_(SPINDLE_FEATURE, safe_delay(1000));
           cutter.kill();

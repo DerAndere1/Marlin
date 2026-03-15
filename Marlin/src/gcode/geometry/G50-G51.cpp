@@ -63,7 +63,7 @@
       #endif
     }
 
-    scaling_center_x = parser.seenval('X') ? motion.logical_to_native(parser.value_axis_units(X_AXIS), X_AXIS) : current_position.x;
+    scaling_center_x = parser.seenval('X') ? motion.logical_to_native(parser.value_axis_units(X_AXIS), X_AXIS) : motion.position.x;
     TERN_(HAS_Y_AXIS, scaling_center_y = parser.seenval('Y') ? motion.logical_to_native(parser.value_axis_units(Y_AXIS), Y_AXIS) : motion.position.y);
     TERN_(HAS_Z_AXIS, scaling_center_z = parser.seenval('Z') ? motion.logical_to_native(parser.value_axis_units(Z_AXIS), Z_AXIS) : motion.position.z);
 

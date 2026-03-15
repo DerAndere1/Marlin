@@ -958,7 +958,7 @@ void Marlin::kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component
 void Marlin::minkill(const bool steppers_off/*=false*/) {
 
   // stop steppers
-  quickstop_stepper();
+  motion.quickstop_stepper();
 
   TERN_(HAS_CUTTER, cutter.kill());  // Full cutter shutdown including ISR control
 
