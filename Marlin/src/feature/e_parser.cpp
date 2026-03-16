@@ -61,10 +61,6 @@ EmergencyParser emergency_parser;
   bool realtime_ramping_pause_flag = false;
 #endif
 
-#if ENABLED(SOFT_FEED_HOLD)
-  bool realtime_ramping_pause_flag = false;
-#endif
-
 void EmergencyParser::update(EmergencyParser::State &state, const uint8_t c) {
   auto uppercase = [](char c) {
     return TERN0(GCODE_CASE_INSENSITIVE, WITHIN(c, 'a', 'z')) ? c + 'A' - 'a' : c;
@@ -227,7 +223,7 @@ void EmergencyParser::update(EmergencyParser::State &state, const uint8_t c) {
             case EP_M876SN: hostui.handle_response(M876_reason); break;
           #endif
           #if ENABLED(REALTIME_REPORTING_COMMANDS)
-            case EP_GRBL_STATUS: motion.report_current_position_moving(); break;
+            case EP_GRBL_STATUS: motion.report_position_moving(); break;
             case EP_GRBL_PAUSE: TERN(SOFT_FEED_HOLD, realtime_ramping_pause_flag = true, motion.quickpause_stepper()); break;
             case EP_GRBL_RESUME: TERN(SOFT_FEED_HOLD, realtime_ramping_pause_flag = false, motion.quickresume_stepper()); break;
           #endif

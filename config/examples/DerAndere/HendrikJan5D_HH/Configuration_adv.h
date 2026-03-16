@@ -2664,7 +2664,7 @@
  * Currently handles M108, M112, M410, M876
  * NOTE: Not yet implemented for all platforms.
  */
-//#define EMERGENCY_PARSER
+#define EMERGENCY_PARSER
 
 /**
  * Realtime Reporting (requires EMERGENCY_PARSER)
@@ -4294,13 +4294,30 @@
  * NOTE: Controls Laser PWM but does NOT pause Spindle, Fans, Heaters or other devices.
  * @section freeze
  */
-#define FREEZE_FEATURE
+//#define FREEZE_FEATURE
 #if ENABLED(FREEZE_FEATURE)
   //#define FREEZE_PIN   -1   // Override the default (KILL) pin here
   #define FREEZE_JERK     2   // (mm/s) Completely halt when motion has decelerated below this value
   #define FREEZE_STATE  LOW   // State of pin indicating freeze
 #endif
 
+#if ANY(FREEZE_FEATURE, REALTIME_REPORTING_COMMANDS)
+  /**
+   * Command P000 (REALTIME_REPORTING_COMMANDS and EMERGENCY_PARSER) or
+   * FREEZE_PIN (FREEZE_FEATURE) initiates a soft feed hold that keeps
+   * power available and does not stop the spindle.
+   *
+   * The soft feed hold decelerates and halts movement at FREEZE_JERK.
+   * Motion can be resumed with command R000 (requires REALTIME_REPORTING_COMMANDS) or
+   * by using the FREEZE_PIN (requires FREEZE_FEATURE).
+   *
+   * NOTE: Affects Laser PWM but DOES NOT pause Spindle, Fans, Heaters or other devices.
+   */
+  #define SOFT_FEED_HOLD
+  #if ENABLED(SOFT_FEED_HOLD)
+    #define FREEZE_JERK     0.1   // (mm/s) Completely halt when motion has decelerated below this value
+  #endif
+#endif
 /**
  * Adds canned drilling cycle G Codes: 
  * G73: Shallow peck drill cycle

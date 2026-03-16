@@ -1790,7 +1790,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
       if (!can_reach(destination)) return true;
     #endif
     #if HAS_ROTATIONAL_AXES
-      bool cartes_move = true;
+      bool cartesian_move = true;
     #endif
     if (!parser.linear_motion_gcode)
       parser.cartesian_mm = get_move_distance(diff OPTARG(HAS_ROTATIONAL_AXES, cartesian_move));

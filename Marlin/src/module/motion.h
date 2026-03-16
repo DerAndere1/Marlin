@@ -693,11 +693,6 @@ private:
   #endif
   static void _goto_destination_internal(const feedRate_t fr_mm_s=0.0f OPTARG(IS_KINEMATIC, const bool is_fast=false));
 
-  #if ENABLED(REALTIME_RAMPING)
-    static void realtime_soft_stop();
-    static void realtime_soft_resume();
-    static void updateSoftStopResume();
-  #endif
 }; // class Motion
 
 // Specify read-only XY_PROBE_FEEDRATE_MM_S, feed rate between Probe Points.
