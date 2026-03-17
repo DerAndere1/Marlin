@@ -1348,7 +1348,10 @@ void setup() {
   #endif
   SERIAL_ECHO_MSG(" Compiled: " __DATE__);
   SERIAL_ECHO_MSG(STR_FREE_MEMORY, hal.freeMemory(), STR_PLANNER_BUFFER_BYTES, sizeof(block_t) * (BLOCK_BUFFER_SIZE));
-
+  
+  #if HAS_ROTATIONAL_AXES
+    parser.cartes_move = true;
+  #endif
   // Some HAL need precise delay adjustment
   calibrate_delay_loop();
 
