@@ -1160,6 +1160,10 @@ void GcodeSuite::process_parsed_command(bool no_ok/*=false*/) {
         case 666: M666(); break;                                  // M666: Set delta or multiple endstop adjustment
       #endif
 
+      #if ENABLED(CALIBRATION_CORRECTION)
+        case 667: M667(); break;                                  // M667: Set calibration correction coefficients
+      #endif
+
       #if ENABLED(DUET_SMART_EFFECTOR) && PIN_EXISTS(SMART_EFFECTOR_MOD)
         case 672: M672(); break;                                  // M672: Set/clear Duet Smart Effector sensitivity
       #endif

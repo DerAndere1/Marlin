@@ -55,6 +55,9 @@
 #include "penta_axis_head_head.h"
 #include "motion.h"
 
+#if ENABLED(CALIBRATION_CORRECTION)
+  #include "calibration_correction.h"
+#endif
 
 // Initialized by settings.load()
 float segments_per_second;
@@ -67,9 +70,27 @@ float rotational_offset_y; // LC
  *
  * Calculate the joints positions for a given position, storing the result in the global delta[] array.
  * The raw position is interpreted as native machine position using native_to_joint().
+ * Calibration correction is applied HERE (only to move targets, not position tracking).
  */
 void inverse_kinematics(const xyz_pos_t &raw) {
     motion.delta = native_to_joint(raw);
+
+    // Apply calibration correction only to move targets (not position sync)
+    #if ENABLED(CALIBRATION_CORRECTION)
+      if (motion.tool_centerpoint_control && calibration_for_move_target) {
+        #if AXIS4_NAME == 'C'
+          const float c_deg = raw.i;
+          const float b_deg = raw.j;
+        #elif AXIS5_NAME == 'C'
+          const float c_deg = raw.j;
+          const float b_deg = raw.i;
+        #endif
+        const xyz_pos_t correction = get_calibration_correction(c_deg, b_deg);
+        motion.delta.x += correction.x;
+        motion.delta.y += correction.y;
+        motion.delta.z += correction.z;
+      }
+    #endif
 }
 
 /**
@@ -105,13 +126,16 @@ xyz_pos_t native_to_joint(const xyz_pos_t &native) {
   const float cos_c = cosf(c_rad);
 
   
-  const xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
+  xyz_pos_t joints_pos = NUM_AXIS_ARRAY(
     pos.x - sin_c * rotational_offset_y + cos_c * sin_b * pivot_length,
     pos.y + (cos_c - 1) * rotational_offset_y + sin_c * sin_b * pivot_length,
     pos.z + (cos_b - 1) * pivot_length,
     pos.i,
     pos.j
   );
+
+  // NOTE: Calibration correction is applied in inverse_kinematics(), not here,
+  // so it only affects move targets and not position tracking.
 
   return joints_pos;
 

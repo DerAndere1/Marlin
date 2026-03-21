@@ -1279,6 +1279,10 @@ private:
     static void M666_report(const bool forReplay=true);
   #endif
 
+  #if ENABLED(CALIBRATION_CORRECTION)
+    static void M667();
+  #endif
+
   #if ENABLED(DUET_SMART_EFFECTOR) && PIN_EXISTS(SMART_EFFECTOR_MOD)
     static void M672();
   #endif

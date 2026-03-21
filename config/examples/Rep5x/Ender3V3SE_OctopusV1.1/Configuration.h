@@ -1214,17 +1214,24 @@
  */
 #define PENTA_AXIS_HH
 #if ENABLED(PENTA_AXIS_HH)
-  // Rep5x LC: Y-offset from yaw axis center to tool (typically 0)
-  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0  // (mm)
+  // Rep5x LC: Y-offset from yaw axis center to tool
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 1.6  // (mm)
 
   // Rep5x LB: Z-offset from tilt axis to nozzle tip
-  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 47.9  // (mm)
+  #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 54.67  // (mm)
 
   // Segments per second for rotational moves
   #define DEFAULT_SEGMENTS_PER_SECOND 200
 
   // Print surface radius
   #define PRINTABLE_RADIUS 100.0  // (mm)
+#endif
+
+// Calibration correction - compensates for mechanical errors
+// Use M667 to set Fourier coefficients from Rep5x Calibrator tool
+// Requires PENTA_AXIS_HH (defined above)
+#ifdef PENTA_AXIS_HH
+  #define CALIBRATION_CORRECTION
 #endif
 
 //===========================================================================

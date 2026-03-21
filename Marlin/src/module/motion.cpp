@@ -37,6 +37,10 @@
 #include "../lcd/marlinui.h"
 #include "../inc/MarlinConfig.h"
 
+#if ENABLED(CALIBRATION_CORRECTION)
+  #include "calibration_correction.h"
+#endif
+
 #if IS_SCARA
   #include "../libs/buzzer.h"
   #include "../lcd/marlinui.h"
@@ -2161,6 +2165,9 @@ void Motion::prepare_line_to_destination() {
 
   if (unpark_before_move()) return;
 
+  // Set flag so calibration correction is applied to move targets only
+  TERN_(CALIBRATION_CORRECTION, calibration_for_move_target = true);
+
   if (
     #if UBL_SEGMENTED
       #if IS_KINEMATIC // UBL using Kinematic / Cartesian cases as a workaround for now.
@@ -2173,8 +2180,12 @@ void Motion::prepare_line_to_destination() {
     #else
       goto_destination_cartesian()
     #endif
-  ) return;
+  ) {
+    TERN_(CALIBRATION_CORRECTION, calibration_for_move_target = false);
+    return;
+  }
 
+  TERN_(CALIBRATION_CORRECTION, calibration_for_move_target = false);
   position = destination;
 }
 
