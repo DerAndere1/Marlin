@@ -1338,6 +1338,10 @@
 
   // Print surface diameter/2
   #define PRINTABLE_RADIUS 100.0    // (mm)
+
+  // Calibration correction - compensates for mechanical errors
+  // Use M667 to set Fourier coefficients from Rep5x Calibrator tool
+  #define CALIBRATION_CORRECTION
 #endif
 
 // @section machine
