@@ -1221,7 +1221,7 @@
   #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Z 54.67  // (mm)
 
   // Segments per second for rotational moves
-  #define DEFAULT_SEGMENTS_PER_SECOND 200
+  #define DEFAULT_SEGMENTS_PER_SECOND 400
 
   // Print surface radius
   #define PRINTABLE_RADIUS 100.0  // (mm)
@@ -1232,7 +1232,6 @@
 // Requires PENTA_AXIS_HH (defined above)
 #ifdef PENTA_AXIS_HH
   #define CALIBRATION_CORRECTION
-  #define IK_PREPROCESS             // M668: Pre-process IK before printing
 #endif
 
 //===========================================================================
@@ -1386,7 +1385,7 @@
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 500, 1000, 1000, 10000 }
+#define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 500, 500, 500, 10000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1419,8 +1418,8 @@
   #define DEFAULT_YJERK 10.0
   #define DEFAULT_ZJERK  0.3
   #define DEFAULT_EJERK  5.0
-  //#define DEFAULT_IJERK  0.3
-  //#define DEFAULT_JJERK  0.3
+  #define DEFAULT_IJERK  20.0  // C-axis (yaw) jerk in deg/s
+  #define DEFAULT_JJERK  20.0  // B-axis (tilt) jerk in deg/s
   //#define DEFAULT_KJERK  0.3
   //#define DEFAULT_UJERK  0.3
   //#define DEFAULT_VJERK  0.3
@@ -1455,7 +1454,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-//#define S_CURVE_ACCELERATION
+#define S_CURVE_ACCELERATION
 #if ENABLED(S_CURVE_ACCELERATION)
   // Define to use 4th instead of 6th order motion curve
   //#define S_CURVE_FACTOR 0.25    // Initial and final acceleration factor, ideally 0.1 to 0.4.
