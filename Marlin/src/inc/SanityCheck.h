@@ -2550,6 +2550,15 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
   #error "HOME_Z_FIRST can't be used when homing Z with a probe."
 #endif
 
+// Z homing with limit switch requirements
+#if NONE(USE_PROBE_FOR_Z_HOMING, Z_AFTER_HOMING) && HAS_BED_LEVELING && ANY(RESTORE_LEVELING_AFTER_G28, ENABLE_LEVELING_AFTER_G28)
+  #if ENABLED(Z_HOME_TO_MAX) && DISABLED(ENABLE_LEVELING_FADE_HEIGHT) 
+    #error "To use USE_PROBE_FOR_Z_HOMING with Z_HOME_DIR 1, enable Z_AFTER_HOMING or ENABLE_LEVELING_FADE_HEIGHT or disable RESTORE_LEVELING_AFTER_G28 and ENABLE_LEVELING_AFTER_G28."
+  #elif ENABLED(Z_HOME_TO_MIN)
+    #error "To use USE_PROBE_FOR_Z_HOMING with HOME_DIR -1, enable Z_AFTER_HOMING or disable RESTORE_LEVELING_AFTER_G28 and ENABLE_LEVELING_AFTER_G28."
+  #endif
+#endif
+
 #if Z_HOME_TO_MAX && defined(Z_AFTER_HOMING) && DISABLED(ALLOW_Z_AFTER_HOMING)
   #error "Z_AFTER_HOMING shouldn't be used with Z max homing to keep 'G28 Z' safe for end-of-print usage. Define ALLOW_Z_AFTER_HOMING to allow this at your own risk."
 #endif
