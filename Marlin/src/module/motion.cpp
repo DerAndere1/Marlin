@@ -1442,10 +1442,10 @@ void Motion::restore_feedrate_and_scaling() {
           #endif
           marlin.stop();
         }
-        else {
-          NOLESS(target_pos[axis], soft_endstop.min[axis]);
-        }
       }
+      else {
+        NOLESS(target_pos[axis], soft_endstop.min[axis]);
+    }
     #else
       NOLESS(target_pos[axis], soft_endstop.min[axis]);
     #endif
@@ -1464,9 +1464,9 @@ void Motion::restore_feedrate_and_scaling() {
           #endif
           marlin.stop();
         }
-        else {
-          NOMORE(target_pos[axis], soft_endstop.max[axis]);
-        }
+      }
+      else {
+        NOMORE(target_pos[axis], soft_endstop.max[axis]);
       }
     #else
       NOMORE(target_pos[axis], soft_endstop.max[axis]);

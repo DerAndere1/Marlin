@@ -528,8 +528,8 @@ public:
   #endif
 
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
-    bool can_reach_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw));
-    inline bool can_reach_xyijkuvw(const xyz_pos_t &pos) {
+    static bool can_reach_xyijkuvw(NUM_AXIS_LIST(const float rx, const float ry, const float rz, const float ri, const float rj, const float rk, const float ru, const float rv, const float rw));
+    static bool can_reach_xyijkuvw(const xyz_pos_t &pos) {
       return can_reach_xyijkuvw(NUM_AXIS_LIST(pos.x, pos.y, pos.z, pos.i, pos.j, pos.k, pos.u, pos.v, pos.w));
     }
   #endif
