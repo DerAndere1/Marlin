@@ -1,10 +1,6 @@
 /**
- * Marlin2ForPipetBot [https://github.com/DerAndere1/Marlin]
- * Copyright 2019 - 2026 DerAndere and other Marlin2ForPipetBot authors [https://github.com/DerAndere1/Marlin]
- *
- * Based on:
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 - 2025 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -72,10 +68,6 @@
   #endif
 #endif
 
-#if ENABLED(G38_PROBE_TARGET)
-  #include "planner.h"
-#endif
-
 #if ENABLED(MEASURE_BACKLASH_WHEN_PROBING)
   #include "../feature/backlash.h"
 #endif
@@ -111,9 +103,6 @@ Probe probe;
 
 xyz_pos_t Probe::offset; // Initialized by settings.load
 
-#if ENABLED(G38_PROBE_TARGET)
-  probe_target_t Probe::G38_move{0};
-#endif
 #if HAS_PROBE_XY_OFFSET
   const xy_pos_t &Probe::offset_xy = Probe::offset;
 #else
@@ -143,7 +132,9 @@ xyz_pos_t Probe::offset; // Initialized by settings.load
     motion.blocking_move_x(X_MAX_POS + SLED_DOCKING_OFFSET - ((stow) ? 1 : 0));
 
     #if HAS_SOLENOID_1 && DISABLED(EXT_SOLENOID)
+      if (!deploy) endstops.enable_z_probe(false);
       WRITE(SOL1_PIN, !stow); // switch solenoid
+      if (deploy) safe_delay(500);
     #endif
   }
 
@@ -382,7 +373,7 @@ xyz_pos_t Probe::offset; // Initialized by settings.load
 
 #endif // HAS_QUIET_PROBING
 
-FORCE_INLINE void probe_specific_action(const bool deploy) {
+void Probe::probe_specific_action(const bool deploy) {
   DEBUG_SECTION(log_psa, "Probe::probe_specific_action", DEBUGGING(LEVELING));
   #if ENABLED(PAUSE_BEFORE_DEPLOY_STOW)
 
@@ -618,29 +609,27 @@ bool Probe::set_deployed(const bool deploy, const bool no_return/*=false*/) {
  * @brief Move down until the probe triggers or the low limit is reached
  *        Used by run_z_probe to do a single Z probe move.
  *
- * @param  pos         probing destination
- * @param  fr_mm_s     Feedrate in mm/s
- * @param  move_value  G38 subcode
+ * @param  z        Z destination
+ * @param  fr_mm_s  Feedrate in mm/s
  * @return true to indicate an error
  *
- * @details Used by run_probe to get each bed Z height measurement.
- *          Sets current_position.z to the height where the probe triggered
+ * @details Used by run_z_probe to get each bed Z height measurement.
+ *          Sets motion.position.z to the height where the probe triggered
  *          (according to the Z stepper count). The float Z is propagated
  *          back to the planner.position to preempt any rounding error.
  *
  * @return TRUE if the probe failed to trigger.
  */
-bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, const uint8_t move_value) {
-  DEBUG_SECTION(log_probe, "Probe::probe_to_tagret", DEBUGGING(LEVELING));
-  if (TERN1(G38_PROBE_TARGET, move_value == 0)) {
-    #if ALL(HAS_HEATED_BED, WAIT_FOR_BED_HEATER)
-      thermalManager.wait_for_bed_heating();
-    #endif
+bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
+  DEBUG_SECTION(log_probe, "Probe::probe_down_to_z", DEBUGGING(LEVELING));
 
-    #if ALL(HAS_TEMP_HOTEND, WAIT_FOR_HOTEND)
-      thermalManager.wait_for_hotend_heating(motion.extruder);
-    #endif
-  }
+  #if ALL(HAS_HEATED_BED, WAIT_FOR_BED_HEATER)
+    thermalManager.wait_for_bed_heating();
+  #endif
+
+  #if ALL(HAS_TEMP_HOTEND, WAIT_FOR_HOTEND)
+    thermalManager.wait_for_hotend_heating(motion.extruder);
+  #endif
 
   #if ENABLED(BLTOUCH)
     // Ensure the BLTouch is deployed. (Does nothing if already deployed.)
@@ -648,6 +637,7 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
     if (TERN(MEASURE_BACKLASH_WHEN_PROBING, true, !bltouch.high_speed_mode) && bltouch.deploy())
       return true;
   #endif
+
   #if HAS_Z_SERVO_PROBE && (ENABLED(Z_SERVO_INTERMEDIATE_STOW) || defined(Z_SERVO_MEASURE_ANGLE))
     probe_specific_action(true);  // Always re-deploy in this case
   #endif
@@ -682,36 +672,20 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
     endstops.enable(true);
   #endif // SENSORLESS_PROBING
 
-  TERN_(HAS_QUIET_PROBING, set_probing_paused(true));
-  bool probe_triggered;
-  #if ENABLED(G38_PROBE_TARGET)
-    if (move_value > 0) {
-      G38_move.triggered = false;
-      G38_move.type = move_value;
-      endstops.enable(true);
-      motion.destination = pos;
-      // Move down until the probe is triggered
-      motion.prepare_line_to_destination();
-      planner.synchronize();
-      probe_triggered = G38_move.triggered;
-      endstops.not_homing();  
-      G38_move.type = 0;
-    }
-    else
-  #endif
-    {
-      // Move down until the probe is triggered
-      motion.blocking_move_z(pos.z, fr_mm_s);
-      // Check to see if the probe was triggered
-      probe_triggered = (
-        #if HAS_DELTA_SENSORLESS_PROBING
-          endstops.trigger_state() & (_BV(X_MAX) | _BV(Y_MAX) | _BV(Z_MAX))
-        #else
-          TEST(endstops.trigger_state(), Z_MIN_PROBE)
-        #endif
-      );
-    }
-  
+  TERN_(HAS_QUIET_PROBING, set_devices_paused_for_probing(true));
+
+  // Move down until the probe is triggered
+  motion.blocking_move_z(z, fr_mm_s);
+
+  // Check to see if the probe was triggered
+  const bool probe_triggered = (
+    #if HAS_DELTA_SENSORLESS_PROBING
+      PROBE_TRIGGERED()
+    #else
+      TEST(endstops.trigger_state(), Z_MIN_PROBE)
+    #endif
+  );
+
   // Offset sensorless probing
   #if HAS_DELTA_SENSORLESS_PROBING
     if (probe_triggered) refresh_largest_sensorless_adj();
@@ -740,7 +714,7 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
     }
     TERN_(IMPROVE_HOMING_RELIABILITY, planner.enable_stall_prevention(false));
   #endif // SENSORLESS_PROBING
-  
+
   #if ENABLED(BLTOUCH)
     if (probe_triggered && !bltouch.high_speed_mode && bltouch.stow())
       return true; // Stow in LOW SPEED MODE on every trigger
@@ -750,12 +724,11 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
     probe_specific_action(false);  //  Always stow
   #endif
 
-
   // Clear endstop flags
   endstops.hit_on_purpose();
 
-  // Get position where the steppers were interrupted
-  motion.set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+  // Get Z where the steppers were interrupted
+  motion.set_current_from_steppers_for_axis(Z_AXIS);
 
   // Tell the planner where we actually are
   motion.sync_plan_position();
@@ -800,7 +773,6 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
   }
 #endif
 
-
 /**
  * @brief Probe at the current XY (possibly more than once) to find the bed Z.
  *
@@ -810,35 +782,34 @@ bool Probe::probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, cons
  * @param sanity_check Flag to compare the probe result with the expected result
  *                     based on the probe Z offset. If the result is too far away
  *                     (more than Z_PROBE_ERROR_TOLERANCE too early) then throw an error.
- * @param target       minimum probing height, to allow deeper probing.
- * @param z_clearance  Z clearance to apply on probe failure.
+ * @param z_min_point Override the minimum probing height (-2mm), to allow deeper probing.
+ * @param z_clearance Z clearance to apply on probe failure.
  *
  * @return The Z position of the bed at the current XY or NAN on error.
  */
-xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &target, const float z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/, const uint8_t move_value) {
-  DEBUG_SECTION(log_probe, "Probe::run_probe", DEBUGGING(LEVELING));
+float Probe::run_z_probe(const bool sanity_check/*=true*/, const float z_min_point/*=Z_PROBE_LOW_POINT*/, const float z_clearance/*=Z_TWEEN_SAFE_CLEARANCE*/) {
+  DEBUG_SECTION(log_probe, "Probe::run_z_probe", DEBUGGING(LEVELING));
 
-  const xyz_pos_t nan_pos = {NUM_AXIS_LIST(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN)};
-  const xyz_pos_t offs = (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, motion.tool_centerpoint_control))) ? (-offset) : SUM_TERN(HAS_HOTEND_OFFSET, -offset, motion.hotend_offset[motion.extruder]);
-  
-  auto try_to_probe = [&](PGM_P const plbl, const xyz_pos_t target_point, const feedRate_t fr_mm_s, const bool scheck, const uint8_t move_value) -> bool {
+  const float zoffs = SUM_TERN(HAS_HOTEND_OFFSET, -offset.z, motion.active_hotend_offset().z);
+
+  auto try_to_probe = [&](PGM_P const plbl, const float z_probe_low_point, const feedRate_t fr_mm_s, const bool scheck) -> bool {
     constexpr float error_tolerance = Z_PROBE_ERROR_TOLERANCE;
     if (DEBUGGING(LEVELING)) {
       DEBUG_ECHOPGM_P(plbl);
-      DEBUG_ECHOLNPGM("> try_to_probe(..., ", target_point, ", ", fr_mm_s, ", ...)");
+      DEBUG_ECHOLNPGM("> try_to_probe(..., ", z_probe_low_point, ", ", fr_mm_s, ", ...)");
     }
 
     // Tare the probe, if supported
     if (TERN0(PROBE_TARE, tare())) return true;
 
-    // Probe and ckeck for failure
-    const bool probe_fail = probe_to_target(target_point, fr_mm_s, move_value),              // No probe trigger?
-               early_fail = (scheck && (!probe_fail) && motion.position.z > target_point.z + error_tolerance); // Probe triggered too high?
+    // Do a first probe at the fast speed
+    const bool probe_fail = probe_down_to_z(z_probe_low_point, fr_mm_s),              // No probe trigger?
+               early_fail = (scheck && motion.position.z > zoffs + error_tolerance);  // Probe triggered too high?
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING) && (probe_fail || early_fail)) {
         DEBUG_ECHOPGM(" Probe fail! - ");
         if (probe_fail) DEBUG_ECHOLNPGM("No trigger.");
-        if (early_fail) DEBUG_ECHOLNPGM("Triggered early (above ", target_point.z + error_tolerance, "mm)");
+        if (early_fail) DEBUG_ECHOLNPGM("Triggered early (above ", zoffs + error_tolerance, "mm)");
       }
     #else
       UNUSED(plbl);
@@ -848,84 +819,33 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
 
   // Stop the probe before it goes too low to prevent damage.
   // For known Z probe below the expected trigger point, otherwise -10mm lower.
-  const xyz_pos_t probe_target_point = {NUM_AXIS_LIST(
-    offs.x + target.x - float(!motion.axis_is_trusted(X_AXIS) * 10.0f),
-    offs.y + target.y - float(!motion.axis_is_trusted(Y_AXIS) * 10.0f),
-    offs.z + target.z - float(!motion.axis_is_trusted(Z_AXIS) * 10.0f),
-    offs.i + target.i - float(!motion.axis_is_trusted(I_AXIS) * 10.0f),
-    offs.j + target.j - float(!motion.axis_is_trusted(J_AXIS) * 10.0f),
-    offs.k + target.k - float(!motion.axis_is_trusted(K_AXIS) * 10.0f),
-    offs.u + target.u - float(!motion.axis_is_trusted(U_AXIS) * 10.0f),
-    offs.v + target.v - float(!motion.axis_is_trusted(V_AXIS) * 10.0f),
-    offs.w + target.w - float(!motion.axis_is_trusted(W_AXIS) * 10.0f)
-  )};
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Probe Low Point: ", probe_target_point.z);
-
+  const float z_probe_low_point = zoffs + z_min_point -float((!motion.axis_is_trusted(Z_AXIS)) * 10);
+  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Probe Low Point: ", z_probe_low_point);
 
   #if DISABLED(DWIN_LCD_PROUI)
 
-    #if ENABLED(G38_PROBE_TARGET)
-      xyz_float_t retract_mm;
-      LOOP_NUM_AXES(i) {
-        const float dist = probe_target_point[i] - motion.position[i];
-        if (i == Z_AXIS) {
-          retract_mm[i] = ABS(dist) < G38_MINIMUM_MOVE ? 0 : _MAX(motion.home_bump_mm((AxisEnum)i), (Z_CLEARANCE_DEPLOY_PROBE)) * (dist > 0 ? -1 : 1);
-        }
-        else {
-          retract_mm[i] = ABS(dist) < G38_MINIMUM_MOVE ? 0 : motion.home_bump_mm((AxisEnum)i) * (dist > 0 ? -1 : 1);
-        }
-      }
-    #endif
-
     // Double-probing does a fast probe followed by a slow probe
     #if TOTAL_PROBING == 2
-      // Attempt to tare the probe
-      if (TERN0(PROBE_TARE, tare())) return nan_pos;
 
       // Do a first probe at the fast speed
-      if (try_to_probe(PSTR("FAST"), probe_target_point, move_value > 0 ? motion.feedrate_mm_s : motion.z_probe_fast_mm_s, sanity_check, move_value)) return nan_pos;
-      xyze_pos_t targ1 = motion.position;
-      #if ENABLED(G38_PROBE_TARGET)
-        if (move_value > 0) {
-          if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", targ1.z);
-          // Move away by the retract distance
-          motion.destination = motion.position + retract_mm;
-          motion.prepare_line_to_destination();
-          planner.synchronize();
-        }
-        else 
-      #endif
-        {
-          TERN_(HAS_DELTA_SENSORLESS_PROBING, targ1.z -= largest_sensorless_adj);
-          if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", targ1.z);
+      if (try_to_probe(PSTR("FAST"), z_probe_low_point, motion.z_probe_fast_mm_s, sanity_check)) return NAN;
 
-          // Raise to give the probe clearance
-          motion.do_z_clearance(targ1.z + (Z_CLEARANCE_MULTI_PROBE), false);
-        }
+      const float z1 = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, motion.position.z, largest_sensorless_adj);
+      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", z1);
+
+      // Raise to give the probe clearance
+      motion.do_z_clearance(z1 + (Z_CLEARANCE_MULTI_PROBE), false);
 
     #elif Z_PROBE_FEEDRATE_FAST != Z_PROBE_FEEDRATE_SLOW
-      #if ENABLED(G38_PROBE_TARGET)
-        if (move_value > 0) {
-          if(!probe_to_target(probe_target_point, motion.feedrate_mm_s, move_value)) {
-            // Move away by the retract distance
-            motion.destination = motion.position + retract_mm;
-            motion.prepare_line_to_destination();
-            planner.synchronize();
-          };
-        }
-        else 
-      #endif
-        {
-          // If the nozzle is well over the travel height then
-          // move down quickly before doing the slow probe
-          xyz_pos_t probe_pos = motion.position;
-          probe_pos.z = (Z_CLEARANCE_DEPLOY_PROBE) + 5.0f + _MAX(offs.z, 0.0f);
-          if (motion.position.z > probe_pos.z) {
-            // Probe down fast. If the probe triggered, raise for probe clearance
-            if (!probe_to_target(probe_pos, motion.z_probe_fast_mm_s, 0))
-              motion.do_z_clearance(z_clearance);
-          }
-        }
+
+      // If the nozzle is well over the travel height then
+      // move down quickly before doing the slow probe
+      const float z = (Z_CLEARANCE_DEPLOY_PROBE) + 5.0f + _MAX(zoffs, 0.0f);
+      if (motion.position.z > z) {
+        // Probe down fast. If the probe never triggered, raise for probe clearance
+        if (!probe_down_to_z(z, motion.z_probe_fast_mm_s))
+          motion.do_z_clearance(z_clearance);
+      }
     #endif
 
     #if EXTRA_PROBING > 0
@@ -944,30 +864,29 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
     #endif
       {
         // If the probe won't tare, return
-        if (TERN0(PROBE_TARE, tare())) return nan_pos;
+        if (TERN0(PROBE_TARE, tare())) return true;
 
-        const feedRate_t fr = (TERN0(G38_PROBE_TARGET, (move_value > 0) && (Z_PROBE_FEEDRATE_FAST == Z_PROBE_FEEDRATE_SLOW))) ? motion.feedrate_mm_s : motion.z_probe_slow_mm_s;
         // Probe downward slowly to find the bed
         if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Slow Probe:");
-        if (try_to_probe(PSTR("SLOW"), probe_target_point, fr, sanity_check, move_value)) return nan_pos;
+        if (try_to_probe(PSTR("SLOW"), z_probe_low_point, motion.z_probe_slow_mm_s, sanity_check)) return NAN;
 
         TERN_(MEASURE_BACKLASH_WHEN_PROBING, backlash.measure_with_probe());
-        xyze_pos_t probe_pos = motion.position;
-        TERN_(HAS_DELTA_SENSORLESS_PROBING, probe_pos.z -= largest_sensorless_adj);
+
+        const float z = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, motion.position.z, largest_sensorless_adj);
 
         #if EXTRA_PROBING > 0
           // Insert Z measurement into probes[]. Keep it sorted ascending.
           for (uint8_t i = 0; i <= p; ++i) {                            // Iterate the saved Zs to insert the new Z
-            if (i == p || probes[i] > probe_pos.z) {                        // Last index or new Z is smaller than this Z
+            if (i == p || probes[i] > z) {                              // Last index or new Z is smaller than this Z
               for (int8_t m = p; --m >= i;) probes[m + 1] = probes[m];  // Shift items down after the insertion point
-              probes[i] = probe_pos.z;                                      // Insert the new Z measurement
+              probes[i] = z;                                            // Insert the new Z measurement
               break;                                                    // Only one to insert. Done!
             }
           }
         #elif TOTAL_PROBING > 2
-          probes_z_sum += probe_pos.z;
+          probes_z_sum += z;
         #else
-          UNUSED(probe_pos);
+          UNUSED(z);
         #endif
 
         #if TOTAL_PROBING > 2
@@ -1003,13 +922,13 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       const float measured_z = probes_z_sum * RECIPROCAL(MULTIPLE_PROBING);
 
     #elif TOTAL_PROBING == 2
-        xyze_pos_t targ2 = motion.position;
-        TERN_(HAS_DELTA_SENSORLESS_PROBING, targ2.z -= largest_sensorless_adj);
 
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("2nd Probe Z:", targ2.z, " Discrepancy:", targ1.z - targ2.z);
+      const float z2 = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, motion.position.z, largest_sensorless_adj);
+
+      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("2nd Probe Z:", z2, " Discrepancy:", z1 - z2);
 
       // Return a weighted average of the fast and slow probes
-      const float measured_z = (targ2.z * 3.0f + targ1.z * 2.0f) * 0.2f;
+      const float measured_z = (z2 * 3.0f + z1 * 2.0f) * 0.2f;
 
     #else
 
@@ -1017,8 +936,8 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
       const float measured_z = motion.position.z;
 
     #endif
-  
- #else // DWIN_LCD_PROUI
+
+  #else // DWIN_LCD_PROUI
 
     // Attempt to tare the probe
     if (TERN0(PROBE_TARE, tare())) return NAN;
@@ -1054,15 +973,7 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
 
   #endif // DWIN_LCD_PROUI
 
-  xyz_pos_t measured = motion.position;
-  measured.z = measured_z;
-
-  #if HAS_HOTEND_OFFSET
-    if ((TERN0(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, motion.tool_centerpoint_control)))
-      return measured - motion.active_hotend_offset();
-    else
-  #endif
-      return measured;
+  return DIFF_TERN(HAS_HOTEND_OFFSET, measured_z, motion.active_hotend_offset().z);
 }
 
 #if DO_TOOLCHANGE_FOR_PROBING
@@ -1086,210 +997,6 @@ xyz_pos_t Probe::run_probe(const bool sanity_check/*=true*/, const xyz_pos_t &ta
   }
 
 #endif
-
-/**
- * - Change to probing tool.
- * - Adjust for probe offset and hotend offset.
- * - Move to the given XY if move_value is 0
- * - Deploy the probe, if not already deployed
- * - Probe the bed, get the Z position according to settings MULTIPLE_PROBING and EXTRA_PROBING
- * - Depending on the 'stow' flag
- *   - Stow the probe, or
- *   - Raise to the BETWEEN height
- * - Return the probed Z position
- * - Revert to previous tool
- *
- * A batch of multiple probing operations should always be preceded by use_probing_tool() invocation
- * and succeeded by use_probing_tool(false), in order to avoid multiple tool changes and to end up
- * with the previously active tool.
- *
- */
-xyz_pos_t Probe::probe_safely(
-  const xyz_pos_t &target,
-  const ProbePtRaise raise_after,  // = PROBE_PT_NONE
-  const uint8_t move_value,        // = 0
-  const uint8_t verbose_level,     // = 0
-  const bool probe_relative,       // = true
-  const bool sanity_check,         // = true
-  const float z_clearance,         // = Z_TWEEN_SAFE_CLEARANCE
-  const bool raise_after_is_rel    // = false
-) {
-  DEBUG_SECTION(log_probe, "Probe::probe_safely", DEBUGGING(LEVELING));
-
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_ECHOLNPGM(
-      "...(", motion.logical_x(target.x), ", ", motion.logical_y(target.y),
-      ", ", raise_after == PROBE_PT_RAISE ? "raise" : raise_after == PROBE_PT_LAST_STOW ? "stow (last)" : raise_after == PROBE_PT_STOW ? "stow" : "none",
-      ", ", verbose_level,
-      ", ", probe_relative ? "probe" : "nozzle", "_relative)"
-    );
-    DEBUG_POS("", motion.position);
-  }
-
-  // Use a safe Z height for the XY move
-  const float safe_z = _MAX(motion.position.z, z_clearance);
-
-  // On delta keep Z below clip height or do_blocking_move_to will abort
-  xyz_pos_t npos = motion.position;
-  npos.z = TERN(DELTA, _MIN(delta_clip_start_height, safe_z), safe_z);
-  if (TERN1(G38_PROBE_TARGET, move_value == 0)) {
-    npos.set(target.x, target.y);
-  } 
-
-  if (!can_reach(target, probe_relative)) {
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Not Reachable");
-    return {NUM_AXIS_LIST(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN,NAN)};
-  }
-
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("Move to probe");
-  if (probe_relative) { // Get the nozzle position, adjust for active hotend if not 0
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("-relative");
-    if (TERN0(G38_PROBE_TARGET, move_value > 0))
-      npos -= (!(TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation) || TERN0(PENTA_AXIS_TRT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HT, motion.tool_centerpoint_control) || TERN0(PENTA_AXIS_HH, motion.tool_centerpoint_control))) ? offset : DIFF_TERN(HAS_HOTEND_OFFSET, offset, motion.hotend_offset[motion.extruder]);
-    else
-      npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, xy_pos_t(motion.hotend_offset[motion.extruder]));
-  }
-
-  if (move_value == 0) {
-    // Move the probe to the starting XY
-    motion.blocking_move(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
-  }
-
-  // Change Z motor current to homing current
-  TERN_(PROBING_USE_CURRENT_HOME, motion.set_homing_current(Z_AXIS));
-
-  xyz_pos_t measured;
-
-  #if ENABLED(BD_SENSOR)
-
-    // Move the probe to the starting XYZ
-    do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
-
-    safe_delay(4);
-
-    measured = motion.position;
-
-    measured.z = motion.position.z - bdl.read(); // Difference between Z-home-relative Z and sensor reading
-
-  #else // !BD_SENSOR
-
-    #if ENABLED(BLTOUCH)
-      // Now at the safe_z if it is still triggered it may be in an alarm
-      // condition.  Reset to clear alarm has a side effect of stowing the probe,
-      // which the following deploy will handle.
-      if (bltouch.triggered()) bltouch._reset();
-    #endif
-    
-    if (deploy()){
-      LOOP_NUM_AXES(a) {
-        measured[a] = NAN;
-      }
-    }
-    else {
-
-      if (move_value > 0) {
-        // Move the probe to the starting XYZ
-        motion.blocking_move(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
-      }
-
-      measured = run_probe(sanity_check, target, z_clearance, move_value) + offset;
-    }
-    // Deploy succeeded and a successful measurement was done.
-    // Raise and/or stow the probe depending on 'raise_after' and settings.
-    if (!isnan(measured.z)) {
-      switch (raise_after) {
-        default: break;
-        case PROBE_PT_RAISE:
-          if (raise_after_is_rel)
-            motion.do_z_clearance_by(z_clearance);
-          else
-            motion.do_z_clearance(z_clearance);
-          break;
-        case PROBE_PT_STOW: case PROBE_PT_LAST_STOW:
-          if (stow()) measured.z = NAN;   // Error on stow?
-          break;
-      }
-    }
-
-    // If any error occurred stow the probe and set an alert
-    if (isnan(measured.z)) {
-      // TODO: Disable steppers (unless G29_RETRY_AND_RECOVER or G29_HALT_ON_FAILURE are set).
-      // Something definitely went wrong at this point, so it might be a good idea to release the steppers.
-      // The user may want to quickly move the carriage or bed by hand to avoid bed damage from the (hot) nozzle.
-      // This would also benefit from the contemplated "Audio Alerts" feature.
-      stow();
-      LCD_MESSAGE(MSG_LCD_PROBING_FAILED);
-      #if DISABLED(G29_RETRY_AND_RECOVER)
-        SERIAL_ERROR_MSG(STR_ERR_PROBING_FAILED);
-      #endif
-    }
-    else {
-      TERN_(HAS_PTC, ptc.apply_compensation(measured.z));
-      TERN_(X_AXIS_TWIST_COMPENSATION, measured.z += xatc.compensation(npos + offset_xy));
-      if (verbose_level > 2 || DEBUGGING(LEVELING))
-        SERIAL_ECHOLNPGM("Bed X: ", motion.logical_x(target.x), " Y: ", motion.logical_y(target.y), " Z: ", measured.z);
-    }
-
-  #endif // !BD_SENSOR
-
-  // Restore the Z homing current
-  TERN_(PROBING_USE_CURRENT_HOME, motion.restore_homing_current(Z_AXIS));
-
-  return measured;
-}
-
-#if HAS_Z_SERVO_PROBE
-
-  void Probe::servo_probe_init() {
-    /**
-     * Set position of Z Servo Endstop
-     *
-     * The servo might be deployed and positioned too low to stow
-     * when starting up the machine or rebooting the board.
-     * There's no way to know where the nozzle is positioned until
-     * homing has been done - no homing with z-probe without init!
-     */
-    STOW_Z_SERVO();
-
-    TERN_(Z_SERVO_DEACTIVATE_AFTER_STOW, servo[Z_PROBE_SERVO_NR].detach());
-  }
-
-#endif // HAS_Z_SERVO_PROBE
-
-#if HAS_DELTA_SENSORLESS_PROBING
-
-  /**
-   * Set the sensorless Z offset
-   */
-  void Probe::set_offset_sensorless_adj(const float sz) {
-    DEBUG_SECTION(pso, "Probe::set_offset_sensorless_adj", true);
-    if (test_sensitivity.x) offset_sensorless_adj.a = sz;
-    if (test_sensitivity.y) offset_sensorless_adj.b = sz;
-    if (test_sensitivity.z) offset_sensorless_adj.c = sz;
-  }
-
-  /**
-   * Refresh largest_sensorless_adj based on triggered endstops
-   */
-  void Probe::refresh_largest_sensorless_adj() {
-    DEBUG_SECTION(rso, "Probe::refresh_largest_sensorless_adj", true);
-    largest_sensorless_adj = -3;  // A reference away from any real probe height
-    const Endstops::endstop_mask_t state = endstops.state();
-    if (TEST(state, X_MAX)) {
-      NOLESS(largest_sensorless_adj, offset_sensorless_adj.a);
-      DEBUG_ECHOLNPGM("Endstop_X: ", largest_sensorless_adj, " TowerX");
-    }
-    if (TEST(state, Y_MAX)) {
-      NOLESS(largest_sensorless_adj, offset_sensorless_adj.b);
-      DEBUG_ECHOLNPGM("Endstop_Y: ", largest_sensorless_adj, " TowerY");
-    }
-    if (TEST(state, Z_MAX)) {
-      NOLESS(largest_sensorless_adj, offset_sensorless_adj.c);
-      DEBUG_ECHOLNPGM("Endstop_Z: ", largest_sensorless_adj, " TowerZ");
-    }
-  }
-
-#endif // HAS_DELTA_SENSORLESS_PROBING
 
 /**
  * - Move to the given XY
@@ -1316,34 +1023,26 @@ float Probe::probe_at_point(
   const float z_clearance,          // = Z_TWEEN_SAFE_CLEARANCE
   const bool raise_after_is_rel       // = false
 ) {
-  const xyz_pos_t probe_pos = NUM_AXIS_ARRAY(
-    rx, ry, z_min_point,
-    motion.position.i, motion.position.j, motion.position.k,
-    motion.position.u, motion.position.v, motion.position.w
-  );
-  const xyz_pos_t measured = probe_safely(probe_pos, raise_after, 0, verbose_level, probe_relative, sanity_check, z_clearance, raise_after_is_rel);
-  return measured.z;
-/**
   DEBUG_SECTION(log_probe, "Probe::probe_at_point", DEBUGGING(LEVELING));
 
   if (DEBUGGING(LEVELING)) {
     DEBUG_ECHOLNPGM(
-      "...(", LOGICAL_X_POSITION(rx), ", ", LOGICAL_Y_POSITION(ry),
+      "...(", motion.logical_x(rx), ", ", motion.logical_y(ry),
       ", ", raise_after == PROBE_PT_RAISE ? "raise" : raise_after == PROBE_PT_LAST_STOW ? "stow (last)" : raise_after == PROBE_PT_STOW ? "stow" : "none",
       ", ", verbose_level,
       ", ", probe_relative ? "probe" : "nozzle", "_relative)"
     );
-    DEBUG_POS("", current_position);
+    DEBUG_POS("", motion.position);
   }
 
   // Use a safe Z height for the XY move
-  const float safe_z = _MAX(current_position.z, z_clearance);
+  const float safe_z = _MAX(motion.position.z, z_clearance);
 
-  // On delta keep Z below clip height or do_blocking_move_to will abort
+  // On delta keep Z below clip height or motion.blocking_move will abort
   xyz_pos_t npos = NUM_AXIS_ARRAY(
     rx, ry, TERN(DELTA, _MIN(delta_clip_start_height, safe_z), safe_z),
-    current_position.i, current_position.j, current_position.k,
-    current_position.u, current_position.v, current_position.w
+    motion.position.i, motion.position.j, motion.position.k,
+    motion.position.u, motion.position.v, motion.position.w
   );
   if (!can_reach(npos, probe_relative)) {
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Not Reachable");
@@ -1353,15 +1052,15 @@ float Probe::probe_at_point(
   if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("Move to probe");
   if (probe_relative) { // Get the nozzle position, adjust for active hotend if not 0
     if (DEBUGGING(LEVELING)) DEBUG_ECHOPGM("-relative");
-    npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, xy_pos_t(hotend_offset[active_extruder]));
+    npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, motion.active_hotend_offset());
   }
   if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM(" point");
 
   // Move the probe to the starting XYZ
-  do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
+  motion.blocking_move(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
 
   // Change Z motor current to homing current
-  TERN_(PROBING_USE_CURRENT_HOME, set_homing_current(Z_AXIS));
+  TERN_(PROBING_USE_CURRENT_HOME, motion.set_homing_current(Z_AXIS));
 
   float measured_z;
 
@@ -1369,7 +1068,7 @@ float Probe::probe_at_point(
 
     safe_delay(4);
 
-    measured_z = current_position.z - bdl.read(); // Difference between Z-home-relative Z and sensor reading
+    measured_z = motion.position.z - bdl.read(); // Difference between Z-home-relative Z and sensor reading
 
   #else // !BD_SENSOR
 
@@ -1389,9 +1088,9 @@ float Probe::probe_at_point(
         default: break;
         case PROBE_PT_RAISE:
           if (raise_after_is_rel)
-            do_z_clearance_by(z_clearance);
+            motion.do_z_clearance_by(z_clearance);
           else
-            do_z_clearance(z_clearance);
+            motion.do_z_clearance(z_clearance);
           break;
         case PROBE_PT_STOW: case PROBE_PT_LAST_STOW:
           if (stow()) measured_z = NAN;   // Error on stow?
@@ -1415,17 +1114,34 @@ float Probe::probe_at_point(
       TERN_(HAS_PTC, ptc.apply_compensation(measured_z));
       TERN_(X_AXIS_TWIST_COMPENSATION, measured_z += xatc.compensation(npos + offset_xy));
       if (verbose_level > 2 || DEBUGGING(LEVELING))
-        SERIAL_ECHOLNPGM("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
+        SERIAL_ECHOLNPGM("Bed X: ", motion.logical_x(rx), " y: ", motion.logical_y(ry), " Z: ", measured_z);
     }
 
   #endif // !BD_SENSOR
 
   // Restore the Z homing current
-  TERN_(PROBING_USE_CURRENT_HOME, restore_homing_current(Z_AXIS));
+  TERN_(PROBING_USE_CURRENT_HOME, motion.restore_homing_current(Z_AXIS));
 
   return measured_z;
- */
 }
+
+#if HAS_Z_SERVO_PROBE
+
+  void Probe::servo_probe_init() {
+    /**
+     * Set position of Z Servo Endstop
+     *
+     * The servo might be deployed and positioned too low to stow
+     * when starting up the machine or rebooting the board.
+     * There's no way to know where the nozzle is positioned until
+     * homing has been done - no homing with z-probe without init!
+     */
+    STOW_Z_SERVO();
+
+    TERN_(Z_SERVO_DEACTIVATE_AFTER_STOW, servo[Z_PROBE_SERVO_NR].detach());
+  }
+
+#endif // HAS_Z_SERVO_PROBE
 
 #if HAS_DELTA_SENSORLESS_PROBING
 

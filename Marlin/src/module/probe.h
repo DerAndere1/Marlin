@@ -96,10 +96,6 @@ public:
     static sense_bool_t test_sensitivity;
   #endif
 
-  #if ENABLED(G38_PROBE_TARGET)
-    static probe_target_t G38_move;
-  #endif
-
   #if HAS_BED_PROBE
 
     static xyz_pos_t offset;
@@ -187,17 +183,6 @@ public:
       }
 
     #endif // !IS_KINEMATIC
-
-    static xyz_pos_t probe_safely(
-      const xyz_pos_t   &target,
-      const ProbePtRaise raise_after        = PROBE_PT_NONE,
-      const uint8_t      move_value         = 0,
-      const uint8_t      verbose_level      = 0,
-      const bool         probe_relative     = true,
-      const bool         sanity_check       = true,
-      const float        z_clearance        = Z_TWEEN_SAFE_CLEARANCE,
-      const bool         raise_after_is_rel = false
-    );
 
     static float probe_at_point(
       const float        rx,
@@ -377,6 +362,8 @@ public:
     static void set_devices_paused_for_probing(const bool p);
   #endif
 
+  static void probe_specific_action(const bool deploy);
+
   #if ENABLED(PROBE_TARE)
     static void tare_init();
     static bool tare();
@@ -391,8 +378,8 @@ public:
 
 private:
   #if HAS_BED_PROBE
-    static bool probe_to_target(const xyz_pos_t &pos, const feedRate_t fr_mm_s, const uint8_t move_value);
-    static xyz_pos_t run_probe(const bool sanity_check, const xyz_pos_t &target, const float z_clearance, const uint8_t move_value);
+    static bool probe_down_to_z(const float z, const feedRate_t fr_mm_s);
+    static float run_z_probe(const bool sanity_check=true, const float z_min_point=Z_PROBE_LOW_POINT, const float z_clearance=Z_TWEEN_SAFE_CLEARANCE);
   #endif
 };
 
