@@ -193,6 +193,37 @@ Set the rotational joint Z offset.
 See `DEFAULT_ROTATIONAL_JOINT_OFFSET_Z`. Also, see definition of `Dz` in sections "5.3. Transformations for a xyzbc-trt machine with rotary axis offsets" and "7. Custom Kinematics Components" in this reference:
 - https://linuxcnc.org/docs/html/motion/5-axis-kinematics.html
 
+### M120 (Enable Endstops)
+
+Set whether machining should abort or moves should be clamped in the event of any endstop being triggered. This provides a fast way to abort machining in the event of mechanical failure such as loose couplings, lost steps, diverted axes, binding, etc., which lead to axes being very far out of position.
+
+#### Notes
+- Use `ENDSTOPS_ALWAYS_ON_DEFAULT` or `M120 S1` to ensure that monitoring of limit switches is enabled.
+
+#### Usage
+
+`M120 H<flag>`
+
+#### Parameters
+
+##### `H<flag>`
+
+Whether to abort machining on software endstops / hardware endstops hit (1) or whether to clamp moves to the endstops (0). Software endstops and/or hardware endstops must be activated for this feature to work. Requires `ABORT_ON_ENDSTOP`
+
+### M121 (Disable Endstops)
+
+Set whether machining should abort or moves should be clamped in the event of any endstop being triggered. This provides a fast way to abort machining in the event of mechanical failure such as loose couplings, lost steps, diverted axes, binding, etc., which lead to axes being very far out of position.
+
+#### Usage
+
+`M211 H<flag>`
+
+#### Parameters
+
+##### `H<flag>`
+
+Whether to abort machining on endstops hit (1) or whether to clamp moves to the endstops (0). 
+
 ### M211 (Software Endstops)
 
 Set whether printing should abort or moves should be clamped in the event of any software endstop being triggered. This provides a fast way to abort a print in the event of mechanical failure such as loose couplings, lost steps, diverted axes, binding, etc., which lead to axes being very far out of position.
@@ -215,7 +246,7 @@ Whether (1) or not (0) to enable software endstops.
 
 ##### `H<flag>`
 
-Whether to abort machining on software endstops hit (1) or whether to clamp moves to the software endstops (0). Requires `ABORT_ON_SOFTWARE_ENDSTOP`
+Whether to abort machining on software endstops / hardware endstops hit (1) or whether to clamp moves to the endstops (0). Software endstops and/or hardware endstops must be activated for this feature to work. Requires `ABORT_ON_ENDSTOP`
 
 ### `P000`
 
@@ -365,7 +396,7 @@ See definition of `Dz` in this reference:
 
 Number of tools, including extruders. Tool indices, starting with 0, must be assigned in the following order: extruders (requires `EXTRUDERS` > 0), laser (requires `LASER_FEATURE`), anf finally tools for a spindle (requires `SPINDLE_FEATURE`). Offsets of each tool from tool 0 must be defined with `HOTEND_OFFSET_X`, `HOTEND_OFFSET_Y` and `HOTEND_OFFSET_Z`.
 
-### `ABORT_ON_SOFTWARE_ENDSTOPS`
+### `ABORT_ON_ENDSTOPS`
 
 Abort printing when any software endstop is triggered. This feature is enabled with 'M211 H1' or from the LCD menu.
 Software endstops must be activated for this option to work.

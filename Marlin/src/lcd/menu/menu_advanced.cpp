@@ -794,8 +794,8 @@ void menu_advanced_settings() {
   #endif
 
   // M211 H - Abort on software endstop hit
-  #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
-    EDIT_ITEM(bool, MSG_ENDSTOP_ABORT, &planner.abort_on_software_endstop);
+  #if ENABLED(ABORT_ON_ENDSTOP)
+    EDIT_ITEM(bool, MSG_ENDSTOP_ABORT, &planner.abort_on_endstop);
   #endif
 
   #if ENABLED(SD_FIRMWARE_UPDATE)

@@ -74,7 +74,7 @@
   #include "../feature/babystep.h"
 #endif
 
-#if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+#if ENABLED(ABORT_ON_ENDSTOP) && HAS_CUTTER
   #include "../feature/spindle_laser.h"
 #endif
 
@@ -1430,8 +1430,8 @@ void Motion::restore_feedrate_and_scaling() {
 
 
   void Motion::handle_min_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
-    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
-      if (planner.abort_on_software_endstop) {
+    #if ENABLED(ABORT_ON_ENDSTOP)
+      if (planner.abort_on_endstop) {
         if (target_pos[axis] < soft_endstop.min[axis]) {
           NOLESS(target_pos[axis], soft_endstop.min[axis]);
           SERIAL_ERROR_MSG(STR_ERR_SW_ENDSTOP);
@@ -1452,8 +1452,8 @@ void Motion::restore_feedrate_and_scaling() {
   }
 
   void Motion::handle_max_software_endstop(const AxisEnum axis, xyz_pos_t &target_pos) {
-    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
-      if (planner.abort_on_software_endstop) {
+    #if ENABLED(ABORT_ON_ENDSTOP)
+      if (planner.abort_on_endstop) {
         if (target_pos[axis] > soft_endstop.max[axis]) {
           NOMORE(target_pos[axis], soft_endstop.max[axis]);
           SERIAL_ERROR_MSG(STR_ERR_SW_ENDSTOP);
@@ -1787,7 +1787,7 @@ float Motion::get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXE
     }
 
     // Fail if attempting move outside printable radius
-    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+    #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH) && ENABLED(ABORT_ON_ENDSTOP)
       // Abort if attempting move outside printable radius
       if (!can_reach(destination)) {
         SERIAL_ERROR_MSG("Position not reachable.");

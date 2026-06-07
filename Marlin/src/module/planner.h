@@ -625,8 +625,8 @@ class Planner {
       static bool abort_on_endstop_hit;
     #endif
 
-    #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
-      static bool abort_on_software_endstop;
+    #if ENABLED(ABORT_ON_ENDSTOP)
+      static bool abort_on_endstop;
     #endif
 
     #ifdef XY_FREQUENCY_LIMIT

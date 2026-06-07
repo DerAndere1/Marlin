@@ -69,7 +69,7 @@
   #include "probe.h"
 #endif
 
-#if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_SOFTWARE_ENDSTOP) && HAS_CUTTER
+#if ANY(SD_ABORT_ON_ENDSTOP_HIT, ABORT_ON_ENDSTOP) && HAS_CUTTER
   #include "../feature/spindle_laser.h"
 #endif
 
@@ -416,8 +416,8 @@ void Endstops::event_handler() {
         print_job_timer.stop();
       }
 
-    #elif ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
-      if (planner.abort_on_software_endstop) {
+    #elif ENABLED(ABORT_ON_ENDSTOP)
+      if (planner.abort_on_endstop) {
         TERN_(ADVANCED_PAUSE_FEATURE, did_pause_print = 0);
         motion.quickstop_stepper();
         #if HAS_CUTTER

@@ -1965,14 +1965,14 @@
 
 #if ANY(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
   //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
-
-  /**
-   * Abort printing when any software endstop is triggered.
-   * This feature is enabled with 'M541 S1' or from the LCD menu.
-   * Software endstops must be activated for this option to work.
-   */
-  #define ABORT_ON_SOFTWARE_ENDSTOP
 #endif
+
+/**
+ * Allow aborting machining when any software endstop or limit switch is triggered.
+ * This feature is enabled with 'M210 S1 H1' or 'M221 S1 H1' or from the LCD menu.
+ * Software endstops and/or hardware endstops must be activated for this option to work.
+ */
+#define ABORT_ON_ENDSTOP
 
 /**
  * Filament Runout Sensors

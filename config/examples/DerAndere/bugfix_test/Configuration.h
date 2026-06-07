@@ -2040,7 +2040,7 @@
    * This feature is enabled with 'M211 H1' or from the LCD menu.
    * Software endstops must be activated for this option to work.
    */
-  #define ABORT_ON_SOFTWARE_ENDSTOP
+  #define ABORT_ON_ENDSTOP
 
   //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif

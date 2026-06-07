@@ -28,7 +28,7 @@
 #include "../../module/motion.h"
 
 
-#if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+#if ENABLED(ABORT_ON_ENDSTOP)
   #include "../../module/planner.h"
 #endif
 
@@ -38,7 +38,7 @@
  * Parameters
  *   S<bool>: flag to enable (1, default) or disable (0) software endstops.
  *   H<bool>: flag to abort print on software endstops (1) or clamp movement to software endstops (0, default) 
- *            if software endstops are enabled. Requires ABORT_ON_SOFTWARE_ENDSTOP
+ *            if software endstops are enabled. Requires ABORT_ON_ENDSTOP
  * 
  * Report the software endstop status if no parameter is specified, 
  * 
@@ -50,11 +50,11 @@
 void GcodeSuite::M211() {
   if (parser.seen('S'))
     motion.soft_endstop._enabled = parser.value_bool();
-  #if ENABLED(ABORT_ON_SOFTWARE_ENDSTOP)
+  #if ENABLED(ABORT_ON_ENDSTOP)
     if (parser.seen('H'))
-      planner.abort_on_software_endstop = parser.value_bool();
+      planner.abort_on_endstop = parser.value_bool();
   #endif
-  if (!(parser.seen('S') || TERN0(ABORT_ON_SOFTWARE_ENDSTOP, parser.seen('H'))))
+  if (!(parser.seen('S') || TERN0(ABORT_ON_ENDSTOP, parser.seen('H'))))
     M211_report();
 }
 
