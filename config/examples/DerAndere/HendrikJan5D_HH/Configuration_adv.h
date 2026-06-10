@@ -1334,15 +1334,15 @@
  * Note: HOTEND_OFFSET and CALIBRATION_OBJECT_CENTER must be set to within
  *       ±5mm of true values for G425 to succeed.
  */
-//#define CALIBRATION_GCODE
+#define CALIBRATION_GCODE
 #if ENABLED(CALIBRATION_GCODE)
 
   //#define CALIBRATION_SCRIPT_PRE  "M117 Starting Auto-Calibration\nT0\nG28\nG12\nM117 Calibrating..."
   //#define CALIBRATION_SCRIPT_POST "M500\nM117 Calibration data saved"
 
   #define CALIBRATION_FEEDRATE_SLOW             60    // mm/min
-  #define CALIBRATION_FEEDRATE_FAST           1200    // mm/min
-  #define CALIBRATION_FEEDRATE_TRAVEL         3000    // mm/min
+  #define CALIBRATION_FEEDRATE_FAST           1000    // mm/min
+  #define CALIBRATION_FEEDRATE_TRAVEL         2000    // mm/min
 
   // The following parameters refer to the conical section of the nozzle tip.
   #define CALIBRATION_NOZZLE_TIP_HEIGHT          1.0  // mm
@@ -1352,15 +1352,15 @@
   //#define CALIBRATION_REPORTING
 
   // The true location and dimension the cube/bolt/washer on the bed.
-  #define CALIBRATION_OBJECT_CENTER     { 264.0, -22.0,  -2.0 } // mm
+  #define CALIBRATION_OBJECT_CENTER     { 0.0, 0.0,  -5.0 } // mm
   #define CALIBRATION_OBJECT_DIMENSIONS {  10.0,  10.0,  10.0 } // mm
 
   // Comment out any sides which are unreachable by the probe. For best
   // auto-calibration results, all sides must be reachable.
-  #define CALIBRATION_MEASURE_RIGHT
-  #define CALIBRATION_MEASURE_FRONT
-  #define CALIBRATION_MEASURE_LEFT
-  #define CALIBRATION_MEASURE_BACK
+  //#define CALIBRATION_MEASURE_RIGHT
+  //#define CALIBRATION_MEASURE_FRONT
+  //#define CALIBRATION_MEASURE_LEFT
+  //#define CALIBRATION_MEASURE_BACK
 
   //#define CALIBRATION_MEASURE_IMIN
   //#define CALIBRATION_MEASURE_IMAX
@@ -1381,10 +1381,10 @@
 
   // Define the pin to read during calibration
   #ifndef CALIBRATION_PIN
-    //#define CALIBRATION_PIN -1            // Define here to override the default pin
+    #define CALIBRATION_PIN PH11            // Define here to override the default pin
     #define CALIBRATION_PIN_INVERTING false // Set to true to invert the custom pin
     //#define CALIBRATION_PIN_PULLDOWN
-    #define CALIBRATION_PIN_PULLUP
+    //#define CALIBRATION_PIN_PULLUP
   #endif
 #endif
 
