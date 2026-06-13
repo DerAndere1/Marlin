@@ -37,7 +37,8 @@ enum PauseMode : char {
   PAUSE_MODE_PAUSE_PRINT,
   PAUSE_MODE_CHANGE_FILAMENT,
   PAUSE_MODE_LOAD_FILAMENT,
-  PAUSE_MODE_UNLOAD_FILAMENT
+  PAUSE_MODE_UNLOAD_FILAMENT,
+  PAUSE_MODE_TOOL_CHANGE
 };
 
 enum PauseMessage : char {
@@ -53,6 +54,15 @@ enum PauseMessage : char {
   PAUSE_MESSAGE_HEAT,
   PAUSE_MESSAGE_HEATING,
   PAUSE_MESSAGE_STATUS,
+  PAUSE_MESSAGE_TOOL_CHANGE,
+  PAUSE_MESSAGE_TOOL_CHANGE_0,
+  PAUSE_MESSAGE_TOOL_CHANGE_1,
+  #if TOOLS >= 3
+    PAUSE_MESSAGE_TOOL_CHANGE_2,
+  #endif
+  #if TOOLS >= 4
+    PAUSE_MESSAGE_TOOL_CHANGE_3,
+  #endif
   PAUSE_MESSAGE_COUNT
 };
 
@@ -100,7 +110,8 @@ bool pause_print(
 
 void wait_for_confirmation(
   const bool      is_reload=false,                            // Reload Filament? (otherwise Resume Print)
-  const int8_t    max_beep_count=0                            // Beep alert for attention
+  const int8_t    max_beep_count=0,                           // Beep alert for attention
+  const PauseMessage message=PAUSE_MESSAGE_WAITING            // The message to show, if not a reload
   DXC_PARAMS                                                  // Dual-X-Carriage extruder index
 );
 

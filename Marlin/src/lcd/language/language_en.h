@@ -125,6 +125,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_MOVE_N_DEG                     = _UxGT("Move $") LCD_STR_DEGREE;
   LSTR MSG_SPEED                          = _UxGT("Speed");
   LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Bed Z");
+  LSTR MSG_TOOL                           = _UxGT("Tool");
   LSTR MSG_NOZZLE                         = _UxGT("Nozzle");
   LSTR MSG_NOZZLE_N                       = _UxGT("Nozzle ~");
   LSTR MSG_BED                            = _UxGT("Bed");
@@ -487,6 +488,13 @@ namespace LanguageNarrow_en {
   LSTR MSG_ERROR_TMC                      = _UxGT("TMC CONNECTION ERROR");
   LSTR MSG_FILAMENT_CHANGE_HEADER         = _UxGT("FILAMENT CHANGE");
   LSTR MSG_FILAMENT_CHANGE_HEADER_PAUSE   = _UxGT("PRINT PAUSED");
+  LSTR MSG_TOOL_CHANGE_HEADER             = _UxGT("TOOL CHANGE");
+    // MANUAL_SWITCHING_TOOLHEAD
+  LSTR MSG_PAUSE_TOOL_CHANGE              = _UxGT(MSG_1_LINE("Change Tool"));
+  LSTR MSG_PAUSE_TOOL_CHANGE_0            = _UxGT(MSG_1_LINE("Install Tool 0"));
+  LSTR MSG_PAUSE_TOOL_CHANGE_1            = _UxGT(MSG_1_LINE("Install Tool 1"));
+  LSTR MSG_PAUSE_TOOL_CHANGE_2            = _UxGT(MSG_1_LINE("Install Tool 2"));
+  LSTR MSG_PAUSE_TOOL_CHANGE_3            = _UxGT(MSG_1_LINE("Install Tool 3"));
   LSTR MSG_FILAMENT_CHANGE_HEADER_LOAD    = _UxGT("LOAD FILAMENT");
   LSTR MSG_FILAMENT_CHANGE_HEADER_UNLOAD  = _UxGT("UNLOAD FILAMENT");
   LSTR MSG_FILAMENT_CHANGE_OPTION_HEADER  = _UxGT("RESUME OPTIONS:");

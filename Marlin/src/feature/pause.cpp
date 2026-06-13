@@ -514,11 +514,11 @@ bool pause_print(const float retract, const xyz_pos_t &park_point, const bool sh
  * Used by M125 and M600
  */
 
-void show_continue_prompt(const bool is_reload) {
+void show_continue_prompt(const bool is_reload, const PauseMessage message/*=PAUSE_MESSAGE_WAITING*/) {
   DEBUG_SECTION(scp, "pause_print", true);
   DEBUG_ECHOLNPGM("... is_reload:", is_reload);
 
-  ui.pause_show_message(is_reload ? PAUSE_MESSAGE_INSERT : PAUSE_MESSAGE_WAITING);
+  ui.pause_show_message(is_reload ? PAUSE_MESSAGE_INSERT : message);
   #if ENABLED(SOVOL_SV06_RTS)
     rts.updateTempE0();
     rts.gotoPage(ID_Insert_L, ID_Insert_D);
@@ -528,13 +528,13 @@ void show_continue_prompt(const bool is_reload) {
   SERIAL_ECHO(is_reload ? F(_PMSG(STR_FILAMENT_CHANGE_INSERT) "\n") : F(_PMSG(STR_FILAMENT_CHANGE_WAIT) "\n"));
 }
 
-void wait_for_confirmation(const bool is_reload/*=false*/, const int8_t max_beep_count/*=0*/ DXC_ARGS) {
+void wait_for_confirmation(const bool is_reload/*=false*/, const int8_t max_beep_count/*=0*/, const PauseMessage message/*=PAUSE_MESSAGE_WAITING*/ DXC_ARGS) {
   DEBUG_SECTION(wfc, "wait_for_confirmation", true);
   DEBUG_ECHOLNPGM("... is_reload:", is_reload, " maxbeep:", max_beep_count DXC_SAY);
 
   bool nozzle_timed_out = false;
 
-  show_continue_prompt(is_reload);
+  show_continue_prompt(is_reload, message);
 
   first_impatient_beep(max_beep_count);
 
@@ -589,10 +589,11 @@ void wait_for_confirmation(const bool is_reload/*=false*/, const int8_t max_beep
       HOTEND_LOOP() thermalManager.reset_hotend_idle_timer(e);
 
       // Wait for the heaters to reach the target temperatures
-      ensure_safe_temperature(false);
+      if (thermalManager.heating_enabled)
+        ensure_safe_temperature(false);
 
       // Show the prompt to continue
-      show_continue_prompt(is_reload);
+      show_continue_prompt(is_reload, message);
 
       // Start the heater idle timers
       const millis_t nozzle_timeout = SEC_TO_MS(PAUSE_PARK_NOZZLE_TIMEOUT);
@@ -676,25 +677,28 @@ void resume_print(
     thermalManager.reset_hotend_idle_timer(e);
   }
 
-  if (targetTemp > thermalManager.degTargetHotend(motion.extruder))
-    thermalManager.setTargetHotend(targetTemp, motion.extruder);
-
-  // Load the new filament
-  load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, show_lcd, nozzle_timed_out, PAUSE_MODE_SAME DXC_PASS);
-
-  if (targetTemp > 0) {
-    thermalManager.setTargetHotend(targetTemp, motion.extruder);
-    thermalManager.wait_for_hotend(motion.extruder, false);
-  }
-
   ui.pause_show_message(PAUSE_MESSAGE_RESUME);
+  if (TERN1(MANUAL_SWITCHING_TOOLHEAD, motion.extruder < HOTENDS)) {
 
-  // Check Temperature before moving hotend
-  ensure_safe_temperature(DISABLED(BELTPRINTER));
+    if (targetTemp > thermalManager.degTargetHotend(motion.extruder))
+      thermalManager.setTargetHotend(targetTemp, motion.extruder);
 
-  // Retract to prevent oozing
-  motion.unscaled_e_move(-(PAUSE_PARK_RETRACT_LENGTH), feedRate_t(PAUSE_PARK_RETRACT_FEEDRATE));
+    // Load the new filament
+    load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, show_lcd, nozzle_timed_out, PAUSE_MODE_SAME DXC_PASS);
 
+    if (targetTemp > 0) {
+      thermalManager.setTargetHotend(targetTemp, motion.extruder);
+      thermalManager.wait_for_hotend(motion.extruder, false);
+    }
+
+    // Check Temperature before moving hotend
+    ensure_safe_temperature(DISABLED(BELTPRINTER));
+
+    // Retract to prevent oozing
+    motion.unscaled_e_move(-(PAUSE_PARK_RETRACT_LENGTH), feedRate_t(PAUSE_PARK_RETRACT_FEEDRATE));
+  }
+  
+  #if DISABLED(MANUAL_SWITCHING_TOOLHEAD)
   if (!motion.axes_should_home()) {
     // Move XY back to saved position
     motion.destination.set(resume_position.x, resume_position.y, motion.position.z, motion.position.e);
@@ -704,6 +708,7 @@ void resume_print(
     motion.destination.z = resume_position.z;
     motion.prepare_internal_move_to_destination(NOZZLE_PARK_Z_FEEDRATE);
   }
+  #endif
 
   #if ENABLED(AUTO_BED_LEVELING_UBL)
     const bool leveling_was_enabled = planner.leveling_active; // save leveling state

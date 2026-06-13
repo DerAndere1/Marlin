@@ -314,6 +314,49 @@
 #endif
 
 /**
+ * Switching Toolhead - Manual
+ *
+ * Support for manual swapping of toolheads, such as the
+ * Wham Bam MUTANT. Toolheads are manually docked/locked,
+ * and all use the same heater/sensor pins when switched.
+ *
+ * !! TOOL TYPE ORDERING MATTERS !!
+ *  1. Hotends (Set TEMP_SENSOR_n)
+ *  2. Non-Hotend Extruder (no TEMP_SENSOR)
+ *  3. Unpowered
+ *  4. Laser/Spindle
+ *
+ * You may also desire to enable/check the following:
+ *  - HOTEND_OFFSET_[XYZ]
+ *  - Tool Change settings in Configuration_adv.h
+ */
+//#define MANUAL_SWITCHING_TOOLHEAD
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+  /**
+   * Hotend / Extruder Setup
+   * By default the toolchange code assumes all hotends share a single extruder (e.g., in a Bowden setup).
+   * Enable this option if all hotends have their own direct drive extruders.
+   * If this is used, also consider enabling:
+   *  - DISTINCT_E_FACTORS and related settings
+   *  - PID_PARAMS_PER_HOTEND
+   */
+  //#define MAN_ST_DIRECT_DRIVE
+
+
+  /**
+   * Define the names of Hotends/Unpowered tools. Optional.
+   * Default to "Hotend #"/"Tool #" as appropriate.
+   */
+  //#define TOOL_NAME_0 "Tool 0"
+  //#define TOOL_NAME_1 "Tool 1"
+  //#define TOOL_NAME_2 "Tool 2"
+  //#define TOOL_NAME_3 "Tool 3"
+
+  // Keep the selected tool in EEPROM. Must be committed/saved with M500 like other settings.
+  #define MAN_ST_EEPROM_STORAGE
+#endif
+
+/**
  * Switching Toolhead
  *
  * Support for swappable and dockable toolheads, such as

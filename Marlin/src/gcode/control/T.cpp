@@ -84,7 +84,9 @@ void GcodeSuite::T(const int8_t tool_index) {
   tool_change(tool_index
     #if HAS_MULTI_TOOLS
       , parser.boolval('S')
-        || TERN(PARKING_EXTRUDER, false, tool_index == motion.extruder) // For PARKING_EXTRUDER motion is decided in tool_change()
+      #if NONE(PARKING_EXTRUDER, MANUAL_SWITCHING_TOOLHEAD) // For PARKING_EXTRUDER motion is decided in tool_change()
+        || tool_index == motion.extruder
+      #endif
     #endif
   );
 }

@@ -25,6 +25,7 @@
  */
 
 #include "../inc/MarlinConfigPre.h"
+#include "../MarlinCore.h"
 
 #if HAS_TOOLCHANGE
 
@@ -34,7 +35,6 @@
 #include "planner.h"
 #include "temperature.h"
 
-#include "../MarlinCore.h"
 #include "../gcode/gcode.h"
 
 //#define DEBUG_TOOL_CHANGE
@@ -52,12 +52,16 @@
   Flags<EXTRUDERS> toolchange_extruder_ready;
 #endif
 
-#if ENABLED(TOOL_SENSOR)
+#if ANY(HAS_MARLINUI_MENU, TOOL_SENSOR)
   #include "../lcd/marlinui.h"
 #endif
 
-#if ENABLED(DUAL_X_CARRIAGE)
+#if ANY(DUAL_X_CARRIAGE, MANUAL_SWITCHING_TOOLHEAD)
   #include "stepper.h"
+#endif
+
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+  #include "../lcd/menu/menu.h"
 #endif
 
 #if ANY(SWITCHING_EXTRUDER, SWITCHING_NOZZLE, SWITCHING_TOOLHEAD)
@@ -86,10 +90,6 @@
   #include "../feature/mmu/mmu2.h"
 #elif HAS_PRUSA_MMU1
   #include "../feature/mmu/mmu.h"
-#endif
-
-#if HAS_MARLINUI_MENU
-  #include "../lcd/marlinui.h"
 #endif
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
@@ -393,7 +393,69 @@ void fast_line_to_current(const AxisEnum fr_axis) { _line_to_current(fr_axis, 0.
     do_solenoid_activation = true; // Activate solenoid for subsequent tool_change()
   }
 
-#endif // PARKING_EXTRUDER
+#elif ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+
+  millis_t last_tool_change = 0;
+
+  void mst_init() {
+    TERN_(MAN_ST_EEPROM_STORAGE, motion.extruder = toolchange_settings.selected_tool); // set active_extruder on first load
+  }
+
+  inline void mst_set_new_tool(const uint8_t new_tool) {
+    thermalManager.temp_hotend[new_tool].reset();
+    motion.extruder = new_tool;
+
+    // allow temperature readings to stabilize; 1khz, OVERSAMPLENR*4 samples
+    safe_delay(
+      _MAX(
+        100UL,
+        ((TEMP_TIMER_FREQUENCY / CYCLES_PER_MICROSECOND) * (OVERSAMPLENR) * 4) / 1000
+      )
+    );
+
+  }
+
+  PauseMessage mst_pause_message(const uint8_t new_tool) {
+    switch (new_tool) {
+      case 0: return PAUSE_MESSAGE_TOOL_CHANGE_0;
+      case 1: return PAUSE_MESSAGE_TOOL_CHANGE_1;
+      #if TOOLS >= 3
+        case 2: return PAUSE_MESSAGE_TOOL_CHANGE_2;
+      #endif
+      #if TOOLS >= 4
+        case 3: return PAUSE_MESSAGE_TOOL_CHANGE_3;
+      #endif
+      default: break;
+    }
+    return PAUSE_MESSAGE_TOOL_CHANGE;
+  }
+
+  inline void mst_tool_change(const uint8_t new_tool) {
+    DEBUG_ECHOPGM("tool change, active ", motion.extruder, " new ", new_tool);
+
+    stepper.disable_e_steppers();
+    thermalManager.heating_enabled = false;
+    thermalManager.disable_all_heaters(); // ?
+
+    PauseMessage pm = mst_pause_message(new_tool);
+    ui.pause_show_message(pm, PAUSE_MODE_TOOL_CHANGE);
+    if (pause_print(0.0, motion.position, true, 0)) {
+      wait_for_confirmation(false, 2, pm);
+      mst_set_new_tool(new_tool);
+      ui.set_status(F("Tool Changed"));
+    }
+    else {
+      // we couldn't pause..?
+      SERIAL_ERROR_MSG("Tool change failed: unable to pause printer.");
+      marlin.stop();
+    }
+
+    thermalManager.heating_enabled = true;
+    stepper.enable_e_steppers();
+  }
+
+#endif
+
 
 #if ENABLED(TOOL_SENSOR)
 
@@ -1263,9 +1325,12 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       }
     #endif
 
-    if (new_tool != old_tool || TERN0(PARKING_EXTRUDER, extruder_parked)) { // PARKING_EXTRUDER may need to attach old_tool when homing
+    if (new_tool != old_tool || TERN0(PARKING_EXTRUDER, extruder_parked) || ENABLED(MANUAL_SWITCHING_TOOLHEAD)) { // PARKING_EXTRUDER may need to attach old_tool when homing
       motion.destination = motion.position;
-
+      
+      // Save the original (or adjusted) position
+      DEBUG_POS("Move back", motion.destination);
+      const xyze_pos_t toolchange_destination = motion.destination;
 
       #if ALL(TOOLCHANGE_FILAMENT_SWAP, HAS_FAN) && TOOLCHANGE_FS_FAN >= 0
         // Store and stop fan. Restored on any exit.
@@ -1394,6 +1459,8 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
         parking_extruder_tool_change(new_tool, no_move);
       #elif ENABLED(MAGNETIC_PARKING_EXTRUDER)                          // Magnetic Parking extruder
         magnetic_parking_extruder_tool_change(new_tool);
+      #elif ENABLED(MANUAL_SWITCHING_TOOLHEAD)                          // Manual Switching Toolhead
+        mst_tool_change(new_tool);
       #elif ENABLED(SWITCHING_TOOLHEAD)                                 // Switching Toolhead
         switching_toolhead_tool_change(new_tool, no_move);
       #elif ENABLED(MAGNETIC_SWITCHING_TOOLHEAD)                        // Magnetic Switching Toolhead
@@ -1479,10 +1546,6 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
               motion.blocking_move_z(motion.destination.z, planner.settings.max_feedrate_mm_s[Z_AXIS]);
 
           #else
-            // Move back to the original (or adjusted) position
-            DEBUG_POS("Move back", motion.destination);
-            const xyze_pos_t toolchange_destination = motion.destination;
-
             // Raise to safe Z
             #if defined(SAFE_TOOLCHANGE_START_Z)
               if (TERN1(TOOLCHANGE_PARK, toolchange_settings.enable_park)) {
@@ -1691,6 +1754,11 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       #endif
 
     } // !no_move
+
+    #if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+      last_tool_change = millis();
+      if (did_pause_print) resume_print();
+    #endif
 
     SERIAL_ECHOLNPGM(STR_ACTIVE_EXTRUDER, motion.extruder);
 

@@ -32,6 +32,9 @@
 #if HAS_MULTI_TOOLS
 
   typedef struct {
+    #if ENABLED(MAN_ST_EEPROM_STORAGE)
+      int8_t selected_tool = 0;
+    #endif
     #if ENABLED(TOOLCHANGE_FILAMENT_SWAP)
       float swap_length;            // M217 S
       float extra_prime;            // M217 E
@@ -117,9 +120,25 @@
 
   void mpe_settings_init();
 
-#endif
+#elif ENABLED(MANUAL_SWITCHING_TOOLHEAD)
 
-#if ENABLED(ELECTROMAGNETIC_SWITCHING_TOOLHEAD)
+  extern millis_t last_tool_change;
+  inline millis_t ms_since_tool_change(const millis_t ms=millis()) { return ms - last_tool_change; }
+
+  inline FSTR_P tool_name(const uint8_t tool) {
+    switch (tool) {
+      case 0: return F(TOOL_NAME_0);
+      case 1: return F(TOOL_NAME_1);
+      #if TOOLS >= 3
+        case 2: return F(TOOL_NAME_2);
+      #endif
+      #if TOOLS >= 4
+        case 3: return F(TOOL_NAME_3);
+      #endif
+      default: return F("Tool");
+    }
+  }
+#elif ENABLED(ELECTROMAGNETIC_SWITCHING_TOOLHEAD)
   void est_init();
 #elif ENABLED(SWITCHING_TOOLHEAD)
   void swt_init();

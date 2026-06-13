@@ -239,6 +239,10 @@
   #include "servo.h"
 #endif
 
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+  #include "tool_change.h"
+#endif
+
 #if ANY(TEMP_SENSOR_0_IS_THERMISTOR, TEMP_SENSOR_1_IS_THERMISTOR, TEMP_SENSOR_2_IS_THERMISTOR, TEMP_SENSOR_3_IS_THERMISTOR, \
         TEMP_SENSOR_4_IS_THERMISTOR, TEMP_SENSOR_5_IS_THERMISTOR, TEMP_SENSOR_6_IS_THERMISTOR, TEMP_SENSOR_7_IS_THERMISTOR )
   #define HAS_HOTEND_THERMISTOR 1
@@ -416,6 +420,12 @@ PGMSTR(str_t_heating_failed, STR_T_HEATING_FAILED);
 
 #if ALL(FAN_SOFT_PWM, USE_CONTROLLER_FAN)
   uint8_t Temperature::soft_pwm_controllerfan_speed = FAN_OFF_PWM;
+#endif
+
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+  bool Temperature::heating_enabled = true;
+#else
+  constexpr bool Temperature::heating_enabled; // = true
 #endif
 
 // Init fans according to whether they're native PWM or Software PWM
@@ -1629,7 +1639,9 @@ void Temperature::_temp_error(
       OPTCODE(HAS_TEMP_CHAMBER, case H_CHAMBER: SERIAL_ECHOPGM(STR_HEATER_CHAMBER); break)
       OPTCODE(HAS_TEMP_BED,     case H_BED:     SERIAL_ECHOPGM(STR_HEATER_BED);     break)
       default:
-        if (real_heater_id >= 0) SERIAL_ECHO(C('E'), real_heater_id);
+        if (real_heater_id >= 0) {
+          SERIAL_ECHO(C('E'), real_heater_id);
+        }
     }
     #if ENABLED(ERR_INCLUDE_TEMP)
       SERIAL_ECHOLNPGM(STR_DETECTED_TEMP_B, deg, STR_DETECTED_TEMP_E);
@@ -1925,13 +1937,13 @@ void Temperature::mintemp_error(const heater_id_t heater_id OPTARG(ERR_INCLUDE_T
   void Temperature::manage_hotends(const millis_t &ms) {
     HOTEND_LOOP() {
       #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-      {
-        const auto deg = degHotend(e);
-        if (deg > temp_range[e].maxtemp) {
-          TERN_(SOVOL_SV06_RTS, rts.gotoPageBeep(ID_KillBadTemp_L, ID_KillBadTemp_D));
-          MAXTEMP_ERROR(e, deg);
+        if (TERN1(MANUAL_SWITCHING_TOOLHEAD, ms_since_tool_change(ms) > 100)) {
+          const auto deg = degHotend(e);
+          if (deg > temp_range[e].maxtemp) {
+            TERN_(SOVOL_SV06_RTS, rts.gotoPageBeep(ID_KillBadTemp_L, ID_KillBadTemp_D));
+            MAXTEMP_ERROR(e, deg);
+          }
         }
-      }
       #endif
 
       TERN_(HEATER_IDLE_HANDLER, heater_idle[e].update(ms));
@@ -2340,46 +2352,52 @@ void Temperature::task() {
   #endif
 
   if (!updateTemperaturesIfReady()) return; // Will also reset the watchdog if temperatures are ready
+  if (!heating_enabled) {
+    disable_all_heaters();
+    return;
+  }
+
+   const millis_t ms = millis();
 
   #if DISABLED(IGNORE_THERMOCOUPLE_ERRORS)
-    #if TEMP_SENSOR_IS_MAX_TC(0)
-    {
-      const auto deg = degHotend(0);
-      if (deg > _MIN(HEATER_0_MAXTEMP, TEMP_SENSOR_0_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E0, deg);
-      if (deg < _MAX(HEATER_0_MINTEMP, TEMP_SENSOR_0_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E0, deg);
+    if (TERN1(MANUAL_SWITCHING_TOOLHEAD, ms_since_tool_change(ms) > 100)) {
+      #if TEMP_SENSOR_IS_MAX_TC(0)
+      {
+        const auto deg = degHotend(0);
+        if (deg > _MIN(HEATER_0_MAXTEMP, TEMP_SENSOR_0_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E0, deg);
+        if (deg < _MAX(HEATER_0_MINTEMP, TEMP_SENSOR_0_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E0, deg);
+      }
+      #endif
+      #if TEMP_SENSOR_IS_MAX_TC(1)
+      {
+        const auto deg = degHotend(1);
+        if (deg > _MIN(HEATER_1_MAXTEMP, TEMP_SENSOR_1_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E1, deg);
+        if (deg < _MAX(HEATER_1_MINTEMP, TEMP_SENSOR_1_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E1, deg);
+      }
+      #endif
+      #if TEMP_SENSOR_IS_MAX_TC(2)
+      {
+        const auto deg = degHotend(2);
+        if (deg > _MIN(HEATER_2_MAXTEMP, TEMP_SENSOR_2_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E2, deg);
+        if (deg < _MAX(HEATER_2_MINTEMP, TEMP_SENSOR_2_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E2, deg);
+      }
+      #endif
+      #if TEMP_SENSOR_IS_MAX_TC(REDUNDANT)
+      {
+        const auto deg = degRedundant();
+        if (deg > TEMP_SENSOR_REDUNDANT_MAX_TC_TMAX - 1.00f) MAXTEMP_ERROR(H_REDUNDANT, deg);
+        if (deg < TEMP_SENSOR_REDUNDANT_MAX_TC_TMIN + 0.01f) MINTEMP_ERROR(H_REDUNDANT, deg);
+      }
+      #endif
+      #if TEMP_SENSOR_IS_MAX_TC(BED)
+      {
+        const auto deg = degBed();
+        if (deg > _MIN(BED_MAXTEMP, TEMP_SENSOR_BED_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_BED, deg);
+        if (deg < _MAX(BED_MINTEMP, TEMP_SENSOR_BED_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_BED, deg);
+      }
+      #endif
     }
-    #endif
-    #if TEMP_SENSOR_IS_MAX_TC(1)
-    {
-      const auto deg = degHotend(1);
-      if (deg > _MIN(HEATER_1_MAXTEMP, TEMP_SENSOR_1_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E1, deg);
-      if (deg < _MAX(HEATER_1_MINTEMP, TEMP_SENSOR_1_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E1, deg);
-    }
-    #endif
-    #if TEMP_SENSOR_IS_MAX_TC(2)
-    {
-      const auto deg = degHotend(2);
-      if (deg > _MIN(HEATER_2_MAXTEMP, TEMP_SENSOR_2_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_E2, deg);
-      if (deg < _MAX(HEATER_2_MINTEMP, TEMP_SENSOR_2_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_E2, deg);
-    }
-    #endif
-    #if TEMP_SENSOR_IS_MAX_TC(REDUNDANT)
-    {
-      const auto deg = degRedundant();
-      if (deg > TEMP_SENSOR_REDUNDANT_MAX_TC_TMAX - 1.00f) MAXTEMP_ERROR(H_REDUNDANT, deg);
-      if (deg < TEMP_SENSOR_REDUNDANT_MAX_TC_TMIN + 0.01f) MINTEMP_ERROR(H_REDUNDANT, deg);
-    }
-    #endif
-    #if TEMP_SENSOR_IS_MAX_TC(BED)
-    {
-      const auto deg = degBed();
-      if (deg > _MIN(BED_MAXTEMP, TEMP_SENSOR_BED_MAX_TC_TMAX - 1.00f)) MAXTEMP_ERROR(H_BED, deg);
-      if (deg < _MAX(BED_MINTEMP, TEMP_SENSOR_BED_MAX_TC_TMIN + 0.01f)) MINTEMP_ERROR(H_BED, deg);
-    }
-    #endif
   #endif
-
-  const millis_t ms = millis();
 
   // Handle Hotend Temp Errors, Heating Watch, etc.
   TERN_(HAS_HOTEND, manage_hotends(ms));
@@ -2898,10 +2916,14 @@ void Temperature::updateTemperaturesFromRawValues() {
     #define _TEMPDIR(N) TEMP_SENSOR_IS_ANY_MAX_TC(N) ? 0 : TEMPDIR(N),
     static constexpr int8_t temp_dir[HOTENDS] = { REPEAT(HOTENDS, _TEMPDIR) };
 
+    #if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+      const millis_t ms_since_tc = ms_since_tool_change();
+    #endif
+
     HOTEND_LOOP() {
       const raw_adc_t r = temp_hotend[e].getraw();
       const bool neg = temp_dir[e] < 0, pos = temp_dir[e] > 0;
-      if ((neg && r < temp_range[e].raw_max) || (pos && r > temp_range[e].raw_max))
+      if (TERN1(MANUAL_SWITCHING_TOOLHEAD, ms_since_tc > 100) && ((neg && r < temp_range[e].raw_max) || (pos && r > temp_range[e].raw_max)))
         MAXTEMP_ERROR(e, temp_hotend[e].celsius);
 
       /**
@@ -4585,6 +4607,8 @@ void Temperature::isr() {
         REMEMBER(1, autotemp.enabled, false);
       #endif
 
+      if (!heating_enabled) return false;
+
       #if TEMP_RESIDENCY_TIME > 0
         millis_t residency_start_ms = 0;
         bool first_loop = true;
@@ -4778,6 +4802,8 @@ void Temperature::isr() {
     bool Temperature::wait_for_bed(const bool no_wait_for_cooling/*=true*/
       OPTARG(G26_CLICK_CAN_CANCEL, const bool click_to_cancel/*=false*/)
     ) {
+      if (!heating_enabled) return false;
+
       #if TEMP_BED_RESIDENCY_TIME > 0
         millis_t residency_start_ms = 0;
         bool first_loop = true;
