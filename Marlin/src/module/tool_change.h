@@ -122,6 +122,8 @@
 
 #elif ENABLED(MANUAL_SWITCHING_TOOLHEAD)
 
+  void mst_init();
+
   extern millis_t last_tool_change;
   inline millis_t ms_since_tool_change(const millis_t ms=millis()) { return ms - last_tool_change; }
 
