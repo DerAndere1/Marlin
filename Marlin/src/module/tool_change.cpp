@@ -395,14 +395,14 @@ void fast_line_to_current(const AxisEnum fr_axis) { _line_to_current(fr_axis, 0.
 
 #elif ENABLED(MANUAL_SWITCHING_TOOLHEAD)
 
-  millis_t last_tool_change = 0;
+   millis_t last_tool_change = 0;
 
   void mst_init() {
-    TERN_(MAN_ST_EEPROM_STORAGE, motion.extruder = toolchange_settings.selected_tool); // set active_extruder on first load
+      TERN_(MAN_ST_EEPROM_STORAGE, motion.extruder = toolchange_settings.selected_tool); // set active_extruder on first load
   }
 
   inline void mst_set_new_tool(const uint8_t new_tool) {
-    thermalManager.temp_hotend[new_tool].reset();
+    TERN_(HAS_HOTEND,thermalManager.temp_hotend[new_tool].reset());
     motion.extruder = new_tool;
 
     // allow temperature readings to stabilize; 1khz, OVERSAMPLENR*4 samples
@@ -412,46 +412,57 @@ void fast_line_to_current(const AxisEnum fr_axis) { _line_to_current(fr_axis, 0.
         ((TEMP_TIMER_FREQUENCY / CYCLES_PER_MICROSECOND) * (OVERSAMPLENR) * 4) / 1000
       )
     );
-
   }
 
-  PauseMessage mst_pause_message(const uint8_t new_tool) {
-    switch (new_tool) {
-      case 0: return PAUSE_MESSAGE_TOOL_CHANGE_0;
-      case 1: return PAUSE_MESSAGE_TOOL_CHANGE_1;
-      #if TOOLS >= 3
-        case 2: return PAUSE_MESSAGE_TOOL_CHANGE_2;
-      #endif
-      #if TOOLS >= 4
-        case 3: return PAUSE_MESSAGE_TOOL_CHANGE_3;
-      #endif
-      default: break;
+  // Sửa lỗi PauseMessage: Chỉ định nghĩa nếu tính năng tạm dừng in tồn tại
+  #if HAS_MARLINUI_MENU && defined(ADVANCED_PAUSE_FEATURE)
+    PauseMessage mst_pause_message(const uint8_t new_tool) {
+      switch (new_tool) {
+        case 0: return PAUSE_MESSAGE_TOOL_CHANGE_0;
+        case 1: return PAUSE_MESSAGE_TOOL_CHANGE_1;
+        #if TOOLS >= 3
+          case 2: return PAUSE_MESSAGE_TOOL_CHANGE_2;
+        #endif
+        #if TOOLS >= 4
+          case 3: return PAUSE_MESSAGE_TOOL_CHANGE_3;
+        #endif
+        default: break;
+      }
+      return PAUSE_MESSAGE_TOOL_CHANGE;
     }
-    return PAUSE_MESSAGE_TOOL_CHANGE;
-  }
+  #endif
 
   inline void mst_tool_change(const uint8_t new_tool) {
     DEBUG_ECHOPGM("tool change, active ", motion.extruder, " new ", new_tool);
 
-    stepper.disable_e_steppers();
+    #if EXTRUDERS > 0
+      stepper.disable_e_steppers();
+    #endif
     thermalManager.heating_enabled = false;
     thermalManager.disable_all_heaters(); // ?
 
-    PauseMessage pm = mst_pause_message(new_tool);
-    ui.pause_show_message(pm, PAUSE_MODE_TOOL_CHANGE);
-    if (pause_print(0.0, motion.position, true, 0)) {
-      wait_for_confirmation(false, 2, pm);
+    // Sửa lỗi logic dừng khi đổi dao trên máy CNC
+    #if HAS_MARLINUI_MENU && defined(ADVANCED_PAUSE_FEATURE)
+      PauseMessage pm = mst_pause_message(new_tool);
+      ui.pause_show_message(pm, PAUSE_MODE_TOOL_CHANGE);
+      if (pause_print(0.0, motion.position, true, 0)) {
+        wait_for_confirmation(false, 2, pm);
+        mst_set_new_tool(new_tool);
+        ui.set_status(F("Tool Changed"));
+      }
+      else {
+        SERIAL_ERROR_MSG("Tool change failed: unable to pause printer.");
+        marlin.stop();
+      }
+    #else
+      // Đối với CNC không dùng màn hình hoặc không dùng lệnh tạm dừng in kiểu máy in 3D:
       mst_set_new_tool(new_tool);
-      ui.set_status(F("Tool Changed"));
-    }
-    else {
-      // we couldn't pause..?
-      SERIAL_ERROR_MSG("Tool change failed: unable to pause printer.");
-      marlin.stop();
-    }
+    #endif
 
     thermalManager.heating_enabled = true;
-    stepper.enable_e_steppers();
+    #if EXTRUDERS > 0
+      stepper.enable_e_steppers();
+    #endif
   }
 
 #endif
@@ -1755,12 +1766,21 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
 
     } // !no_move
 
-    #if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
       last_tool_change = millis();
-      if (did_pause_print) resume_print();
+      // Chỉ gọi lệnh tiếp tục in nếu hệ thống có đầu đùn nhựa và hỗ trợ tạm dừng
+      #if EXTRUDERS > 0 && defined(ADVANCED_PAUSE_FEATURE)
+        if (did_pause_print) resume_print();
+      #endif
     #endif
 
-    SERIAL_ECHOLNPGM(STR_ACTIVE_EXTRUDER, motion.extruder);
+// Tránh báo lỗi lỗi không có thành viên 'extruder' khi EXTRUDERS = 0
+    #if EXTRUDERS > 0
+      SERIAL_ECHOLNPGM(STR_ACTIVE_EXTRUDER, motion.extruder);
+    #else
+      // Sửa active_tool thành new_tool tại đây
+      SERIAL_ECHOLNPGM("Active Tool: ", new_tool);
+    #endif
 
   #endif // HAS_MULTI_TOOLS
 }
