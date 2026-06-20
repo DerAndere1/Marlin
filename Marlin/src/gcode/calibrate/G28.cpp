@@ -396,6 +396,10 @@ void GcodeSuite::G28() {
       motion.tool_centerpoint_control = false;
     #endif
 
+    #if ENABLED(CNC_COORDINATE_SYSTEMS)
+      const bool old_coordinate_system = active_coordinate_system;
+    #endif
+
     // Home with tool 0 active, if specified
     #if ALL(HAS_TOOLCHANGE, TOOLCHANGE_HOMING_USE_T0)
       #if DISABLED(DELTA) || ENABLED(DELTA_HOME_TO_SAFE_ZONE)
@@ -659,6 +663,11 @@ void GcodeSuite::G28() {
   // Restore tool centerpoint control (IK) after homing for PENTA_AXIS
   #if ANY(PENTA_AXIS_TRT, PENTA_AXIS_HT, PENTA_AXIS_HH)
     motion.tool_centerpoint_control = saved_tool_centerpoint_control;
+  #endif
+
+  #if ENABLED(CNC_COORDINATE_SYSTEMS)
+    bool coordinate_system_refresh_needed = select_coordinate_system(-1);  
+    coordinate_system_refresh_needed = select_coordinate_system(old_coordinate_system);  
   #endif
 
   ui.refresh();
