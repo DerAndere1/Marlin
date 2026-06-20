@@ -1069,6 +1069,14 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
   #error "MAX_BED_POWER must be an integer from 0 to 255."
 #endif
 
+#if ANY(PIDTEMPBED, PIDTEMPCHAMBER) && HOTENDS == 0
+  #error "PIDTEMPBED and PIDTEMPCHAMBER currently requires at least one hotend."
+#endif
+
+#if ENABLED(THERMAL_PROTECTION_HOTENDS) && HOTENDS == 0 
+  #error "THERMAL_PROTECTION_HOTENDS requires at least one hotend."
+#endif
+
 // Fan Kickstart power
 #if FAN_KICKSTART_TIME
   #if ENABLED(FAN_KICKSTART_LINEAR) && FAN_KICKSTART_POWER != 255
@@ -1108,6 +1116,8 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #error "AUTOTEMP requires AUTOTEMP_FACTOR."
   #elif AUTOTEMP_MAX < AUTOTEMP_MIN
     #error "AUTOTEMP_MAX must be greater than or equal to AUTOTEMP_MIN."
+  #elif HOTENDS == 0
+    #error "AUTOTEMP requires at least one hotend."
   #endif
 #endif
 

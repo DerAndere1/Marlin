@@ -1261,8 +1261,10 @@ private:
 
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     static void M600();
-    static void M603();
-    static void M603_report(const bool forReplay=true);
+    #if ENABLED(CONFIGURE_FILAMENT_CHANGE)
+      static void M603();
+      static void M603_report(const bool forReplay=true);
+    #endif
   #endif
 
   #if HAS_DUPLICATION_MODE
