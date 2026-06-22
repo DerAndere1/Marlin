@@ -889,7 +889,7 @@ void MarlinUI::init() {
       #else
 
         // For Cartesian / Core motion simply move to the motion.position
-        planner.buffer_line(current_position, fr_mm_s,
+        planner.buffer_line(motion.position, fr_mm_s,
           TERN_(MULTI_E_MANUAL, axis == E_AXIS ? e_index :) motion.extruder
         );
 

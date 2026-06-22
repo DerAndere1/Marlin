@@ -162,8 +162,8 @@
 //#define Z2_DRIVER_TYPE A4988
 //#define Z3_DRIVER_TYPE A4988
 //#define Z4_DRIVER_TYPE A4988
-#define I_DRIVER_TYPE  A4988
-#define J_DRIVER_TYPE  A4988
+//#define I_DRIVER_TYPE  A4988
+//#define J_DRIVER_TYPE  A4988
 //#define K_DRIVER_TYPE  TMC2209
 //#define U_DRIVER_TYPE  TMC2209
 //#define V_DRIVER_TYPE  A4988
@@ -398,7 +398,7 @@
 #define HOTEND_OFFSET_Z { 0.0, -10.00, -30.00 }  // (mm) relative Z-offset for each nozzle
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
-#define DEFAULT_TOOL_LENGTH_COMPENSATION false
+#define DEFAULT_TOOL_LENGTH_COMPENSATION true
 
 // @section multi-material
 
@@ -719,13 +719,13 @@
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify up to one value per hotend here, according to your setup.
     // If there are fewer values, the last one applies to the remaining hotends.
-    #define DEFAULT_Kp_LIST {  22.20,  22.20 }
-    #define DEFAULT_Ki_LIST {   1.08,   1.08 }
-    #define DEFAULT_Kd_LIST { 114.00, 114.00 }
+    #define DEFAULT_KP_LIST {  22.20,  22.20 }
+    #define DEFAULT_KI_LIST {   1.08,   1.08 }
+    #define DEFAULT_KD_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp  18.34
-    #define DEFAULT_Ki   1.09
-    #define DEFAULT_Kd  77.04
+    #define DEFAULT_KP  18.34
+    #define DEFAULT_KI   1.09
+    #define DEFAULT_KD  77.04
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -816,9 +816,9 @@
 
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKp 12.59
-  #define DEFAULT_bedKi  2.35
-  #define DEFAULT_bedKd 44.99
+  #define DEFAULT_BED_KP 12.59
+  #define DEFAULT_BED_KI  2.35
+  #define DEFAULT_BED_KD 44.99
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #else
@@ -1051,6 +1051,8 @@
     //#define DEBUG_SCARA_KINEMATICS
     #define FEEDRATE_SCALING        // Convert XY feedrate from mm/s to degrees/s on the fly
 
+   #define HAS_FEEDRATE_EDIT 1
+
     // Radius around the center where the arm cannot reach
     #define MIDDLE_DEAD_ZONE_R   0  // (mm)
 
@@ -1148,7 +1150,7 @@
  * (A axis parallel to the X axis, or B axis parallel to the Y axis).
  * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
  */
-#define PENTA_AXIS_TRT
+//#define PENTA_AXIS_TRT
 #if ENABLED(PENTA_AXIS_TRT)
 
  
@@ -1356,7 +1358,7 @@
  * Override with M92 (when enabled below)
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160.00, 160.00, 1600.00, 1422.222, 106.656, 907.868 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160.00, 160.00, 1600.00, 907.868 }
 
 /**
  * Enable support for M92. Disable to save at least ~530 bytes of flash.
@@ -1368,8 +1370,9 @@
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 200, 200, 15, 200, 200, 25 }
-
+#define DEFAULT_MAX_FEEDRATE          { 200, 200, 15, 25 }
+#define HAS_FEEDRATE_EDIT 1
+#define HAS_FLOW_EDIT 1       // Flow percentage
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
   #define MAX_FEEDRATE_EDIT_VALUES    { 600, 600, 10, 50 } // ...or, set your own edit limits
@@ -1381,7 +1384,7 @@
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 500, 500, 50, 25, 25, 10000 }
+#define DEFAULT_MAX_ACCELERATION      { 500, 500, 50, 10000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1701,7 +1704,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 10, -22, -2.2, 0, 0 }
+#define NOZZLE_TO_PROBE_OFFSET { 10, -22, -2.2 }
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
 #define PROBING_TOOL 0
@@ -2166,9 +2169,9 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-#define AUTO_BED_LEVELING_BILINEAR
+//#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
-//#define MESH_BED_LEVELING
+#define MESH_BED_LEVELING
 
 /**
  * Commands to execute at the end of G29 probing.
@@ -2405,7 +2408,7 @@
 #endif
 
 // Homing speeds (mm/min for linear axes, °/min for rotational axes)
-#define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (4*60), (8*60), (4*60) }
+#define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (4*60) }
 
 // Validate that endstops are triggered on homing moves
 #define VALIDATE_HOMING_ENDSTOPS
