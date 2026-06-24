@@ -510,6 +510,10 @@ void Endstops::update() {
     if (calibration_probe_enabled) {
       #if HAS_CALIBRATION_STATE
         SET_BIT_TO(live_state, CALIBRATION, READ(CALIBRATION_PIN) != CALIBRATION_PIN_INVERTING);
+      #elif DISABLED(USE_Z_MIN_PROBE) && Z_HOME_DIR == 1 && HAS_BED_PROBE
+        UPDATE_LIVE_STATE(Z, MIN_PROBE);
+      #elif DISABLED(USE_Z_MIN_PROBE) && Z_HOME_DIR == 1
+        UPDATE_LIVE_STATE(Z, MAX);
       #else
         UPDATE_LIVE_STATE(Z, TERN(USE_Z_MIN_PROBE, MIN_PROBE, MIN));
       #endif
