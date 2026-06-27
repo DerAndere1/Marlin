@@ -1337,8 +1337,20 @@
 #define CALIBRATION_GCODE
 #if ENABLED(CALIBRATION_GCODE)
 
-  //#define CALIBRATION_SCRIPT_PRE  "M117 Starting Auto-Calibration\nT0\nG28\nG12\nM117 Calibrating..."
+  #define CALIBRATION_SCRIPT_PRE  "G28\nG1X0Y0F1000\nG43"
   //#define CALIBRATION_SCRIPT_POST "M500\nM117 Calibration data saved"
+
+  // Uncertainty of hotend z offset. This defines, how far away in z from the 
+  // calibration object the measurment starts. Can be overridden by parameter L.
+  #define CALIBRATION_MEASUREMENT_TOOL_LENGTH 201.0 // (mm)
+
+  // Uncertainty of hotend xy offset for G425. This defines, how far away in in xy from the 
+  // calibration object the measurment starts for hotend offset calibration. Can be overridden by parameter U.
+  #define CALIBRATION_MEASUREMENT_UNKNOWN   52.0 // (mm)
+
+  // Uncertainty of hotend xy offset for G425 T... and of backlash. This defines, how far away from the 
+  // calibration object the measurment starts for backlash- and xy hotend offset calibration. Can be overridden by parameter U.
+  #define CALIBRATION_MEASUREMENT_UNCERTAIN 51.0 // (mm)
 
   // Back-off distance. This determines, how many mm above the calibration object the controlled point is moved to before measurement. 
   #define CALIBRATION_MEASUREMENT_UNKNOWN 5       // mm
@@ -1354,8 +1366,8 @@
   //#define CALIBRATION_REPORTING
 
   // The true location and dimension the cube/bolt/washer on the bed.
-  #define CALIBRATION_OBJECT_CENTER     { 0.0, 0.0,  -5.0 } // mm
-  #define CALIBRATION_OBJECT_DIMENSIONS {  10.0,  10.0,  10.0 } // mm
+  #define CALIBRATION_OBJECT_CENTER     { 0.0, 150.0,  0.0 } // mm
+  #define CALIBRATION_OBJECT_DIMENSIONS {  10.0,  10.0,  0.1 } // mm
 
   // Comment out any sides which are unreachable by the probe. For best
   // auto-calibration results, all sides must be reachable.
@@ -1383,7 +1395,7 @@
 
   // Define the pin to read during calibration
   #ifndef CALIBRATION_PIN
-    #define CALIBRATION_PIN PH11            // Define here to override the default pin
+    #define CALIBRATION_PIN PF6 // TRT B axis I_STOP_PIN            // Define here to override the default pin
     #define CALIBRATION_PIN_INVERTING false // Set to true to invert the custom pin
     //#define CALIBRATION_PIN_PULLDOWN
     //#define CALIBRATION_PIN_PULLUP
