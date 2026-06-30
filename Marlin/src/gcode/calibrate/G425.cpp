@@ -218,7 +218,7 @@ float measuring_movement(const AxisEnum axis, const int dir, const bool stop_sta
  *   uncertainty_tool_length  in  - How far away from the object to begin probing for hotend Z offset calibration with G425 T...
  */
 inline float measure(const AxisEnum axis, const int dir, const bool stop_state, float * const backlash_ptr, const float uncertainty, const float uncertainty_tool_length) {
-  const bool fast = uncertainty == CALIBRATION_MEASUREMENT_UNKNOWN;
+  const bool fast = (uncertainty == CALIBRATION_MEASUREMENT_UNKNOWN || uncertainty_tool_length == CALIBRATION_MEASUREMENT_TOOL_LENGTH);
 
   // Save the current position of the specified axis
   const float start_pos = motion.position[axis];
@@ -600,7 +600,7 @@ inline void calibrate_all() {
   TERN_(BACKLASH_GCODE, calibrate_backlash(m, CALIBRATION_MEASUREMENT_UNCERTAIN));
 
   // Do a slow and precise calibration of the toolheads
-  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_TOOL_LENGTH);
+  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN);
 
   motion.position.x = X_CENTER;
   calibration_move();         // Park nozzle away from calibration object
@@ -840,10 +840,12 @@ void GcodeSuite::G425() {
     // Nếu gõ G425 T1 Z hoặc G425 T1 Z0 -> Kích hoạt chế độ đo chiều dài Z nhanh CNC style
     if (parser.seen('Z')) {
       calibrate_toolhead_z_only(m, uncertainty_tool_length, target_tool);
+      calibrate_toolhead_z_only(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool); 
     } 
     // Nếu chỉ gõ G425 T1 -> Chạy chế độ mặc định đo toàn diện X Y Z
     else {
-      calibrate_toolhead(m, uncertainty, uncertainty_tool_length, parser.intval('T', motion.extruder));
+      calibrate_toolhead(m, uncertainty, uncertainty_tool_length, target_tool);
+      calibrate_toolhead(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool);
     }
   }
   #if ENABLED(CALIBRATION_REPORTING)
