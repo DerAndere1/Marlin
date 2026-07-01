@@ -94,12 +94,11 @@ enum side_t : uint8_t {
   TOP, RIGHT, FRONT, LEFT, BACK, NUM_SIDES
 };
 
-static constexpr xyz_pos_t true_center = motion.calibration_center;
-static constexpr xyz_float_t dimensions CALIBRATION_OBJECT_DIMENSIONS;
+static constexpr xyz_float_t dimensions = CALIBRATION_OBJECT_DIMENSIONS;
 static constexpr xy_float_t nod = { CALIBRATION_NOZZLE_OUTER_DIAMETER, CALIBRATION_NOZZLE_OUTER_DIAMETER };
 
 struct measurements_t {
-  xyz_pos_t obj_center = true_center; // Non-static must be assigned from xyz_pos_t
+  xyz_pos_t obj_center = motion.calibration_center; // Non-static must be assigned from xyz_pos_t
 
   float obj_side[NUM_SIDES], backlash[NUM_SIDES];
   xyz_float_t pos_error;
@@ -186,7 +185,7 @@ float measuring_movement(const AxisEnum axis, const int dir, const bool stop_sta
   const feedRate_t mms = fast ? MMM_TO_MMS(CALIBRATION_FEEDRATE_FAST) : MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW);
   const float limit    = fast ? (uncertainty + 50) : (uncertainty + 5);
   #if Z_HOME_TO_MAX
-    const float limit_z = fast ? ((Z_HOME_POS) - calibration_center.z  + 50) : ((Z_MAX_POS) - calibration_center.z + 5);
+    const float limit_z = fast ? ((Z_HOME_POS) - motion.calibration_center.z  + 50) : ((Z_MAX_POS) - motion.calibration_center.z + 5);
   #else
     const float limit_z = fast ? (2 * uncertainty_tool_length + 50) : (2 * uncertainty_tool_length + 5);
   #endif
@@ -250,7 +249,7 @@ inline float measure(const AxisEnum axis, const int dir, const bool stop_state, 
  *                               to find out height of edge
  */
 inline void probe_side(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const side_t side, const bool probe_top_at_edge=false) {
-  const xyz_float_t dimensions = CALIBRATION_OBJECT_DIMENSIONS;
+  const xyz_float_t dimensions = dimensions;
   AxisEnum axis;
   float dir = 1;
 
@@ -354,9 +353,9 @@ inline void probe_sides(measurements_t &m, const float uncertainty, const float 
   // The difference between the known and the measured location
   // of the calibration object is the positional error
   NUM_AXIS_CODE(
-    m.pos_error.x = TERN0(HAS_X_CENTER, true_center.x - m.obj_center.x),
-    m.pos_error.y = TERN0(HAS_Y_CENTER, true_center.y - m.obj_center.y),
-    m.pos_error.z = true_center.z - m.obj_center.z,
+    m.pos_error.x = TERN0(HAS_X_CENTER, motion.calibration_center.x - m.obj_center.x),
+    m.pos_error.y = TERN0(HAS_Y_CENTER, motion.calibration_center.y - m.obj_center.y),
+    m.pos_error.z = motion.calibration_center.z - m.obj_center.z,
     m.pos_error.i = 0,
     m.pos_error.j = 0,
     m.pos_error.k = 0,
@@ -511,7 +510,7 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
 
 inline void update_measurements(measurements_t &m, const AxisEnum axis) {
   motion.position[axis] += m.pos_error[axis];
-  m.obj_center[axis] = true_center[axis];
+  m.obj_center[axis] = motion.calibration_center[axis];
   m.pos_error[axis] = 0;
 }
 
@@ -606,7 +605,7 @@ inline void calibrate_all() {
   calibration_move();         // Park nozzle away from calibration object
 }
 
-calibrate_toolhead_Z_only(measurements_t &m, const float uncertainty, const uint8_t extruder) {
+inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty, const uint8_t extruder) {
   TEMPORARY_BACKLASH_CORRECTION(backlash.all_on);
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
@@ -655,9 +654,9 @@ calibrate_toolhead_Z_only(measurements_t &m, const float uncertainty, const uint
   // The difference between the known and the measured location
   // of the calibration object is the positional error
   NUM_AXIS_CODE(
-    m.pos_error.x = TERN0(HAS_X_CENTER, true_center.x - m.obj_center.x),
-    m.pos_error.y = TERN0(HAS_Y_CENTER, true_center.y - m.obj_center.y),
-    m.pos_error.z = true_center.z - m.obj_center.z,
+    m.pos_error.x = TERN0(HAS_X_CENTER, motion.calibration_center.x - m.obj_center.x),
+    m.pos_error.y = TERN0(HAS_Y_CENTER, motion.calibration_center.y - m.obj_center.y),
+    m.pos_error.z = motion.calibration_center.z - m.obj_center.z,
     m.pos_error.i = 0,
     m.pos_error.j = 0,
     m.pos_error.k = 0,
@@ -828,7 +827,7 @@ void GcodeSuite::G425() {
   motion.set_soft_endstop_loose(true);
 
   measurements_t m;
-  const float uncertainty = parser.floatval('U', CALIBRATION_MEASUREMENT_UNCERTAIN);
+  const float uncertainty = parser.floatval('U', CALIBRATION_MEASUREMENT_UNKNOWN);
   const float uncertainty_tool_length = parser.floatval('L', CALIBRATION_MEASUREMENT_TOOL_LENGTH);
 
   if (parser.seen_test('B'))
@@ -840,7 +839,7 @@ void GcodeSuite::G425() {
     // Nếu gõ G425 T1 Z hoặc G425 T1 Z0 -> Kích hoạt chế độ đo chiều dài Z nhanh CNC style
     if (parser.seen('Z')) {
       calibrate_toolhead_z_only(m, uncertainty_tool_length, target_tool);
-      calibrate_toolhead_z_only(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool); 
+      calibrate_toolhead_z_only(m, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool); 
     } 
     // Nếu chỉ gõ G425 T1 -> Chạy chế độ mặc định đo toàn diện X Y Z
     else {

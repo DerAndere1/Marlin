@@ -1002,7 +1002,8 @@ void MarlinSettings::postprocess() {
     {
       #if ENABLED(CALIBRATION_GCODE)
         _FIELD_TEST(calibration_center);
-        EEPROM_WRITE(motion.calibration_center);
+        xyz_pos_t &calib_center = motion.calibration_center;
+        EEPROM_WRITE(calib_center);
       #endif
     }
   
@@ -2121,10 +2122,11 @@ void MarlinSettings::postprocess() {
     // Calibration Center
     //
     {
-      #if ENABLED(CALIBRATION_GCODE)
-        _FIELD_TEST(calibration_center);
-        EEPROM_WRITE(motion.calibration_center);
-      #endif
+    #if ENABLED(CALIBRATION_GCODE)
+      _FIELD_TEST(calibration_center);
+      const xyz_pos_t &calib_center = motion.calibration_center;
+      EEPROM_READ(calib_center);
+    #endif
     }
 
       //
@@ -3513,7 +3515,11 @@ void MarlinSettings::reset() {
   //
   // Calibration Center
   //
-  TERN_(CALIBRATION_GCODE, calibration_center = CALIBRATION_OBJECT_CENTER)
+  #if ENABLED(CALIBRATION_GCODE)
+    constexpr float dco[] = CALIBRATION_OBJECT_CENTER;
+    static_assert(COUNT(dco) == NUM_AXES, "CALIBRATION_OBJECT_CENTER must contain offsets for each linear axis X, Y, Z....");
+    LOOP_NUM_AXES(a) motion.calibration_center[a] = dco[a];
+  #endif
   
   //
   // Spindle Acceleration
