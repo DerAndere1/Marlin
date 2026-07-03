@@ -233,7 +233,12 @@ inline float measure(const AxisEnum axis, const int dir, const bool stop_state, 
 
   // Move back to the starting position
   motion.destination = motion.position;
-  motion.destination[axis] = start_pos;
+  #if Z_HOME_TO_MAX
+    if (axis == Z_AXIS)
+      motion.destination[axis] = motion.position.z + CALIBRATION_MEASUREMENT_UNCERTAIN;
+    else
+  #endif
+  motion.destination = start_pos;
   motion.blocking_move((xyz_pos_t)motion.destination, MMM_TO_MMS(CALIBRATION_FEEDRATE_TRAVEL));
   return measured_pos;
 }

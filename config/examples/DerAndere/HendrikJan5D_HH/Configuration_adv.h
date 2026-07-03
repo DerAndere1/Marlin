@@ -1350,10 +1350,8 @@
 
   // Uncertainty of hotend xy offset for G425 T... and of backlash. This defines, how far away from the 
   // calibration object the measurment starts for backlash- and xy hotend offset calibration. Can be overridden by parameter U.
-  #define CALIBRATION_MEASUREMENT_UNCERTAIN 51.0 // (mm)
+  #define CALIBRATION_MEASUREMENT_UNCERTAIN 5.0 // (mm)
 
-  // Back-off distance. This determines, how many mm above the calibration object the controlled point is moved to before measurement. 
-  #define CALIBRATION_MEASUREMENT_UNKNOWN 5       // mm
   #define CALIBRATION_FEEDRATE_SLOW             60    // mm/min
   #define CALIBRATION_FEEDRATE_FAST           1000    // mm/min
   #define CALIBRATION_FEEDRATE_TRAVEL         2000    // mm/min
