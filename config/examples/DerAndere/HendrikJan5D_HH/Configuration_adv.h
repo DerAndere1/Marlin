@@ -1337,12 +1337,12 @@
 #define CALIBRATION_GCODE
 #if ENABLED(CALIBRATION_GCODE)
 
-  #define CALIBRATION_SCRIPT_PRE  "G28\nG1X0Y0F1000\nG43"
+  #define CALIBRATION_SCRIPT_PRE  "G28\nG1X0Y100F1000\nG43"
   //#define CALIBRATION_SCRIPT_POST "M500\nM117 Calibration data saved"
 
   // Uncertainty of hotend z offset. This defines, how far away in z from the 
   // calibration object the measurment starts. Can be overridden by parameter L.
-  #define CALIBRATION_MEASUREMENT_TOOL_LENGTH 201.0 // (mm)
+  #define CALIBRATION_MEASUREMENT_TOOL_LENGTH 101.0 // (mm)
 
   // Uncertainty of hotend xy offset for G425. This defines, how far away in in xy from the 
   // calibration object the measurment starts for hotend offset calibration. Can be overridden by parameter U.
@@ -1364,8 +1364,8 @@
   //#define CALIBRATION_REPORTING
 
   // The true location and dimension the cube/bolt/washer on the bed.
-  #define CALIBRATION_OBJECT_CENTER     { 0.0, 150.0,  0.0 } // mm
-  #define CALIBRATION_OBJECT_DIMENSIONS {  10.0,  10.0,  0.1 } // mm
+  #define CALIBRATION_OBJECT_CENTER     { 0.0, 100.0,  0.0, 0.0, 0.0 } // mm
+  #define CALIBRATION_OBJECT_DIMENSIONS {  10.0,  10.0,  0.1, 0.0, 0.0 } // mm
 
   // Comment out any sides which are unreachable by the probe. For best
   // auto-calibration results, all sides must be reachable.

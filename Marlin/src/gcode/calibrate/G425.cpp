@@ -144,8 +144,10 @@ inline void calibration_move() {
  */
 inline void park_above_object(measurements_t &m, const float uncertainty_tool_length) {
   // Move to safe distance above calibration object
-  #if defined(Z_HOME_DIR) && Z_HOME_DIR > 0
-    gcode.process_subcommands_now(F("G28 Z")); // Ép trục Z chạy Home Max cơ khí thực tế tại điểm 380mm để làm sạch mốc tọa độ
+  #if defined(Z_HOME_DIR) && Z_HOME_DIR == 1
+    if (uncertainty_tool_length > CALIBRATION_MEASUREMENT_UNCERTAIN)
+      gcode.process_subcommands_now(F("G28 Z")); // Ép trục Z chạy Home Max cơ khí thực tế tại điểm 380mm để làm sạch mốc tọa độ
+    else
   #else
     motion.position.z = m.obj_center.z + dimensions.z / 2 + uncertainty_tool_length;
   #endif
@@ -353,7 +355,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty, const float 
   // at which it makes contact with the calibration object
   TERN_(HAS_X_CENTER, m.nozzle_outer_dimension.x = m.obj_side[RIGHT] - m.obj_side[LEFT] - dimensions.x);
 
-  park_above_object(m, uncertainty_tool_length);
+  park_above_object(m, CALIBRATION_MEASUREMENT_UNCERTAIN);
 
   // The difference between the known and the measured location
   // of the calibration object is the positional error
@@ -654,7 +656,7 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
   // at which it makes contact with the calibration object
   TERN_(HAS_X_CENTER, m.nozzle_outer_dimension.x = m.obj_side[RIGHT] - m.obj_side[LEFT] - dimensions.x);
 
-  park_above_object(m, uncertainty);
+  park_above_object(m, CALIBRATION_MEASUREMENT_UNCERTAIN);
 
   // The difference between the known and the measured location
   // of the calibration object is the positional error

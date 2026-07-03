@@ -47,7 +47,7 @@
 void GcodeSuite::M425() {
   bool noArgs = true;
 
-  #if ENABLED(CALIBRATION_CODE)
+  #if ENABLED(CALIBRATION_GCODE)
     if (parser.seen('O')) {
       motion.calibration_center[0] = parser.value_linear_units();
       noArgs = false;
@@ -149,7 +149,7 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
     ));
   #endif
 
-  #if ENABLED(CALIBRATION_CODE)
+  #if ENABLED(CALIBRATION_GCODE)
   SERIAL_ECHOPGM_P(
     , PSTR("O"), LINEAR_UNIT(calibration_center_x)
     , PSTR("P"), LINEAR_UNIT(calibration_center_y)
