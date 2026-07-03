@@ -61,7 +61,7 @@ void GcodeSuite::M425() {
       noArgs = false;
     };
   #endif
-  #if ENABLED(BACKLASH_CODE)
+  #if ENABLED(BACKLASH_GCODE)
   auto axis_can_calibrate = [](const uint8_t a) -> bool {
     #define _CAN_CASE(N) case N##_AXIS: return bool(AXIS_CAN_CALIBRATE(N));
     switch (a) {
@@ -121,7 +121,7 @@ void GcodeSuite::M425() {
       SERIAL_EOL();
     #endif
   }
-  #endif //BACKLASH_CODE
+  #endif //BACKLASH_GCODE
 }
 
 void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
@@ -129,14 +129,14 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
 
   report_heading_etc(forReplay, F(STR_BACKLASH_COMPENSATION));
   SERIAL_ECHOPGM_P(PSTR("  M425")
-  #if ENABLED(BACKLASH_CODE)
+  #if ENABLED(BACKLASH_GCODE)
     , PSTR("  F"), backlash.get_correction()
     #ifdef BACKLASH_SMOOTHING_MM
       , PSTR(" S"), LINEAR_UNIT(backlash.get_smoothing_mm())
     #endif
   #endif
   );
-  #if ENABLED(BACKLASH_CODE)
+  #if ENABLED(BACKLASH_GCODE)
   #if NUM_AXES
     SERIAL_ECHOPGM_P(NUM_AXIS_PAIRED_LIST(
       SP_X_STR, LINEAR_UNIT(backlash.get_distance_mm(X_AXIS)),
@@ -161,4 +161,4 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
   SERIAL_EOL();
 }
 
-#endif // ANY(BACKLASH_CODE, CALIBRATION_GCODE)
+#endif // ANY(BACKLASH_GCODE, CALIBRATION_GCODE)
