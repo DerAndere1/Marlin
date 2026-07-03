@@ -128,13 +128,15 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
   TERN_(MARLIN_SMALL_BUILD, return);
 
   report_heading_etc(forReplay, F(STR_BACKLASH_COMPENSATION));
-  SERIAL_ECHOPGM_P(
+  SERIAL_ECHOPGM_P(PSTR("  M425")
   #if ENABLED(BACKLASH_CODE)
-    PSTR("  M425 F"), backlash.get_correction()
+    , PSTR("  F"), backlash.get_correction()
     #ifdef BACKLASH_SMOOTHING_MM
       , PSTR(" S"), LINEAR_UNIT(backlash.get_smoothing_mm())
     #endif
+  #endif
   );
+  #if ENABLED(BACKLASH_CODE)
   #if NUM_AXES
     SERIAL_ECHOPGM_P(NUM_AXIS_PAIRED_LIST(
       SP_X_STR, LINEAR_UNIT(backlash.get_distance_mm(X_AXIS)),
@@ -148,7 +150,7 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
       SP_W_STR, W_AXIS_UNIT(backlash.get_distance_mm(W_AXIS))
     ));
   #endif
-
+  #endif
   #if ENABLED(CALIBRATION_GCODE)
   SERIAL_ECHOPGM_P(
     , PSTR("O"), LINEAR_UNIT(calibration_center_x)
@@ -159,4 +161,4 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
   SERIAL_EOL();
 }
 
-#endif // BACKLASH_GCODE
+#endif // ANY(BACKLASH_CODE, CALIBRATION_GCODE)
