@@ -134,7 +134,7 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
     #ifdef BACKLASH_SMOOTHING_MM
       , PSTR(" S"), LINEAR_UNIT(backlash.get_smoothing_mm())
     #endif
-  );
+    );
   #endif
 
   #if ENABLED(BACKLASH_GCODE)
