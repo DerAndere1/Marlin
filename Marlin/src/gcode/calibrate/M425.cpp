@@ -96,8 +96,6 @@ void GcodeSuite::M425() {
     }
   #endif
 
-  #endif
-
   if (noArgs) {
     SERIAL_ECHOPGM("Backlash Correction ");
     if (!backlash.get_correction_uint8()) SERIAL_ECHOPGM("in");
@@ -131,7 +129,7 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
   TERN_(MARLIN_SMALL_BUILD, return);
 
   report_heading_etc(forReplay, F(STR_BACKLASH_COMPENSATION));
-  SERIAL_ECHOPGM_P(PSTR("  M425"));
+  SERIAL_ECHOPGM("  M425");
   #if ENABLED(BACKLASH_GCODE)
     SERIAL_ECHOPGM_P(PSTR("  F"), backlash.get_correction()
     #ifdef BACKLASH_SMOOTHING_MM
@@ -156,10 +154,13 @@ void GcodeSuite::M425_report(const bool forReplay/*=true*/) {
   #endif
   #endif
   #if ENABLED(CALIBRATION_GCODE)
-  SERIAL_ECHOPGM_P(
-    , PSTR("O"), LINEAR_UNIT(motion.calibration_center.x)
+  SERIAL_ECHOPGM_P(PSTR("O"), LINEAR_UNIT(motion.calibration_center.x)
+  #if HAS_Y_AXIS
     , PSTR("P"), LINEAR_UNIT(motion.calibration_center.y)
+  #endif
+  #if HAS_Z_AXIS  
     , PSTR("Q"), LINEAR_UNIT(motion.calibration_center.z)
+  #endif
   );
   #endif
   SERIAL_EOL();
