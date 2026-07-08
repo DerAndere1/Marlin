@@ -256,7 +256,7 @@ inline float measure(const AxisEnum axis, const int dir, const bool stop_state, 
  *                               to find out height of edge
  */
 inline void probe_side(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const side_t side, const bool probe_top_at_edge=false) {
-  const xyz_float_t dimensions = dimensions;
+  const xyz_float_t dims = dimensions;
   AxisEnum axis;
   float dir = 1;
 
@@ -275,7 +275,7 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
     #if AXIS_CAN_CALIBRATE(Z)
       case TOP: {
         const float measurement = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length);
-        m.obj_center.z = measurement - dimensions.z / 2;
+        m.obj_center.z = measurement - dims.z / 2;
         m.obj_side[TOP] = measurement;
         return;
       }
@@ -289,20 +289,20 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
       motion.position[axis] = m.obj_center[axis] + (-dir) * (dimensions[axis] / 2 - m.nozzle_outer_dimension[axis]);
       calibration_move();
       m.obj_side[TOP] = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length);
-      m.obj_center.z = m.obj_side[TOP] - dimensions.z / 2;
+      m.obj_center.z = m.obj_side[TOP] - dims.z / 2;
     #endif
   }
 
   if ((AXIS_CAN_CALIBRATE(X) && axis == X_AXIS) || (AXIS_CAN_CALIBRATE(Y) && axis == Y_AXIS)) {
     // Move to safe distance to the side of the calibration object
-    motion.position[axis] = m.obj_center[axis] + (-dir) * (dimensions[axis] / 2 + m.nozzle_outer_dimension[axis] / 2 + uncertainty);
+    motion.position[axis] = m.obj_center[axis] + (-dir) * (dims[axis] / 2 + m.nozzle_outer_dimension[axis] / 2 + uncertainty);
     calibration_move();
 
     // Plunge below the side of the calibration object and measure
     motion.position.z = m.obj_side[TOP] - (CALIBRATION_NOZZLE_TIP_HEIGHT) * 0.7f;
     calibration_move();
     const float measurement = measure(axis, dir, true, &m.backlash[side], uncertainty, uncertainty_tool_length);
-    m.obj_center[axis] = measurement + dir * (dimensions[axis] / 2 + m.nozzle_outer_dimension[axis] / 2);
+    m.obj_center[axis] = measurement + dir * (dims[axis] / 2 + m.nozzle_outer_dimension[axis] / 2);
     m.obj_side[side] = measurement;
   }
 }
@@ -518,8 +518,8 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
 inline void update_measurements(measurements_t &m, const AxisEnum axis) {
   if (TERN1(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
     motion.position[axis] += m.pos_error[axis];
-    m.obj_center[axis] = motion.calibration_center[axis];
   }
+  m.obj_center[axis] = motion.calibration_center[axis];
   m.pos_error[axis] = 0;
 }
 
@@ -545,10 +545,18 @@ inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const
 
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
-    xyz_pos_t &hotoff = (TERN1(motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) ? motion.active_hotend_offset() : NUM_AXIS_ARRAY_1(0.0f);
-    if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x += m.pos_error.x;
-    if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y += m.pos_error.y;
-                             if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;
+    xyz_pos_t &hotoff = motion.active_hotend_offset();
+    if (TERN1(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
+      if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x += m.pos_error.x;
+      if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y += m.pos_error.y;
+                               if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;
+    }
+    else {
+      if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x = m.pos_error.x;
+      if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y = m.pos_error.y;
+                               if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
+
+    }
     normalize_hotend_offsets();
   #endif
 
