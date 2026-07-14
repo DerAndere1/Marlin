@@ -516,7 +516,7 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
 }
 
 inline void update_measurements(measurements_t &m, const AxisEnum axis) {
-  if (TERN1(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
+  if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
     motion.position[axis] += m.pos_error[axis];
   }
   m.obj_center[axis] = motion.calibration_center[axis];
@@ -546,7 +546,7 @@ inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
     xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (TERN1(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
+    if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
       if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x += m.pos_error.x;
       if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y += m.pos_error.y;
                                if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;

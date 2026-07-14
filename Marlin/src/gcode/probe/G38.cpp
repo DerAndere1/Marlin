@@ -131,7 +131,7 @@ FORCE_INLINE bool G38_run_probe() {
     #endif
   
     // Report a good probe result in machine coordinate system to the host and LCD
-    const xyz_pos_t probe_pos = (TERN0(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation) || TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control)) ? motion.position + DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]) : motion.position + probe.offset;
+    const xyz_pos_t probe_pos = (TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation) || TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control)) ? motion.position + DIFF_TERN(HAS_HOTEND_OFFSET, probe.offset, motion.hotend_offset[motion.extruder]) : motion.position + probe.offset;
     SString<30> msg(
       F("Machine X:"), p_float_t(probe_pos.x, 2),
       F(" Y:"), p_float_t(probe_pos.y, 2),
