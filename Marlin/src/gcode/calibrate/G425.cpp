@@ -233,7 +233,7 @@ inline float measure(const AxisEnum axis, const int dir, const bool stop_state, 
     *backlash_ptr = ABS(release_pos - measured_pos);
   }
 
-  // Move back to the starting position
+   // Move back to the starting position
   motion.destination = motion.position;
   #if Z_HOME_TO_MAX
     if (axis == Z_AXIS)
@@ -634,13 +634,19 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
     // Probing at the exact center only works if the center is flat. Probing on a washer
     // or bolt will require probing the top near the side edges, away from the center.
     constexpr bool probe_top_at_edge = false;
-    probe_side(m, uncertainty, uncertainty, TOP);
+  probe_side(m, uncertainty, uncertainty, TOP);
   #endif
 
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
     xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;
+    if (AXIS_CAN_CALIBRATE(Z)) {
+      if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
+        hotoff.z += m.pos_error.z;
+      }
+    else {
+      hotoff.z = m.pos_error.z;
+    }
     normalize_hotend_offsets();
   #endif
 
