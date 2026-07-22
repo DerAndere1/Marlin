@@ -1352,7 +1352,7 @@
   // calibration object the measurment starts for backlash- and xy hotend offset calibration. Can be overridden by parameter U.
   #define CALIBRATION_MEASUREMENT_UNCERTAIN 51.0 // (mm)
 
-  #define CALIBRATION_FEEDRATE_SLOW             60    // mm/min
+  #define CALIBRATION_FEEDRATE_SLOW             66    // mm/min
   #define CALIBRATION_FEEDRATE_FAST           1000    // mm/min
   #define CALIBRATION_FEEDRATE_TRAVEL         2000    // mm/min
 
