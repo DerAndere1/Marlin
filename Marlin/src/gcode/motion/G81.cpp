@@ -89,7 +89,7 @@ void drill_cycle(uint8_t mode) {
   float drill_retract_z = retract_to_initial ? drill_position[Z_AXIS] : drill_rapid_z;
 
   //feedrate
-  if(parser.seenval('F')) drill_feedrate = parser.value_feedrate();
+  if(parser.seenval('F')) drill_feedrate = MMM_TO_MMS(parser.value_feedrate());
   else if(drill_feedrate == NAN) drill_feedrate = MMM_TO_MMS(DRILL_CYCLES_DEFAULT_FEEDRATE);
 
   //peck
