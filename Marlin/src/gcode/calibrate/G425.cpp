@@ -183,8 +183,8 @@ inline void park_above_object(measurements_t &m, const float uncertainty_tool_le
  *   stop_state   in - Move until probe pin becomes this value
  *   fast         in - Fast vs. precise measurement
  */
-float measuring_movement(const AxisEnum axis, const int dir, const bool stop_state, const bool fast, const bool uncertainty, const bool uncertainty_tool_length) {
-  const feedRate_t mms = fast ? MMM_TO_MMS(CALIBRATION_FEEDRATE_FAST) : MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW);
+float measuring_movement(const AxisEnum axis, const int dir, const bool stop_state, const bool fast, const bool uncertainty, const bool uncertainty_tool_length, const feedRate_t feedrate) {
+  const feedRate_t mms = (feedrate != MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW)) ? feedrate : (fast ? MMM_TO_MMS(CALIBRATION_FEEDRATE_FAST) : MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW));
   const float limit    = fast ? (uncertainty + 50) : (uncertainty + 5);
   #if Z_HOME_TO_MAX
     const float limit_z = fast ? ((Z_HOME_POS) - motion.calibration_center.z  + 50) : ((Z_MAX_POS) - motion.calibration_center.z + 5);
@@ -218,18 +218,18 @@ float measuring_movement(const AxisEnum axis, const int dir, const bool stop_sta
  *   uncertainty        in     - If uncertainty is CALIBRATION_MEASUREMENT_UNKNOWN, do a fast probe.
  *   uncertainty_tool_length  in  - How far away from the object to begin probing for hotend Z offset calibration with G425 T...
  */
-inline float measure(const AxisEnum axis, const int dir, const bool stop_state, float * const backlash_ptr, const float uncertainty, const float uncertainty_tool_length) {
+inline float measure(const AxisEnum axis, const int dir, const bool stop_state, float * const backlash_ptr, const float uncertainty, const float uncertainty_tool_length, const feedRate_t feedrate) {
   const bool fast = (uncertainty == CALIBRATION_MEASUREMENT_UNKNOWN || uncertainty_tool_length == CALIBRATION_MEASUREMENT_TOOL_LENGTH);
 
   // Save the current position of the specified axis
   const float start_pos = motion.position[axis];
 
   // Take a measurement. Only the specified axis will be affected.
-  const float measured_pos = measuring_movement(axis, dir, stop_state, fast, uncertainty, uncertainty_tool_length);
+  const float measured_pos = measuring_movement(axis, dir, stop_state, fast, uncertainty, uncertainty_tool_length, feedrate);
 
   // Measure backlash
   if (backlash_ptr && !fast) {
-    const float release_pos = measuring_movement(axis, -dir, !stop_state, fast, uncertainty, uncertainty_tool_length);
+    const float release_pos = measuring_movement(axis, -dir, !stop_state, fast, uncertainty, uncertainty_tool_length, feedrate);
     *backlash_ptr = ABS(release_pos - measured_pos);
   }
 
@@ -255,7 +255,7 @@ inline float measure(const AxisEnum axis, const int dir, const bool stop_state, 
  *   probe_top_at_edge  in     - When probing sides, probe top of calibration object nearest edge
  *                               to find out height of edge
  */
-inline void probe_side(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const side_t side, const bool probe_top_at_edge=false) {
+inline void probe_side(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const side_t side, const bool probe_top_at_edge=false, const feedRate_t feedrate=MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW)) {
   const xyz_float_t dims = dimensions;
   AxisEnum axis;
   float dir = 1;
@@ -274,7 +274,7 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
     #endif
     #if AXIS_CAN_CALIBRATE(Z)
       case TOP: {
-        const float measurement = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length);
+        const float measurement = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length, feedrate);
         m.obj_center.z = measurement - dims.z / 2;
         m.obj_side[TOP] = measurement;
         return;
@@ -288,7 +288,7 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
       // Probe top nearest the side we are probing
       motion.position[axis] = m.obj_center[axis] + (-dir) * (dimensions[axis] / 2 - m.nozzle_outer_dimension[axis]);
       calibration_move();
-      m.obj_side[TOP] = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length);
+      m.obj_side[TOP] = measure(Z_AXIS, -1, true, &m.backlash[TOP], uncertainty, uncertainty_tool_length, feedrate);
       m.obj_center.z = m.obj_side[TOP] - dims.z / 2;
     #endif
   }
@@ -301,7 +301,7 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
     // Plunge below the side of the calibration object and measure
     motion.position.z = m.obj_side[TOP] - (CALIBRATION_NOZZLE_TIP_HEIGHT) * 0.7f;
     calibration_move();
-    const float measurement = measure(axis, dir, true, &m.backlash[side], uncertainty, uncertainty_tool_length);
+    const float measurement = measure(axis, dir, true, &m.backlash[side], uncertainty, uncertainty_tool_length, feedrate);
     m.obj_center[axis] = measurement + dir * (dims[axis] / 2 + m.nozzle_outer_dimension[axis] / 2);
     m.obj_side[side] = measurement;
   }
@@ -313,14 +313,14 @@ inline void probe_side(measurements_t &m, const float uncertainty, const float u
  *   m                  in/out - Measurement record: center, backlash and error values be updated.
  *   uncertainty        in     - How far away from the calibration object to begin probing
  */
-inline void probe_sides(measurements_t &m, const float uncertainty, const float uncertainty_tool_length) {
+inline void probe_sides(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const feedRate_t feedrate) {
   #if ENABLED(CALIBRATION_MEASURE_AT_TOP_EDGES)
     constexpr bool probe_top_at_edge = true;
   #else
     // Probing at the exact center only works if the center is flat. Probing on a washer
     // or bolt will require probing the top near the side edges, away from the center.
     constexpr bool probe_top_at_edge = false;
-    probe_side(m, uncertainty, uncertainty_tool_length, TOP);
+    probe_side(m, uncertainty, uncertainty_tool_length, TOP, feedrate);
   #endif
 
   /**
@@ -329,16 +329,16 @@ inline void probe_sides(measurements_t &m, const float uncertainty, const float 
    * values where the nozzle was catching on the edges of the cube, and this was intended to help
    * ensure the probe object remained centered.
    */
-  TERN_(CALIBRATION_MEASURE_FRONT, probe_side(m, uncertainty, uncertainty_tool_length, FRONT,    probe_top_at_edge));
-  TERN_(CALIBRATION_MEASURE_BACK,  probe_side(m, uncertainty, uncertainty_tool_length, BACK,     probe_top_at_edge));
+  TERN_(CALIBRATION_MEASURE_FRONT, probe_side(m, uncertainty, uncertainty_tool_length, FRONT,    probe_top_at_edge, feedrate));
+  TERN_(CALIBRATION_MEASURE_BACK,  probe_side(m, uncertainty, uncertainty_tool_length, BACK,     probe_top_at_edge, feedrate));
 
   #if HAS_Y_CENTER
     m.obj_center.y = (m.obj_side[FRONT] + m.obj_side[BACK]) / 2;
     m.nozzle_outer_dimension.y = m.obj_side[BACK] - m.obj_side[FRONT] - dimensions.y;
   #endif
 
-  TERN_(CALIBRATION_MEASURE_LEFT,  probe_side(m, uncertainty, uncertainty_tool_length, LEFT,     probe_top_at_edge));
-  TERN_(CALIBRATION_MEASURE_RIGHT, probe_side(m, uncertainty, uncertainty_tool_length, RIGHT,    probe_top_at_edge));
+  TERN_(CALIBRATION_MEASURE_LEFT,  probe_side(m, uncertainty, uncertainty_tool_length, LEFT,     probe_top_at_edge, feedrate));
+  TERN_(CALIBRATION_MEASURE_RIGHT, probe_side(m, uncertainty, uncertainty_tool_length, RIGHT,    probe_top_at_edge, feedrate));
 
   // Compute the measured center of the calibration object.
   TERN_(HAS_X_CENTER, m.obj_center.x = (m.obj_side[LEFT]     + m.obj_side[RIGHT])    / 2);
@@ -473,7 +473,7 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
     TEMPORARY_BACKLASH_CORRECTION(backlash.all_off);
     TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
-    probe_sides(m, uncertainty, uncertainty);
+    probe_sides(m, uncertainty, uncertainty, CALIBRATION_FEEDRATE_SLOW);
 
     #if ENABLED(BACKLASH_GCODE)
 
@@ -516,9 +516,6 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
 }
 
 inline void update_measurements(measurements_t &m, const AxisEnum axis) {
-  if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
-    motion.position[axis] += m.pos_error[axis];
-  }
   m.obj_center[axis] = motion.calibration_center[axis];
   m.pos_error[axis] = 0;
 }
@@ -535,28 +532,20 @@ inline void update_measurements(measurements_t &m, const AxisEnum axis) {
  * Prerequisites:
  *    - Call calibrate_backlash() beforehand for best accuracy
  */
-inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const uint8_t extruder) {
+inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const uint8_t extruder, const feedRate_t feedrate) {
   TEMPORARY_BACKLASH_CORRECTION(backlash.all_on);
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
   TERN(HAS_TOOLCHANGE, set_nozzle(m, extruder, uncertainty_tool_length), UNUSED(extruder));
 
-  probe_sides(m, uncertainty, uncertainty_tool_length);
+  probe_sides(m, uncertainty, uncertainty_tool_length, feedrate);
 
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
     xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
-      if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x += m.pos_error.x;
-      if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y += m.pos_error.y;
-                               if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;
-    }
-    else {
-      if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x = m.pos_error.x;
-      if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y = m.pos_error.y;
-                               if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
-
-    }
+    if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x = m.pos_error.x;
+    if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y = m.pos_error.y;
+                             if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
     normalize_hotend_offsets();
   #endif
 
@@ -578,12 +567,12 @@ inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const
  *   uncertainty    in     - How far away from the object to begin probing
  *   uncertainty_tool_length  in  - How far away from the object to begin probing for hotend Z offset calibration with G425 T...
  */
-inline void calibrate_all_toolheads(measurements_t &m, const float uncertainty, const float uncertainty_tool_length) {
+inline void calibrate_all_toolheads(measurements_t &m, const float uncertainty, const float uncertainty_tool_length, const feedRate_t feedrate) {
   TEMPORARY_BACKLASH_CORRECTION(backlash.all_on);
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
  
   for (int8_t t = 0; t < TOOLS; t++) {
-    calibrate_toolhead(m, uncertainty, uncertainty_tool_length, t);
+    calibrate_toolhead(m, uncertainty, uncertainty_tool_length, t, feedrate);
   }
 
   TERN_(HAS_HOTEND_OFFSET, normalize_hotend_offsets());
@@ -611,18 +600,18 @@ inline void calibrate_all() {
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
   // Do a fast and rough calibration of the toolheads
-  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNKNOWN, CALIBRATION_MEASUREMENT_TOOL_LENGTH);
+  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNKNOWN, CALIBRATION_MEASUREMENT_TOOL_LENGTH, CALIBRATION_FEEDRATE_FAST);
 
   TERN_(BACKLASH_GCODE, calibrate_backlash(m, CALIBRATION_MEASUREMENT_UNCERTAIN));
 
   // Do a slow and precise calibration of the toolheads
-  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN);
+  calibrate_all_toolheads(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_FEEDRATE_SLOW);
 
   motion.position.x = X_CENTER;
   calibration_move();         // Park nozzle away from calibration object
 }
 
-inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty, const uint8_t extruder) {
+inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty, const uint8_t extruder, const feedRate_t feedrate) {
   TEMPORARY_BACKLASH_CORRECTION(backlash.all_on);
   TEMPORARY_BACKLASH_SMOOTHING(0.0f);
 
@@ -634,21 +623,10 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
     // Probing at the exact center only works if the center is flat. Probing on a washer
     // or bolt will require probing the top near the side edges, away from the center.
     constexpr bool probe_top_at_edge = false;
-  probe_side(m, uncertainty, uncertainty, TOP);
+  probe_side(m, uncertainty, uncertainty, TOP, feedrate);
   #endif
 
-  // Adjust the hotend offset
-  #if HAS_HOTEND_OFFSET
-    xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (AXIS_CAN_CALIBRATE(Z)) {
-      if (TERN0(HAS_TOOL_CENTERPOINT_CONTROL, motion.tool_centerpoint_control) || TERN1(HAS_TOOL_LENGTH_COMPENSATION, motion.simple_tool_length_compensation)) {
-        hotoff.z += m.pos_error.z;
-      }
-    else {
-      hotoff.z = m.pos_error.z;
-    }
-    normalize_hotend_offsets();
-  #endif
+  park_above_object(m, CALIBRATION_MEASUREMENT_UNCERTAIN);
 
   // Correct for positional error, so the object
   // is at the known actual spot
@@ -677,8 +655,8 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
   // The difference between the known and the measured location
   // of the calibration object is the positional error
   NUM_AXIS_CODE(
-    m.pos_error.x = TERN0(HAS_X_CENTER, motion.calibration_center.x - m.obj_center.x),
-    m.pos_error.y = TERN0(HAS_Y_CENTER, motion.calibration_center.y - m.obj_center.y),
+    m.pos_error.x = 0,
+    m.pos_error.y = 0,
     m.pos_error.z = motion.calibration_center.z - m.obj_center.z,
     m.pos_error.i = 0,
     m.pos_error.j = 0,
@@ -687,6 +665,20 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
     m.pos_error.v = 0,
     m.pos_error.w = 0
   );
+
+  // Adjust the hotend offset
+  #if HAS_HOTEND_OFFSET
+    xyz_pos_t &hotoff = motion.active_hotend_offset();
+    if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
+    normalize_hotend_offsets();
+  #endif
+
+  // Correct for positional error, so the object
+  // is at the known actual spot
+  planner.synchronize();
+  if (AXIS_CAN_CALIBRATE(Z)) update_measurements(m, Z_AXIS);
+
+  motion.sync_plan_position();
 }
 
 
@@ -844,6 +836,14 @@ void GcodeSuite::G425() {
 
   if (motion.homing_needed_error()) return;
 
+  #if HAS_TOOL_CENTERPOINT_CONTROL
+    const bool old_tcpc = motion.tool_centerpoint_control;
+  #endif
+  #if HAS_TOOL_LENGTH_COMPENSATION
+    const bool old_tool_length_compensation = motion.simple_tool_length_compensation;
+    process_subcommands_now(F("G49"));
+  #endif
+
   #if HAS_LEVELING
     TEMPORARY_BED_LEVELING_STATE(false);
   #endif
@@ -852,7 +852,7 @@ void GcodeSuite::G425() {
   measurements_t m;
   const float uncertainty = parser.floatval('U', CALIBRATION_MEASUREMENT_UNKNOWN);
   const float uncertainty_tool_length = parser.floatval('L', CALIBRATION_MEASUREMENT_TOOL_LENGTH);
-
+  const feedRate_t measurement_feedrate = parser.seenval('F') ? MMM_TO_MMS(parser.value_linear_units()) : MMM_TO_MMS(CALIBRATION_FEEDRATE_SLOW);
   if (parser.seen_test('B'))
     calibrate_backlash(m, uncertainty);
   // --- ĐOẠN ĐIỀU HƯỚNG MỚI ĐÃ ĐƯỢC CHUẨN HÓA ---
@@ -861,13 +861,11 @@ void GcodeSuite::G425() {
     
     // Nếu gõ G425 T1 Z hoặc G425 T1 Z0 -> Kích hoạt chế độ đo chiều dài Z nhanh CNC style
     if (parser.seen('Z')) {
-      calibrate_toolhead_z_only(m, uncertainty_tool_length, target_tool);
-      calibrate_toolhead_z_only(m, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool); 
+      calibrate_toolhead_z_only(m, uncertainty_tool_length, target_tool, measurement_feedrate);
     } 
     // Nếu chỉ gõ G425 T1 -> Chạy chế độ mặc định đo toàn diện X Y Z
     else {
-      calibrate_toolhead(m, uncertainty, uncertainty_tool_length, target_tool);
-      calibrate_toolhead(m, CALIBRATION_MEASUREMENT_UNCERTAIN, CALIBRATION_MEASUREMENT_UNCERTAIN, target_tool);
+      calibrate_toolhead(m, uncertainty, uncertainty_tool_length, target_tool, measurement_feedrate);
     }
   }
   #if ENABLED(CALIBRATION_REPORTING)
@@ -889,6 +887,12 @@ void GcodeSuite::G425() {
     calibrate_all();
 
   motion.set_soft_endstop_loose(false);
+  #if HAS_TOOL_LENGTH_COMPENSATION
+    if (old_tool_length_compensation) process_subcommands_now(F("G43"));
+  #endif
+  #if HAS_TOOL_CENTERPOINT_CONTROL
+    if (old_tcpc) process_subcommands_now(F("G43.4"));
+  #endif
 
   #ifdef CALIBRATION_SCRIPT_POST
     process_subcommands_now(F(CALIBRATION_SCRIPT_POST));
