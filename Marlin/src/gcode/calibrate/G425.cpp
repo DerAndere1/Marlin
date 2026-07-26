@@ -530,6 +530,9 @@ inline void calibrate_backlash(measurements_t &m, const float uncertainty) {
 }
 
 inline void update_measurements(measurements_t &m, const AxisEnum axis) {
+  #if NONE(HAS_TOOL_CENTERPOINT_CONTROL, HAS_TOOL_LENGTH_COMPENSATION)
+    motion.position += m.pos_error[axis];
+  #endif
   m.obj_center[axis] = motion.calibration_center[axis];
   m.pos_error[axis] = 0;
 }
@@ -558,9 +561,16 @@ inline void calibrate_toolhead(measurements_t &m, const float uncertainty, const
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
     xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x = m.pos_error.x;
-    if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y = m.pos_error.y;
-                             if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
+      #if ANY(HAS_TOOL_CENTERPOINT_CONTROL, HAS_TOOL_LENGTH_COMPENSATION)
+        if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x = m.pos_error.x;
+        if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y = m.pos_error.y;
+                                 if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
+      #else
+        if (ENABLED(HAS_X_CENTER) && AXIS_CAN_CALIBRATE(X)) hotoff.x += m.pos_error.x;
+        if (ENABLED(HAS_Y_CENTER) && AXIS_CAN_CALIBRATE(Y)) hotoff.y += m.pos_error.y;
+                                 if (AXIS_CAN_CALIBRATE(Z)) hotoff.z += m.pos_error.z;
+
+      #endif
     normalize_hotend_offsets();
   #endif
 
@@ -685,7 +695,13 @@ inline void calibrate_toolhead_z_only(measurements_t &m, const float uncertainty
   // Adjust the hotend offset
   #if HAS_HOTEND_OFFSET
     xyz_pos_t &hotoff = motion.active_hotend_offset();
-    if (AXIS_CAN_CALIBRATE(Z)) hotoff.z = m.pos_error.z;
+    if (AXIS_CAN_CALIBRATE(Z)) {
+      #if ANY(TOOL_LENGTH_COMPENSATION, TOOL_CENTERPOINT_CONTROL)  
+        hotoff.z = m.pos_error.z;
+      #else
+        hotoff.z += m.pos_error.z;
+      #endif
+    }
     normalize_hotend_offsets();
   #endif
 
