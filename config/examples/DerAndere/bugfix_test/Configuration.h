@@ -314,6 +314,58 @@
 #endif
 
 /**
+ * Differential Extruder
+ *
+ * The X and E steppers work together to create a differential drive system.
+ * Simple  : E steps = X + E   ; X steps = X  (E drives a loop, X stays the same)
+ * Balanced: E steps = X + E/2 ; X steps = X - E/2  (Dual loop system)
+ */
+//#define DIFFERENTIAL_EXTRUDER
+#if ENABLED(DIFFERENTIAL_EXTRUDER)
+  //#define BALANCED_DIFFERENTIAL_EXTRUDER
+#endif
+
+ /**
+ * Switching Toolhead - Manual
+ *
+ * Support for manual swapping of toolheads, such as the
+ * Wham Bam MUTANT. Toolheads are manually docked/locked,
+ * and all use the same heater/sensor pins when switched.
+ *
+ * !! TOOL TYPE ORDERING MATTERS !!
+ *  1. Hotends (Set TEMP_SENSOR_n)
+ *  2. Non-Hotend Extruder (no TEMP_SENSOR)
+ *  3. Unpowered
+ *  4. Laser/Spindle
+ *
+ * You may also desire to enable/check the following:
+ *  - HOTEND_OFFSET_[XYZ]
+ *  - Tool Change settings in Configuration_adv.h
+ */
+//#define MANUAL_SWITCHING_TOOLHEAD
+#if ENABLED(MANUAL_SWITCHING_TOOLHEAD)
+  /**
+   * Hotend / Extruder Setup
+   * By default the toolchange code assumes all hotends share a single extruder (e.g., in a Bowden setup).
+   * Enable this option if all hotends have their own direct drive extruders.
+   * If this is used, also consider enabling:
+   *  - DISTINCT_E_FACTORS and related settings
+   *  - PID_PARAMS_PER_HOTEND
+   */
+  //#define MAN_ST_DIRECT_DRIVE
+
+
+  /**
+   * Define the names of Hotends/Unpowered tools. Optional.
+   * Default to "Hotend #"/"Tool #" as appropriate.
+   */
+  //#define TOOL_NAME_0 "Tool 0"
+  //#define TOOL_NAME_1 "Tool 1"
+  //#define TOOL_NAME_2 "Tool 2"
+  //#define TOOL_NAME_3 "Tool 3"
+#endif
+
+/**
  * Switching Toolhead
  *
  * Support for swappable and dockable toolheads, such as
@@ -397,6 +449,9 @@
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
 #define DEFAULT_TOOL_LENGTH_COMPENSATION false
+
+// Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
+//#define DEFAULT_TOOL_LENGTH_COMPENSATION true
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
 //#define DEFAULT_TOOL_LENGTH_COMPENSATION true
@@ -955,6 +1010,15 @@
 // Enable for a belt style printer with endless "Z" motion
 //#define BELTPRINTER
 
+// Articulated robot (arm). Joints are directly mapped to axes with no kinematics.
+//#define ARTICULATED_ROBOT_ARM
+
+// For a hot wire cutter with parallel horizontal axes (X, I) where the heights of the two wire
+// ends are controlled by parallel axes (Y, J). Joints are directly mapped to axes (no kinematics).
+//#define FOAMCUTTER_XYUV
+
+// @section polargraph
+
 // Enable for Polargraph Kinematics
 //#define POLARGRAPH
 #if ENABLED(POLARGRAPH)
@@ -1177,12 +1241,10 @@
 
   // For a machine with XYZBC axes, this is the distance along the x axis from the vertical centerline of the
   // joint of the horizontal rotary table to the horizontal centerline of the joint that tilts the table.
-  // Measured when the table is oriented horizontally.
   #define DEFAULT_ROTATIONAL_JOINT_OFFSET_X 0.0 // (mm)
 
   // For a machine with XYZAC axes, this is the distance along the y axis from the vertical centerline of the
   // joint of the horizontal table to the horizontal centerline of the joint that tilts the table. 
-  // Measured when the table is oriented horizontally.
   #define DEFAULT_ROTATIONAL_JOINT_OFFSET_Y 0.0 // (mm)
 
   // This is the distance along the Z axis from the surface at the top of the table to the horizontal
@@ -2550,6 +2612,11 @@
 // G93/G94 Feedrate mode support
 //
 #define FEEDRATE_MODE_SUPPORT
+
+//
+// G93/G94 Feedrate mode support
+//
+//#define FEEDRATE_MODE_SUPPORT
 
 //
 // G93/G94 Feedrate mode support

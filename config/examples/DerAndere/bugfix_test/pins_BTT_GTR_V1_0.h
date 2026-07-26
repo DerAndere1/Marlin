@@ -97,8 +97,10 @@
 //
 #if ENABLED(M5_EXTENDER)
   #define Y2_STOP_PIN                      PF12  // M5 M5_STOP
-  #define I_STOP_PIN                       PI4   // M5 M1_STOP
-  #define J_STOP_PIN                       PF4   // M5 M2_STOP
+  //#define J_STOP_PIN                       PI7   // M5 M4_STOP For TRT C axis
+  //#define I_STOP_PIN                       PF6   // M5 M3_STOP For TRT A axis
+  #define I_STOP_PIN                       PI4   // M5 M1_STOP For HH B axis
+  #define J_STOP_PIN                       PF4   // M5 M2_STOP For HH C axis
 #endif
 
 #ifndef Z_MIN_PROBE_PIN
@@ -159,14 +161,35 @@
 
 #if ENABLED(M5_EXTENDER)
 
-  #define I_STEP_PIN                       PF3
+/**
+  #define I_STEP_PIN                       PE12 // For TRT A axis
+  #define I_DIR_PIN                        PE10
+  #define I_ENABLE_PIN                     PF14
+  #ifndef I_CS_PIN
+    #define I_CS_PIN                       PE7
+  #endif
+
+  #define J_STEP_PIN                       PG0 // For TRT C axis
+  #define J_DIR_PIN                        PG1
+  #define J_ENABLE_PIN                     PE8
+  #ifndef J_CS_PIN
+    #define J_CS_PIN                       PF15
+  #endif
+
+  #define E7_STEP_PIN                       PH12
+  #define E7_DIR_PIN                        PH15
+  #define E7_ENABLE_PIN                     PI0
+  #ifndef E7_CS_PIN
+    #define E7_CS_PIN                       PH14
+ */
+  #define I_STEP_PIN                       PF3 // For HH B axis
   #define I_DIR_PIN                        PG3
   #define I_ENABLE_PIN                     PF8
   #ifndef I_CS_PIN
     #define I_CS_PIN                       PG4
   #endif
 
-  #define J_STEP_PIN                       PD14
+  #define J_STEP_PIN                       PD14 // For HH C axis
   #define J_DIR_PIN                        PD11
   #define J_ENABLE_PIN                     PG2
   #ifndef J_CS_PIN
@@ -293,6 +316,8 @@
 #define FAN0_PIN                            PE5   // Fan0
 #define FAN1_PIN                            PE6   // Fan1
 #define FAN2_PIN                            PC8   // Fan2
+#define PART_COOLING_FAN1_PIN -1
+#define PART_COOLING_FAN2_PIN -1
 
 #if ENABLED(M5_EXTENDER)
   #define FAN3_PIN                          PI5   // M5 FAN1
