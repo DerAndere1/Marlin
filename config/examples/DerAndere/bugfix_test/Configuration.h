@@ -448,7 +448,7 @@
 #define HOTEND_OFFSET_Z { 0.0, -10.00, -2.2 }  // (mm) relative Z-offset for each nozzle
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
-#define DEFAULT_TOOL_LENGTH_COMPENSATION false
+//#define DEFAULT_TOOL_LENGTH_COMPENSATION false
 
 // Enable and disable tool length compensation with G43 and G49, respectively. true: Enabled by default. false: Disabled by default.
 //#define DEFAULT_TOOL_LENGTH_COMPENSATION true
@@ -1291,7 +1291,7 @@
  * The axis of rotation of the tilting joint (B-axis) is oriented parallel to the Y axis when all axes are at machine position 0.
  * More information can be found at https://github.com/DerAndere1/Marlin/wiki/Marlin2ForPipetBot:-five-axis-CNC
  */
-#define PENTA_AXIS_HH
+//#define PENTA_AXIS_HH
 #if ENABLED(PENTA_AXIS_HH)
 
   // For a machine with XYZBC axes, this is the distance along the y axis from the vertical centerline of the

@@ -2866,7 +2866,7 @@
  * Universal tool change settings.
  * Applies to all types of extruders except where explicitly noted.
  */
-#if HAS_MULTI_TOOLS
+#if HAS_MULTI_EXTRUDERS
   // Always switch to T0 when homing; comment out to disable.
   #define TOOLCHANGE_HOMING_USE_T0
 
@@ -2976,7 +2976,7 @@
       //#define TOOLCHANGE_MIGRATION_DO_PARK  // Force park (or no-park) on migration
     #endif
   #endif
-#endif // HAS_MULTI_TOOLS
+#endif // HAS_MULTI_EXTRUDERS
 
 // @section advanced pause
 
