@@ -401,7 +401,7 @@ void GcodeSuite::G28() {
     #endif
 
     // Home with tool 0 active, if specified
-    #if ALL(HAS_TOOLCHANGE, TOOLCHANGE_HOMING_USE_T0)
+    #if HAS_MULTI_TOOLS
       #if DISABLED(DELTA) || ENABLED(DELTA_HOME_TO_SAFE_ZONE)
         const uint8_t old_tool_index = motion.extruder;
       #endif
